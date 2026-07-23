@@ -1,7 +1,7 @@
 # Phase 00 Completion Report
 
 - Phase: 00
-- release/commit: base `329a1b5`, uncommitted evidence
+- release/commit 기준: base `7fd5729`; activation prototype change
 - reviewer: Product scope DG00-01~03 approved; remaining human reviewers pending
 - 결과: **Incomplete**
 
@@ -14,14 +14,14 @@
 | WP00-03 시장·연령·아동 분류 | PARTIAL | D-013/D-039 제품 승인; 법률·Store questionnaire와 보관 정책 미완료 |
 | WP00-04 가격·구독 정책 | PARTIAL | 가격 비교와 smoke-test 가설만 작성, H-06/H-07 미실행 |
 | WP00-05 기술·계정 준비 | PARTIAL | `MANUAL_SETUP_STATUS.md` |
-| WP00-06 위험 PoC | PARTIAL | `TECHNICAL_POC.md`; RLS PASS, Flutter unit PASS, device/provider NOT RUN |
+| WP00-06 위험 PoC | PARTIAL | `TECHNICAL_POC.md`; RLS/analyze/test/Android APK PASS, device/provider NOT RUN |
 
 ## 변경 산출물
 
 - 제품 검증: research runbook, interview template, hypothesis scorecard, prototype/pilot result ledger
 - 결정: G0 review packet, ACCEPTED MVP scope ADR, D-013/D-039/D-051 반영
 - 위험: 30개 위험에 accountable role 지정, named owner는 미정
-- 기술: 폐기 가능한 household RLS isolation PoC와 실행 evidence
+- 기술: 폐기 가능한 household RLS isolation PoC, 성인 2인 Flutter prototype과 실행 evidence
 - production UI/domain/repository/provider: 변경 없음
 - production migration/RLS/RPC: 변경 없음
 - observability/runbook: 연구용 최소 event와 개인정보 규칙 정의
@@ -34,8 +34,9 @@
 | 결정 ID | DECISIONS 중복과 OPEN/PROVISIONAL 수 검사 | PASS | `logs/document-validation.log` |
 | 문서팩 무결성 | 105개 SHA-256 비교 | PASS | `logs/document-validation.log` |
 | Flutter 기준선 | 공식 tag 격리 설치 후 version machine 출력 | PASS — 3.44.7/Dart 3.12.2 | `TECHNICAL_POC.md` |
-| Flutter unit | 격리 scaffold 기본 test | PASS — 1/1 | `PHASE_00_EVIDENCE.md` |
-| Flutter Android build | 격리 scaffold debug APK | TIMEOUT — 약 10분, APK 없음 | `logs/flutter-poc.log` |
+| Flutter analyze | 성인 2인 activation prototype | PASS — issue 0 | `logs/activation-prototype.log` |
+| Flutter test | model/widget activation 흐름 | PASS — 4/4 | `logs/activation-prototype.log` |
+| Flutter Android build | activation prototype debug APK | PASS — SHA-256 기록 | `logs/activation-prototype.log` |
 | Household RLS | PostgreSQL 16 same/cross/removed/direct-write test | PASS | `logs/rls-poc.log` |
 | iOS/Android boot | 실제 runtime/device | NOT RUN | `TECHNICAL_POC.md` |
 | Auth/push/billing sandbox | provider console/device | NOT RUN | `TECHNICAL_POC.md` |
@@ -65,9 +66,9 @@ Phase 00을 완료하려면 다음이 실제 증거로 남아야 한다.
 
 - production 기능과 외부 console 변경이 없어 kill switch는 해당 없음.
 - RLS test container는 자동 제거했다.
-- 임시 Flutter SDK/scaffold/npm cache 약 1.4GB는 evidence 작성 후 `/private/tmp`에서 삭제했다.
-- Android 시도로 공유 Gradle dependency cache에 다운로드 항목이 추가됐을 수 있다.
-- 새 evidence/PoC 파일은 독립된 untracked 파일이므로 검토 후 선택적으로 커밋할 수 있다.
+- 격리 Flutter SDK는 `/private/tmp/kinflow-flutter-3.44.7`에 있으며 공용 Flutter SDK는 변경하지 않았다.
+- Android build로 공유 Gradle dependency cache에 다운로드 항목이 추가됐고 APK는 ignored `build/`에 있다.
+- Prototype은 메모리 상태와 `dev.kinflow.poc` 식별자만 사용하는 폐기 가능한 코드다.
 
 ## 다음 Phase 진입 판단
 
@@ -81,7 +82,7 @@ Engineering은 문서 검토와 로컬 환경 보완을 준비할 수 있지만 
 |---|---|---|---|---|
 | Shared domain/API | household isolation 원칙 | PostgreSQL RLS spike | PARTIAL PASS | `TECHNICAL_POC.md` |
 | iOS | scaffold boot | runtime/device | NOT RUN | `MANUAL_SETUP_STATUS.md` |
-| Android | scaffold build/boot | build timeout, device 없음 | INCOMPLETE | `TECHNICAL_POC.md` |
+| Android | activation prototype build/boot | debug APK PASS, device 없음 | PARTIAL PASS | `TECHNICAL_POC.md` |
 | Web | Phase 00 비범위 | N/A | DEFERRED | ADR-0001 |
 | Web Companion | Phase 00 비범위 | N/A | DEFERRED | ADR-0001 |
 

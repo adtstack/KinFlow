@@ -35,6 +35,7 @@
 | iOS Simulator | BLOCKED | 설치 runtime 0 |
 | CocoaPods | BLOCKED | 미설치 |
 | Android SDK 36 | PASS | platform/build-tools 36.0.0 |
+| Android NDK | PARTIAL | 28.2 install 손상; PoC는 정상 NDK 27.0으로 build PASS |
 | Android AVD/device | BLOCKED | AVD 0, 연결 기기 0 |
 | Docker | PASS | Engine 28.3.2 |
 | Supabase CLI | PARTIAL | 임시 npm cache로 2.109.1 확인; project pin 없음 |

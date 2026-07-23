@@ -13,6 +13,10 @@
 
 실행 예시는 Phase evidence의 `TECHNICAL_POC.md`에 기록한다.
 
+## Adult activation prototype
+
+`activation_prototype/`은 D-051의 성인 2인 Activation 흐름을 한 기기에서 검증하는 폐기 가능한 Flutter 앱이다. `dev.kinflow.poc` 식별자와 메모리 상태만 사용하며 production app/backend로 승격하지 않는다.
+
 ## 비범위
 
 - 전체 `database-schema.sql` 적용
@@ -20,3 +24,4 @@
 - production RPC와 migration
 - Managed Child acting context
 - chores/calendar/billing RLS 전체 matrix
+- 실제 인증·초대·푸시·결제·영구 저장

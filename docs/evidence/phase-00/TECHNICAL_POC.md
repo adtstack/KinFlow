@@ -2,7 +2,7 @@
 
 - 검증일: 2026-07-23
 - 검증 환경: macOS 26.4.1 arm64
-- 저장소 commit: `329a1b5`
+- 저장소 기준: base commit `7fd5729`; activation prototype change
 - 검증자: Codex local audit
 - 결과: PARTIAL
 
@@ -26,8 +26,8 @@
 | PoC | 절차 | 결과 | Evidence/차단 이유 |
 |---|---|---|---|
 | Flutter iOS boot | Flutter 3.44.7 + iOS runtime | NOT RUN | Simulator runtime/CocoaPods/실제 기기 없음 |
-| Flutter Android scaffold | Flutter 3.44.7 `flutter create` + `flutter test` | PASS | scaffold 생성, 기본 widget test 1/1 통과 |
-| Flutter Android build | Flutter 3.44.7 `flutter build apk --debug` | TIMEOUT | 약 10분간 Gradle/Kotlin DSL 초기 구성 후 APK 미생성; 프로세스 정상 종료 |
+| Flutter adult activation prototype | Flutter 3.44.7 `flutter analyze` + `flutter test` | PASS | analyzer issue 0, model/widget test 4/4 통과 |
+| Flutter Android build | Flutter 3.44.7 `flutter build apk --debug` | PASS | debug APK 146,166,848 bytes, SHA-256 `028b9cec54ebc1793574905d16b807a60f4423f3680353652824aad7aca4de60` |
 | Flutter Android boot | Flutter 3.44.7 + Android runtime | NOT RUN | AVD/실제 기기 없음 |
 | Supabase auth callback deep link | 실제 auth project + app link | NOT RUN | identifier/domain/auth project 미결정 |
 | Firebase notification | dev Firebase + 실제 기기 | NOT RUN | Firebase project/APNs key/실제 기기 없음 |
@@ -73,14 +73,14 @@ ROLLBACK
 
 1. 사용자의 공용 Flutter SDK를 직접 업그레이드하지 말고 Phase 01에서 프로젝트 단위 exact pin을 구성한다.
 2. iOS 26 Simulator runtime과 CocoaPods를 설치하고 대표 iOS 기기 1대를 준비한다.
-3. Android API 24 또는 저사양 대표 AVD와 실제 기기 1대를 준비한다.
+3. Android API 24 또는 저사양 대표 AVD와 실제 기기 1대를 준비하고 생성된 APK를 설치한다.
 4. legal entity/domain/identifier 승인 후 dev Supabase/Firebase/RevenueCat project를 만든다.
 5. 각 provider PoC는 production secret 없이 dev/sandbox에서 실행한다.
-6. Android build는 Phase 01의 고정 Gradle/JDK/네트워크 조건에서 상세 로그와 함께 재실행한다. 이번 timeout만으로 Flutter 3.44.7 호환 실패라고 판정하지 않는다.
+6. 손상된 local NDK 28.2 설치를 복구한다. Prototype은 정상 설치된 NDK 27.0으로만 우회했으며 production scaffold는 Flutter 기본 NDK를 사용해야 한다.
 
 ## Rollback
 
 - RLS 컨테이너는 `--rm`으로 중지 후 자동 제거했다.
-- 격리 Flutter SDK, scaffold, npm cache 약 1.4GB는 evidence 작성 후 `/private/tmp`에서 삭제했다.
-- 사용자의 공용 Flutter SDK는 변경하지 않았다. Android 시도 과정에서 공유 Gradle dependency cache에는 다운로드 항목이 추가됐을 수 있다.
+- 격리 Flutter SDK는 `/private/tmp/kinflow-flutter-3.44.7`에 재생성했으며 disposable toolchain으로만 사용한다.
+- 사용자의 공용 Flutter SDK 3.32.8은 업그레이드하지 않았다. Android build 과정에서 공유 Gradle dependency cache에는 다운로드 항목이 추가됐다.
 - 실제 provider project, token, SKU, 사용자 데이터는 생성하지 않았다.

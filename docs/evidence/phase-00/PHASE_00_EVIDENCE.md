@@ -1,8 +1,8 @@
 # Phase 00 Evidence
 
 - Phase: 00
-- Commit/tag: base `329a1b5`; working tree evidence not committed
-- App version/build/runtime: no production app; isolated Flutter 3.44.7/Dart 3.12.2 PoC
+- Commit/tag 기준: base `7fd5729`; activation prototype change
+- App version/build/runtime: disposable prototype 0.0.1+1; isolated Flutter 3.44.7/Dart 3.12.2
 - DB schema/migration head: no production migration; isolated PostgreSQL 16 RLS PoC
 - Environment: local macOS 26.4.1 arm64
 - 검증일: 2026-07-23
@@ -17,7 +17,7 @@
 | WP00-03 출시 시장과 아동 분류 | PARTIAL | D-013/D-039 제품 승인; 법률·Store questionnaire와 보관 정책 미완료 |
 | WP00-04 가격과 구독 정책 | PARTIAL | 경쟁 가격 참고 및 smoke-test 셀 정의, H-06/H-07 미실행 |
 | WP00-05 기술·계정 준비 | PARTIAL | `MANUAL_SETUP_STATUS.md` |
-| WP00-06 위험 PoC | PARTIAL | `TECHNICAL_POC.md`; RLS PASS, provider/device PoC NOT RUN |
+| WP00-06 위험 PoC | PARTIAL | `TECHNICAL_POC.md`; RLS/analyze/test/Android APK PASS, provider/device boot NOT RUN |
 
 ## Automated Commands
 
@@ -27,9 +27,10 @@
 | DECISIONS ID 중복/OPEN 수 검사 | PASS — duplicate 0, OPEN 1 | `logs/document-validation.log` |
 | Package manifest SHA-256 105개 검사 | PASS | `logs/document-validation.log` |
 | `/private/tmp/kinflow-flutter-3.44.7/bin/flutter --version --machine` | PASS — Flutter 3.44.7, Dart 3.12.2 | `TECHNICAL_POC.md` |
-| 격리 Flutter scaffold `flutter test` | PASS — 1 test | `TECHNICAL_POC.md` |
+| Activation prototype `flutter analyze --fatal-infos --fatal-warnings` | PASS — issue 0 | `logs/activation-prototype.log` |
+| Activation prototype `flutter test` | PASS — 4/4 | `logs/activation-prototype.log` |
 | PostgreSQL household RLS test | PASS | `logs/rls-poc.log` |
-| Flutter Android build | TIMEOUT — 약 10분, APK 미생성 | `logs/flutter-poc.log` |
+| Activation prototype `flutter build apk --debug` | PASS — APK 146,166,848 bytes | `logs/activation-prototype.log` |
 | Flutter iOS build/boot | NOT RUN — runtime/CocoaPods 없음 | `TECHNICAL_POC.md` |
 
 ## Database / Authorization
@@ -50,7 +51,7 @@
 ## Accessibility / Localization
 
 - en: NOT RUN — prototype build 없음
-- ko: NOT RUN — prototype build 없음
+- ko: BUILD PRESENT — 수동 검증 NOT RUN
 - pseudo/long text: NOT RUN
 - VoiceOver/TalkBack: NOT RUN
 - large text: NOT RUN
@@ -79,8 +80,8 @@
 ## Rollback Evidence
 
 - RLS PostgreSQL container는 중지 후 `--rm`으로 제거됨.
-- Flutter SDK/scaffold/npm cache는 `/private/tmp` 격리 경로에서 검증 후 삭제했고, 공용 Flutter SDK와 저장소를 변경하지 않음.
-- Android 시도로 공유 Gradle dependency cache에 항목이 추가됐을 수 있으나 project artifact는 남지 않음.
+- 격리 Flutter SDK는 `/private/tmp/kinflow-flutter-3.44.7`에 있으며 공용 Flutter SDK 3.32.8은 업그레이드하지 않음.
+- Android debug APK는 prototype의 ignored `build/` 아래에 생성됐고 공유 Gradle cache에 의존성이 추가됨.
 - production project, 사용자, 결제, token, secret을 생성하지 않음.
 
 ## Sign-off
@@ -96,12 +97,12 @@
 - target platforms: iOS/Android risk PoC
 - web release ID/URL: N/A
 - iOS build: NOT RUN
-- Android build: TIMEOUT, artifact 없음
+- Android build: PASS, debug APK 생성
 
 | Platform | Build/export | E2E | 수동 환경 | 결과 | Evidence |
 |---|---|---|---|---|---|
 | iOS | NOT RUN | N/A | runtime 없음 | BLOCKED | `TECHNICAL_POC.md` |
-| Android | TIMEOUT, APK 없음 | N/A | AVD/device 없음 | BLOCKED | `TECHNICAL_POC.md` |
+| Android | PASS, debug APK | N/A | AVD/device 없음 | PARTIAL | `TECHNICAL_POC.md` |
 | Web | 비범위 | N/A | N/A | N/A | ADR-0001 |
 | Web Companion | 비범위 | N/A | N/A | N/A | ADR-0001 |
 
