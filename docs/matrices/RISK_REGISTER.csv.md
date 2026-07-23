@@ -10,7 +10,7 @@
 ```csv
 ﻿risk_id,title,likelihood_1_5,impact_1_5,detectability_1_3,priority_score,prevention_mitigation,trigger_detection,contingency,phase_gate,owner,due_date,status,acceptance_notes,evidence
 RISK-001,Cross-household data exposure,2,5,3,30,"RLS, composite integrity, deny tests",Auth anomaly/support,Deny/kill switch; privacy incident,All,,,OPEN,,
-RISK-002,Managed Child adult-action bypass,3,5,3,45,Server allowlist + parental gate,Bypass test/audit,Disable child mode,02/07,,,OPEN,,
+RISK-002,Managed Child adult-action bypass,3,5,3,45,Server allowlist + parental gate,Bypass test/audit,Disable child mode,P1 child gate,,,DEFERRED,,Reopen only when P1 child scope is approved
 RISK-003,Purchaser-household entitlement corruption,3,5,3,45,Separated model/reconcile/matrix,Mismatch alert,Purchase kill switch/recompute,06,,,OPEN,,
 RISK-004,Wrong age/Families classification,2,5,3,30,Phase00 official/legal review,Policy audit,Delay market/features,00/07/09,,,OPEN,,
 RISK-005,DST/recurrence wrong occurrence,4,4,2,32,Typed time/revision/matrix,Support/materialization diff,Pause recurrence/repair,04/05,,,OPEN,,

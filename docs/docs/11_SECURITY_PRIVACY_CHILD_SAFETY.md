@@ -43,9 +43,9 @@
 - 중복·동시 수락은 transaction/idempotency로 방지
 - 초대 URL에는 PII를 넣지 않는다.
 
-## 4. Managed Child 원칙
+## 4. Managed Child 원칙(P1 계약)
 
-Store MVP의 Managed Child는 독립 로그인 계정이 아니다.
+Managed Child는 Store MVP 비범위다. P1에서 재승인될 경우에도 독립 로그인 계정이 아니다.
 
 - 보호자가 household 안에서 만든 프로필
 - 이메일, OAuth identity, 개인 push token 없음
@@ -54,7 +54,7 @@ Store MVP의 Managed Child는 독립 로그인 계정이 아니다.
 - 외부 analytics는 child mode에서 기본 차단 또는 최소 집계
 - location, chat, medical, school record 수집 금지
 
-대상 연령과 mixed-audience 분류가 확정되기 전에는 자녀용 독립 계정이나 광고 SDK를 도입하지 않는다.
+Store MVP에는 자녀 프로필·child mode·자녀 대상 마케팅을 노출하지 않는다. P1은 H-05와 법률·Store 검토를 통과하기 전 production에 활성화하지 않는다.
 
 ## 5. Parental gate
 

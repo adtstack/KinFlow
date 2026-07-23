@@ -9,6 +9,7 @@
 - 플랫폼: Tier 1 iOS·iPadOS·Android, Tier 2 Web Companion, Deferred Flutter Desktop
 - 초기 언어: en, ko
 - 요구사항 ID 접두사: `PRD-`, 세부 기능은 `FR-`
+- 승인 범위: 대한민국 단일 시장, 성인 계정 사용자, 성인 2인 Activation 우선(D-013, D-039, D-051)
 
 ## 2. 목표
 
@@ -17,7 +18,7 @@
 | PRD-G01 | 가족 두 명 이상이 집안일 책임과 완료 상태를 공유 | 활성화 가구율, 두 번째 성인 행동률 |
 | PRD-G02 | 오늘의 집안일과 일정을 한 화면에서 이해 | Today 재방문, task success |
 | PRD-G03 | 반복 작업을 매번 재입력하지 않고 현지 시간대로 정확히 생성 | 반복 오류·수정·알림 누락률 |
-| PRD-G04 | 자녀에게 최소 권한으로 참여 경험 제공 | 보호자 gate 우회 0, 자녀 task completion |
+| PRD-G04 | P1에서 자녀에게 최소 권한으로 참여 경험 제공 | 보호자 gate 우회 0, 자녀 task completion |
 | PRD-G05 | 한 명의 결제로 선택된 한 가구에 안정적으로 Plus 제공 | entitlement mismatch, 복원 성공률 |
 | PRD-G06 | 글로벌 출시의 기본 요건인 개인정보·삭제·접근성·i18n 충족 | release gate 통과 |
 | PRD-G07 | Flutter 모바일 플랫폼에서 동일 가구 데이터·권한·entitlement를 일관되게 제공하고 후속 Web Companion으로 계약을 확장 | iOS/Android mismatch 0, Web contract parity |
@@ -37,6 +38,7 @@ Store MVP는 다음을 해결하지 않는다.
 - 초기 Windows·macOS·Linux 네이티브 앱
 - 모든 플랫폼에서 픽셀 단위로 동일한 UI
 - Web Beta의 필수 조건으로서 Web Push 또는 Web 유료 결제
+- Managed Child 프로필과 child mode(P1; H-05·법률·Store 검토 후 재승인)
 
 ## 4. 사용자와 역할
 
@@ -45,7 +47,7 @@ Store MVP는 다음을 해결하지 않는다.
 | Owner | 성인 로그인 | 가구 소유권·삭제·billing household 선택·모든 관리 |
 | Admin | 성인 로그인 | 구성원·초대·집안일·일정 관리. 소유권/가구 삭제/결제 이전 제외 |
 | Member | 성인 로그인 | 허용된 항목 생성·편집, 자기/가족 상태 확인 |
-| Managed Child | 독립 인증 없음 | 허용된 공유 기기 모드에서 자기 할 일 보기·완료 |
+| Managed Child (P1) | 독립 인증 없음 | 허용된 공유 기기 모드에서 자기 할 일 보기·완료 |
 
 정확한 권한은 `07_DOMAIN_RULES_AND_STATE_MACHINES.md`를 따른다.
 
@@ -61,7 +63,7 @@ Store MVP는 다음을 해결하지 않는다.
 6. 서로 다른 두 명이 각자 항목을 완료한다.
 7. 다음 날 Today를 다시 확인한다.
 
-### F2. 관리형 자녀
+### F2. 관리형 자녀(P1 후속 흐름, Store MVP 비범위)
 
 1. Owner/Admin이 Managed Child를 만들고 보호자를 연결한다.
 2. 보호자가 공유 기기에서 자녀 모드로 전환한다.
@@ -83,7 +85,7 @@ Store MVP는 다음을 해결하지 않는다.
 |---|---|---|
 | 인증 | OTP, Apple/Google, 세션 복원, 로그아웃, 계정 삭제 | FR-AUTH-* |
 | 가구 | 생성, 초대, 수락, 역할, 소유권, 구성원 제거 | FR-HH-* |
-| 자녀 | 관리형 프로필, guardian 관계, member mode, parental gate | FR-CHILD-* |
+| 자녀(P1) | 관리형 프로필, guardian 관계, member mode, parental gate | FR-CHILD-* |
 | 집안일 | CRUD, 배정, due, 반복, occurrence, 완료·승인 | FR-CHORE-* |
 | 일정 | timed/all-day, 참석/가시성, 반복, 회차 예외 | FR-CAL-* |
 | Today | 집안일·일정 통합, 필터, timezone, 빈/오류 상태 | FR-TODAY-* |
@@ -102,12 +104,12 @@ Store MVP UI는 한 로그인 사용자가 하나의 활성 가구에 참여하�
 
 ### 7.2 데이터 가시성
 
-기본적으로 가구 구성원은 가구의 집안일과 공유 일정을 본다. 비공개 개인 일정은 MVP에 포함하지 않는다. Managed Child는 정책상 허용된 필드와 항목만 본다.
+기본적으로 성인 가구 구성원은 가구의 집안일과 공유 일정을 본다. 비공개 개인 일정은 MVP에 포함하지 않는다. P1의 Managed Child는 정책상 허용된 필드와 항목만 본다.
 
 ### 7.3 완료와 승인
 
 - 일반 항목은 담당자 또는 권한 있는 성인이 완료할 수 있다.
-- `approval_required=true`인 자녀 배정 항목은 자녀 완료 후 `awaiting_approval`이 되고 보호자가 승인/반려한다.
+- P1의 `approval_required=true` 자녀 배정 항목은 자녀 완료 후 `awaiting_approval`이 되고 보호자가 승인/반려한다.
 - 누가 언제 완료/승인/되돌렸는지 이력을 남긴다.
 
 ### 7.4 반복
@@ -137,7 +139,7 @@ Store MVP UI는 한 로그인 사용자가 하나의 활성 가구에 참여하�
 
 - 이벤트 이름은 행동을 나타내고 텍스트 내용은 전송하지 않는다.
 - household/member ID는 분석 공급자에 원본으로 보내지 않고 필요 시 회전 가능한 pseudonymous ID를 사용한다.
-- Managed Child mode에서는 제3자 분석 SDK를 기본 비활성화한다.
+- P1의 Managed Child mode에서는 제3자 분석 SDK를 기본 비활성화한다.
 - 성능·오류 이벤트와 마케팅 분석을 분리한다.
 
 ## 10. 출시 성공 기준

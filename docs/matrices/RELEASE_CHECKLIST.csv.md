@@ -18,7 +18,7 @@ REL-006,Push,APNs/FCM production and permission copy verified,08,G8,,,NOT_STARTE
 REL-007,Billing,Store products/RevenueCat/webhook/sandbox matrix passed,06/08,G6/G8,,,NOT_STARTED,,
 REL-008,Privacy,"Privacy policy, App Privacy, Data Safety approved",07/09,G7/G9,,,NOT_STARTED,,
 REL-009,Deletion,In-app and public account deletion end-to-end,07/08,G7/G8,,,NOT_STARTED,,
-REL-010,Child Safety,Managed Child and parental gate review passed,07,G7,,,NOT_STARTED,,
+REL-010,Deferred Child Scope,Managed Child/child mode absent and adult-directed metadata consistent,07,G7,,,NOT_STARTED,,P1 requires a separate child safety gate
 REL-011,Accessibility,VoiceOver/TalkBack/large text/tablet journeys,07/08,G7/G8,,,NOT_STARTED,,
 REL-012,Localization,EN/KO app and Store metadata complete,07/09,G7/G9,,,NOT_STARTED,,
 REL-013,Security,Secret/dependency/RLS/invite/webhook review,08,G8,,,NOT_STARTED,,

@@ -1,5 +1,13 @@
 # Documentation Changelog
 
+## Unreleased — 2026-07-23 — Phase 00 product-scope decisions
+
+- 대한민국 단일 공개 출시와 Supabase Seoul `ap-northeast-2` 승인(D-039)
+- Store MVP를 성인 계정 사용자로 한정하고 Managed Child/child mode를 P1로 연기(D-013)
+- 성인 2인 Activation vertical slice 승인(D-051, ADR-0001)
+- PRD, roadmap, requirements, Phase 00/02/07, traceability와 release checklist를 승인 범위에 맞게 정렬
+- 사용자 연구, 법률·Store 검토, 가격·보관 정책, 앱 식별자·console owner, 실제 기기/provider PoC는 미완료 상태 유지
+
 ## v1.2 — 2026-07-22 — Version terminology and SDK patch correction
 
 - `Flutter v1.0`이라는 모호한 표현을 제거하고 `KinFlow 앱 스펙 v1.0`으로 통일

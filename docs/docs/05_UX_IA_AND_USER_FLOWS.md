@@ -4,7 +4,7 @@
 
 - 앱을 열고 5초 안에 “오늘 누가 무엇을 해야 하는지” 이해한다.
 - 생성 폼에서 책임·시간·반복의 모호함을 없앤다.
-- 자녀와 성인 모드의 차이가 명확하되 자녀를 낙인찍지 않는다.
+- P1 자녀 기능에서는 자녀와 성인 모드의 차이가 명확하되 자녀를 낙인찍지 않는다.
 - 실패·오프라인·동기화 상태를 숨기지 않는다.
 - 유료 제한과 권한 제한을 같은 메시지로 표현하지 않는다.
 
@@ -15,17 +15,17 @@ Store MVP의 기본 탭:
 1. **Today** — 집안일·일정 통합, 가장 가까운 행동
 2. **Chores** — 목록, 반복 template/series, 완료 내역
 3. **Calendar** — 월/주보다 agenda 중심에서 시작, 생성
-4. **Family** — 구성원, 초대, 자녀 프로필, 역할
+4. **Family** — 성인 구성원, 초대, 역할
 5. **Settings** — 계정, 알림, 언어/시간대, 구독, 개인정보
 
-Managed Child mode에서는 Today와 제한된 Chores만 노출한다. Calendar는 자녀에게 공개된 가족 일정만 Today 카드로 보여줄 수 있으며 Family/Settings는 보호자 gate 뒤에 둔다.
+P1의 Managed Child mode에서는 Today와 제한된 Chores만 노출한다. Calendar는 자녀에게 공개된 가족 일정만 Today 카드로 보여줄 수 있으며 Family/Settings는 보호자 gate 뒤에 둔다.
 
 ## 3. Global navigation 상태
 
 - household context는 상단 또는 profile switcher에 표시한다.
 - 네트워크 끊김은 비차단 banner로 알리고 온라인 전용 action은 이유와 함께 disable한다.
 - entitlement 만료는 전체 앱을 막지 않고 제한되는 action 직전에 설명한다.
-- active child mode는 지속적으로 식별 가능한 시각/텍스트 표시가 있어야 한다.
+- P1에서 active child mode는 지속적으로 식별 가능한 시각/텍스트 표시가 있어야 한다.
 - deep link가 권한 없는 화면을 열면 빈 화면이 아니라 안전한 설명과 홈 경로를 제공한다.
 
 ## 4. 온보딩 흐름
@@ -107,7 +107,7 @@ Welcome → 로그인 방법 → 인증 완료 → 이름/locale/timezone 확인
 
 전체 반복 변경 시 과거 완료 이력은 수정하지 않는다는 점을 명시한다.
 
-## 7. 관리형 자녀 UX
+## 7. 관리형 자녀 UX(P1 계약, Store MVP 비범위)
 
 ### 자녀 모드 진입
 
@@ -183,7 +183,7 @@ confirm 문구는 정확한 객체 이름을 보여주고, 삭제 가능한 cool
 1. 초대 deep link → 신규 가입 → 수락 → Today
 2. 두 성인이 집안일을 만들고 상대가 완료
 3. 반복 집안일 한 회차만 변경
-4. 자녀 모드에서 완료 → 보호자 승인
+4. P1: 자녀 모드에서 완료 → 보호자 승인
 5. DST 변경 주간에도 08:00 반복 일정이 현지 08:00 유지
 6. 오프라인에서 읽고 온라인 전용 action 설명 확인
 7. Plus 구매 후 다른 구성원이 entitlement 확인

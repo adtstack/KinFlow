@@ -50,7 +50,8 @@ OPEN 결정은 구현자가 임의로 확정하지 않는다. 해당 기능은 �
 
 - iPhone 및 iPad
 - Android phone 및 tablet
-- 가족 생성·초대·집안일·일정·Today·알림·구독·삭제 전체 지원
+- 성인 가구 생성·초대·집안일·일정·Today·알림·구독·삭제 지원
+- Managed Child와 child mode는 P1 계약으로 보존하되 Store MVP에는 구현·노출하지 않음(D-013)
 
 ### Tier 2: Web Companion
 

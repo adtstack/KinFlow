@@ -6,6 +6,7 @@
 - 원본 형식: `csv`
 - 사용 방법: 아래 코드 블록의 내용을 복사하여 위 원본 경로에 저장합니다.
 - 데이터 행 수(헤더 제외): `266`
+- 범위 주의: `managed_child_represented`, `member_guardians`, `acting_contexts` 행은 P1 test catalog이며 Store MVP RLS Gate에서 제외한다(D-013).
 
 ```csv
 ﻿object,operation,actor,expected,same_household_reference_check,rls_using,rls_with_check,constraint_trigger,test_id,status,evidence,notes

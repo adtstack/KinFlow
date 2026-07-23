@@ -14,10 +14,10 @@
 | R0 Prototype | 연구 참여자 | 초대·Today·집안일 이해 검증 | Figma/로컬 prototype |
 | R1 Internal Alpha | 개발자·내부 테스터 | auth, 가구, 단건 chore end-to-end | dev client/internal |
 | R2 Household Alpha | 5~8 실제 가구 | 반복 chore와 두 번째 성인 retention | closed internal |
-| R3 Closed Beta | 20~50 가구 | calendar, push, child mode, 안정성 | TestFlight/Play closed |
+| R3 Closed Beta | 20~50 가구 | calendar, push, 성인 가구 안정성 | TestFlight/Play closed |
 | R4 Paid Beta | 제한 국가·초대 | sandbox에서 검증된 subscription을 소수 production 사용자에게 노출 | phased feature flag |
 | R5 Store MVP | 선정 국가 | 영어·한국어 공개 출시 | App Store/Google Play |
-| R6 P1 | 유지율 증명 후 | Guest, multi-household, 고급 반복/자동화 | 점진 업데이트 |
+| R6 P1 | 유지율·H-05·정책 Gate 후 | Managed Child, Guest, multi-household, 고급 반복/자동화 | 점진 업데이트 |
 
 ## 3. Train별 범위
 
@@ -60,7 +60,7 @@
 
 ### R5 Store MVP
 
-R3와 R4의 검증 범위, 스토어 정책·법률·운영 준비를 포함한다. 스토어 상세 범위는 `15_RELEASE_AND_STORE_SUBMISSION_PLAN.md`를 따른다.
+R3와 R4의 검증 범위, 스토어 정책·법률·운영 준비를 포함한다. 계정 사용자는 성인으로 한정하고 Managed Child/child mode는 포함하지 않는다(D-013). 스토어 상세 범위는 `15_RELEASE_AND_STORE_SUBMISSION_PLAN.md`를 따른다.
 
 ## 4. P1 후보
 
@@ -74,6 +74,7 @@ R3와 R4의 검증 범위, 스토어 정책·법률·운영 준비를 포함한�
 - 위젯/워치/웹 read-only
 - 제한적 chore offline outbox
 - 외부 캘린더 단방향 import
+- Managed Child, guardian 관계, child mode, parental gate(H-05·법률·Store 검토 후 별도 Gate)
 
 ## 5. Scope Cut 규칙
 
@@ -82,10 +83,10 @@ R3와 R4의 검증 범위, 스토어 정책·법률·운영 준비를 포함한�
 1. Realtime 즉시 반영 → 수동/foreground refresh
 2. 여러 reminder → 한 개의 안정적 reminder
 3. 복잡한 반복 패턴 → daily/weekly/monthly subset
-4. 자녀 승인 workflow → 자녀 완료 + 보호자 이력 확인으로 단순화(정책 승인 필요)
-5. calendar 반복 → 단건/all-day만 유지
-6. child mode 자체를 P1로 이동
-7. calendar 전체를 P1로 이동하고 chores+Today 출시
+4. calendar 반복 → 단건/all-day만 유지
+5. calendar 전체를 P1로 이동하고 chores+Today 출시
+
+Managed Child와 child mode는 이미 P1로 이동했으므로 Store MVP scope cut 후보가 아니라 비범위다(D-013).
 
 다음은 cut할 수 없다.
 
@@ -116,7 +117,7 @@ R3와 R4의 검증 범위, 스토어 정책·법률·운영 준비를 포함한�
 
 | Train | 대상 | 필수 범위 | Gate |
 |---|---|---|---|
-| R5M Mobile Store MVP | iOS·Android | 전체 Store MVP, push, native billing, privacy/store | G2 |
+| R5M Mobile Store MVP | iOS·Android | 성인용 Store MVP, push, native billing, privacy/store | G2 |
 | R6W Web Companion Beta | Web | HTTPS auth, core household/chores/calendar, responsive/keyboard, session/cache purge | G9 |
 | R7D Native Desktop Review | Windows/macOS/Linux | 수요·ROI·plugin·보안·배포 ADR만 | G10 |
 

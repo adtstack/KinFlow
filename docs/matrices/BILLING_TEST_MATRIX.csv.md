@@ -33,7 +33,7 @@ BILL-021,Billing issue/account hold,iOS/Android/Server as applicable,Provider is
 BILL-022,Expiration,iOS/Android/Server as applicable,Expired,TODO during implementation,Free; data readable; new limits enforced,BOTH,Sandbox/Staging,NOT_STARTED,,
 BILL-023,Refund/revoke,iOS/Android/Server as applicable,Provider revoke,TODO during implementation,Entitlement removed per policy; data preserved,BOTH,Sandbox/Staging,NOT_STARTED,,
 BILL-024,Plus→Free over limit,iOS/Android/Server as applicable,Existing items exceed Free,TODO during implementation,No deletion; restrict approved actions,BOTH,Sandbox/Staging,NOT_STARTED,,
-BILL-025,Child mode purchase attempt,iOS/Android/Server as applicable,Managed Child mode,TODO during implementation,Blocked client and server,BOTH,Sandbox/Staging,NOT_STARTED,,
+BILL-025,Child mode purchase attempt,iOS/Android/Server as applicable,Managed Child mode,P1 test only,Blocked client and server,BOTH,Sandbox/Staging,DEFERRED,,P1 child gate
 BILL-026,Member tries assignment/transfer,iOS/Android/Server as applicable,Non-authorized member,TODO during implementation,Denied,BOTH,Sandbox/Staging,NOT_STARTED,,
 BILL-027,RevenueCat outage,iOS/Android/Server as applicable,Existing Plus/new purchase,TODO during implementation,Existing server entitlement preserved; purchase disabled,BOTH,Sandbox/Staging,NOT_STARTED,,
 BILL-028,Webhook outage and reconciliation,iOS/Android/Server as applicable,Missed events,TODO during implementation,Periodic reconciliation repairs state,BOTH,Sandbox/Staging,NOT_STARTED,,

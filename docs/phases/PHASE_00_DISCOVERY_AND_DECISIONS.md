@@ -75,11 +75,12 @@ PoC 코드는 production architecture로 간주하지 않는다.
 
 ## Exit Gate
 
-- D-007, D-019, D-023의 launch-blocking 부분 ACCEPTED
+- D-013, D-039, D-051 ACCEPTED
 - 제품 이름/식별자 owner 결정
 - Phase 01 toolchain과 계정 준비
 - Risk Register owner 지정
 - MVP/비범위 승인
+- 성인 대상 Store questionnaire와 법률·Privacy 검토 완료
 
 ## Stop 조건
 

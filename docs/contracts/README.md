@@ -4,6 +4,8 @@
 
 실제 구현에서는 `MD_ONLY_FORMAT_GUIDE.md`에 따라 코드 블록을 원본 파일로 추출하고 parser/validator를 실행합니다.
 
+범위 예외: `managed_child`, `member_guardians`, `acting_contexts`, parental gate, child 전용 event/RLS/API는 P1 참조 계약이다. D-013의 별도 승인 전에는 Store MVP migration/API/client로 추출하거나 활성화하지 않는다.
+
 | Markdown 문서 | 구현 시 생성할 원본 파일 | 역할 |
 |---|---|---|
 | `analysis_options.yaml.md` | `analysis_options.yaml` | analyzer/lint 최소 기준 |

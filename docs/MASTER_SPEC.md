@@ -10,6 +10,7 @@
 - 계약 버전: 2026-07-21
 - 제품: 글로벌 가족 집안일·공유 일정 구독 앱
 - 플랫폼: Flutter iOS/Android 우선, Web Companion 후속
+- 최근 제품 범위 결정: 2026-07-23 — 대한민국 단일 시장·Seoul 리전, 성인 2인 Activation 우선, Managed Child P1
 
 
 ---
@@ -17,9 +18,10 @@
 # KinFlow Flutter 앱 개발 스펙 v1.0 — START HERE
 
 - 상태: `ACCEPTED — FLUTTER IMPLEMENTATION BASELINE`
-- 기준일: 2026-07-21
+- 기준일: 2026-07-23
 - 제품 전략: 가족용 집안일·공유 일정 구독 앱
 - 출시 전략: iOS·Android 네이티브 앱 우선, Web Companion 후속, 네이티브 데스크톱은 수요 Gate 이후
+- Phase 00 제품 결정: 대한민국 단일 시장·Seoul 리전, 성인 계정 Store MVP, 성인 2인 Activation 우선; Managed Child는 P1
 
 ## 1. 무엇이 바뀌었나
 
@@ -65,12 +67,13 @@ Phase Gate의 자동·수동 검증 증거가 없으면 완료라고 하지 않�
 ## 4. 구현을 시작하기 전 반드시 확정할 항목
 
 - 앱의 최종 이름·Bundle ID·Package name·도메인
-- 최초 출시 국가와 Supabase 리전
-- 스토어 대상 연령 및 mixed-audience 여부
+- 성인 대상 Store questionnaire의 법률·Privacy 검토(D-013의 제품 범위는 승인됨)
 - Free/Plus 한도, 월간·연간 가격, 무료 체험
 - 개인정보 보관·삭제 기간
 - 보호자 PIN 복구 정책
 - Apple/Google 개발자 계정 소유 주체
+
+최초 출시 국가는 대한민국, Supabase production region은 Seoul `ap-northeast-2`로 승인됐다. 이 결정은 법적 운영 주체나 console owner 미지정을 해소하지 않는다.
 
 ## 5. 절대 하지 말아야 할 것
 
@@ -172,6 +175,8 @@ KinFlow의 핵심은 가족이 매일 빠르게 확인하고 완료하는 행동
 - 떨어져 사는 가족을 돌보지만 초기에는 같은 가구 단위로 운영 가능한 경우
 - 룸메이트·커플: 사용은 가능하지만 초기 메시지와 정책의 중심은 가족
 
+Store MVP는 성인 계정 사용자만 대상으로 한다. Managed Child와 child mode는 제품 방향에는 남기되 P1로 연기하고 H-05 및 법률·Store 검토 후 다시 승인한다(D-013).
+
 ### 비대상
 
 - 교대 근무 스케줄링이 핵심인 기업·팀
@@ -222,7 +227,7 @@ KinFlow의 핵심은 가족이 매일 빠르게 확인하고 완료하는 행동
 4. 서로 다른 2명이 적어도 1개씩 완료
 5. 둘 중 한 명이 다음 날 다시 Today 방문
 
-관리형 자녀만 추가하고 두 번째 성인이 참여하지 않은 경우는 제품 활성화와 구분해 측정한다.
+P1에서 관리형 자녀를 도입하더라도 자녀만 추가하고 두 번째 성인이 참여하지 않은 경우는 제품 활성화와 구분해 측정한다.
 
 ## 8. 사업 모델 가설
 
@@ -495,6 +500,7 @@ Windows·macOS·Linux 네이티브 앱은 Store MVP 가설이 아니다. Web Com
 - 플랫폼: Tier 1 iOS·iPadOS·Android, Tier 2 Web Companion, Deferred Flutter Desktop
 - 초기 언어: en, ko
 - 요구사항 ID 접두사: `PRD-`, 세부 기능은 `FR-`
+- 승인 범위: 대한민국 단일 시장, 성인 계정 사용자, 성인 2인 Activation 우선(D-013, D-039, D-051)
 
 ## 2. 목표
 
@@ -503,7 +509,7 @@ Windows·macOS·Linux 네이티브 앱은 Store MVP 가설이 아니다. Web Com
 | PRD-G01 | 가족 두 명 이상이 집안일 책임과 완료 상태를 공유 | 활성화 가구율, 두 번째 성인 행동률 |
 | PRD-G02 | 오늘의 집안일과 일정을 한 화면에서 이해 | Today 재방문, task success |
 | PRD-G03 | 반복 작업을 매번 재입력하지 않고 현지 시간대로 정확히 생성 | 반복 오류·수정·알림 누락률 |
-| PRD-G04 | 자녀에게 최소 권한으로 참여 경험 제공 | 보호자 gate 우회 0, 자녀 task completion |
+| PRD-G04 | P1에서 자녀에게 최소 권한으로 참여 경험 제공 | 보호자 gate 우회 0, 자녀 task completion |
 | PRD-G05 | 한 명의 결제로 선택된 한 가구에 안정적으로 Plus 제공 | entitlement mismatch, 복원 성공률 |
 | PRD-G06 | 글로벌 출시의 기본 요건인 개인정보·삭제·접근성·i18n 충족 | release gate 통과 |
 | PRD-G07 | Flutter 모바일 플랫폼에서 동일 가구 데이터·권한·entitlement를 일관되게 제공하고 후속 Web Companion으로 계약을 확장 | iOS/Android mismatch 0, Web contract parity |
@@ -523,6 +529,7 @@ Store MVP는 다음을 해결하지 않는다.
 - 초기 Windows·macOS·Linux 네이티브 앱
 - 모든 플랫폼에서 픽셀 단위로 동일한 UI
 - Web Beta의 필수 조건으로서 Web Push 또는 Web 유료 결제
+- Managed Child 프로필과 child mode(P1; H-05·법률·Store 검토 후 재승인)
 
 ## 4. 사용자와 역할
 
@@ -531,7 +538,7 @@ Store MVP는 다음을 해결하지 않는다.
 | Owner | 성인 로그인 | 가구 소유권·삭제·billing household 선택·모든 관리 |
 | Admin | 성인 로그인 | 구성원·초대·집안일·일정 관리. 소유권/가구 삭제/결제 이전 제외 |
 | Member | 성인 로그인 | 허용된 항목 생성·편집, 자기/가족 상태 확인 |
-| Managed Child | 독립 인증 없음 | 허용된 공유 기기 모드에서 자기 할 일 보기·완료 |
+| Managed Child (P1) | 독립 인증 없음 | 허용된 공유 기기 모드에서 자기 할 일 보기·완료 |
 
 정확한 권한은 `07_DOMAIN_RULES_AND_STATE_MACHINES.md`를 따른다.
 
@@ -547,7 +554,7 @@ Store MVP는 다음을 해결하지 않는다.
 6. 서로 다른 두 명이 각자 항목을 완료한다.
 7. 다음 날 Today를 다시 확인한다.
 
-### F2. 관리형 자녀
+### F2. 관리형 자녀(P1 후속 흐름, Store MVP 비범위)
 
 1. Owner/Admin이 Managed Child를 만들고 보호자를 연결한다.
 2. 보호자가 공유 기기에서 자녀 모드로 전환한다.
@@ -569,7 +576,7 @@ Store MVP는 다음을 해결하지 않는다.
 |---|---|---|
 | 인증 | OTP, Apple/Google, 세션 복원, 로그아웃, 계정 삭제 | FR-AUTH-* |
 | 가구 | 생성, 초대, 수락, 역할, 소유권, 구성원 제거 | FR-HH-* |
-| 자녀 | 관리형 프로필, guardian 관계, member mode, parental gate | FR-CHILD-* |
+| 자녀(P1) | 관리형 프로필, guardian 관계, member mode, parental gate | FR-CHILD-* |
 | 집안일 | CRUD, 배정, due, 반복, occurrence, 완료·승인 | FR-CHORE-* |
 | 일정 | timed/all-day, 참석/가시성, 반복, 회차 예외 | FR-CAL-* |
 | Today | 집안일·일정 통합, 필터, timezone, 빈/오류 상태 | FR-TODAY-* |
@@ -588,12 +595,12 @@ Store MVP UI는 한 로그인 사용자가 하나의 활성 가구에 참여하�
 
 ### 7.2 데이터 가시성
 
-기본적으로 가구 구성원은 가구의 집안일과 공유 일정을 본다. 비공개 개인 일정은 MVP에 포함하지 않는다. Managed Child는 정책상 허용된 필드와 항목만 본다.
+기본적으로 성인 가구 구성원은 가구의 집안일과 공유 일정을 본다. 비공개 개인 일정은 MVP에 포함하지 않는다. P1의 Managed Child는 정책상 허용된 필드와 항목만 본다.
 
 ### 7.3 완료와 승인
 
 - 일반 항목은 담당자 또는 권한 있는 성인이 완료할 수 있다.
-- `approval_required=true`인 자녀 배정 항목은 자녀 완료 후 `awaiting_approval`이 되고 보호자가 승인/반려한다.
+- P1의 `approval_required=true` 자녀 배정 항목은 자녀 완료 후 `awaiting_approval`이 되고 보호자가 승인/반려한다.
 - 누가 언제 완료/승인/되돌렸는지 이력을 남긴다.
 
 ### 7.4 반복
@@ -623,7 +630,7 @@ Store MVP UI는 한 로그인 사용자가 하나의 활성 가구에 참여하�
 
 - 이벤트 이름은 행동을 나타내고 텍스트 내용은 전송하지 않는다.
 - household/member ID는 분석 공급자에 원본으로 보내지 않고 필요 시 회전 가능한 pseudonymous ID를 사용한다.
-- Managed Child mode에서는 제3자 분석 SDK를 기본 비활성화한다.
+- P1의 Managed Child mode에서는 제3자 분석 SDK를 기본 비활성화한다.
 - 성능·오류 이벤트와 마케팅 분석을 분리한다.
 
 ## 10. 출시 성공 기준
@@ -698,10 +705,10 @@ Store MVP UI는 한 로그인 사용자가 하나의 활성 가구에 참여하�
 | R0 Prototype | 연구 참여자 | 초대·Today·집안일 이해 검증 | Figma/로컬 prototype |
 | R1 Internal Alpha | 개발자·내부 테스터 | auth, 가구, 단건 chore end-to-end | dev client/internal |
 | R2 Household Alpha | 5~8 실제 가구 | 반복 chore와 두 번째 성인 retention | closed internal |
-| R3 Closed Beta | 20~50 가구 | calendar, push, child mode, 안정성 | TestFlight/Play closed |
+| R3 Closed Beta | 20~50 가구 | calendar, push, 성인 가구 안정성 | TestFlight/Play closed |
 | R4 Paid Beta | 제한 국가·초대 | sandbox에서 검증된 subscription을 소수 production 사용자에게 노출 | phased feature flag |
 | R5 Store MVP | 선정 국가 | 영어·한국어 공개 출시 | App Store/Google Play |
-| R6 P1 | 유지율 증명 후 | Guest, multi-household, 고급 반복/자동화 | 점진 업데이트 |
+| R6 P1 | 유지율·H-05·정책 Gate 후 | Managed Child, Guest, multi-household, 고급 반복/자동화 | 점진 업데이트 |
 
 ## 3. Train별 범위
 
@@ -744,7 +751,7 @@ Store MVP UI는 한 로그인 사용자가 하나의 활성 가구에 참여하�
 
 ### R5 Store MVP
 
-R3와 R4의 검증 범위, 스토어 정책·법률·운영 준비를 포함한다. 스토어 상세 범위는 `15_RELEASE_AND_STORE_SUBMISSION_PLAN.md`를 따른다.
+R3와 R4의 검증 범위, 스토어 정책·법률·운영 준비를 포함한다. 계정 사용자는 성인으로 한정하고 Managed Child/child mode는 포함하지 않는다(D-013). 스토어 상세 범위는 `15_RELEASE_AND_STORE_SUBMISSION_PLAN.md`를 따른다.
 
 ## 4. P1 후보
 
@@ -758,6 +765,7 @@ R3와 R4의 검증 범위, 스토어 정책·법률·운영 준비를 포함한�
 - 위젯/워치/웹 read-only
 - 제한적 chore offline outbox
 - 외부 캘린더 단방향 import
+- Managed Child, guardian 관계, child mode, parental gate(H-05·법률·Store 검토 후 별도 Gate)
 
 ## 5. Scope Cut 규칙
 
@@ -766,10 +774,10 @@ R3와 R4의 검증 범위, 스토어 정책·법률·운영 준비를 포함한�
 1. Realtime 즉시 반영 → 수동/foreground refresh
 2. 여러 reminder → 한 개의 안정적 reminder
 3. 복잡한 반복 패턴 → daily/weekly/monthly subset
-4. 자녀 승인 workflow → 자녀 완료 + 보호자 이력 확인으로 단순화(정책 승인 필요)
-5. calendar 반복 → 단건/all-day만 유지
-6. child mode 자체를 P1로 이동
-7. calendar 전체를 P1로 이동하고 chores+Today 출시
+4. calendar 반복 → 단건/all-day만 유지
+5. calendar 전체를 P1로 이동하고 chores+Today 출시
+
+Managed Child와 child mode는 이미 P1로 이동했으므로 Store MVP scope cut 후보가 아니라 비범위다(D-013).
 
 다음은 cut할 수 없다.
 
@@ -800,7 +808,7 @@ R3와 R4의 검증 범위, 스토어 정책·법률·운영 준비를 포함한�
 
 | Train | 대상 | 필수 범위 | Gate |
 |---|---|---|---|
-| R5M Mobile Store MVP | iOS·Android | 전체 Store MVP, push, native billing, privacy/store | G2 |
+| R5M Mobile Store MVP | iOS·Android | 성인용 Store MVP, push, native billing, privacy/store | G2 |
 | R6W Web Companion Beta | Web | HTTPS auth, core household/chores/calendar, responsive/keyboard, session/cache purge | G9 |
 | R7D Native Desktop Review | Windows/macOS/Linux | 수요·ROI·plugin·보안·배포 ADR만 | G10 |
 
@@ -821,7 +829,7 @@ R3와 R4의 검증 범위, 스토어 정책·법률·운영 준비를 포함한�
 
 - 앱을 열고 5초 안에 “오늘 누가 무엇을 해야 하는지” 이해한다.
 - 생성 폼에서 책임·시간·반복의 모호함을 없앤다.
-- 자녀와 성인 모드의 차이가 명확하되 자녀를 낙인찍지 않는다.
+- P1 자녀 기능에서는 자녀와 성인 모드의 차이가 명확하되 자녀를 낙인찍지 않는다.
 - 실패·오프라인·동기화 상태를 숨기지 않는다.
 - 유료 제한과 권한 제한을 같은 메시지로 표현하지 않는다.
 
@@ -832,17 +840,17 @@ Store MVP의 기본 탭:
 1. **Today** — 집안일·일정 통합, 가장 가까운 행동
 2. **Chores** — 목록, 반복 template/series, 완료 내역
 3. **Calendar** — 월/주보다 agenda 중심에서 시작, 생성
-4. **Family** — 구성원, 초대, 자녀 프로필, 역할
+4. **Family** — 성인 구성원, 초대, 역할
 5. **Settings** — 계정, 알림, 언어/시간대, 구독, 개인정보
 
-Managed Child mode에서는 Today와 제한된 Chores만 노출한다. Calendar는 자녀에게 공개된 가족 일정만 Today 카드로 보여줄 수 있으며 Family/Settings는 보호자 gate 뒤에 둔다.
+P1의 Managed Child mode에서는 Today와 제한된 Chores만 노출한다. Calendar는 자녀에게 공개된 가족 일정만 Today 카드로 보여줄 수 있으며 Family/Settings는 보호자 gate 뒤에 둔다.
 
 ## 3. Global navigation 상태
 
 - household context는 상단 또는 profile switcher에 표시한다.
 - 네트워크 끊김은 비차단 banner로 알리고 온라인 전용 action은 이유와 함께 disable한다.
 - entitlement 만료는 전체 앱을 막지 않고 제한되는 action 직전에 설명한다.
-- active child mode는 지속적으로 식별 가능한 시각/텍스트 표시가 있어야 한다.
+- P1에서 active child mode는 지속적으로 식별 가능한 시각/텍스트 표시가 있어야 한다.
 - deep link가 권한 없는 화면을 열면 빈 화면이 아니라 안전한 설명과 홈 경로를 제공한다.
 
 ## 4. 온보딩 흐름
@@ -924,7 +932,7 @@ Welcome → 로그인 방법 → 인증 완료 → 이름/locale/timezone 확인
 
 전체 반복 변경 시 과거 완료 이력은 수정하지 않는다는 점을 명시한다.
 
-## 7. 관리형 자녀 UX
+## 7. 관리형 자녀 UX(P1 계약, Store MVP 비범위)
 
 ### 자녀 모드 진입
 
@@ -1000,7 +1008,7 @@ confirm 문구는 정확한 객체 이름을 보여주고, 삭제 가능한 cool
 1. 초대 deep link → 신규 가입 → 수락 → Today
 2. 두 성인이 집안일을 만들고 상대가 완료
 3. 반복 집안일 한 회차만 변경
-4. 자녀 모드에서 완료 → 보호자 승인
+4. P1: 자녀 모드에서 완료 → 보호자 승인
 5. DST 변경 주간에도 08:00 반복 일정이 현지 08:00 유지
 6. 오프라인에서 읽고 온라인 전용 action 설명 확인
 7. Plus 구매 후 다른 구성원이 entitlement 확인
@@ -1069,7 +1077,7 @@ confirm 문구는 정확한 객체 이름을 보여주고, 삭제 가능한 cool
 
 # 06. 기능 요구사항 상세
 
-상태는 구현 시 traceability matrix와 함께 갱신한다. 모든 `MUST` 요구사항은 Store MVP 출시 Gate다.
+상태는 구현 시 traceability matrix와 함께 갱신한다. 모든 `MUST` 요구사항은 Store MVP 출시 Gate이고 `P1`은 Store MVP 비범위다.
 
 ## 1. 인증 (`FR-AUTH`)
 
@@ -1104,14 +1112,14 @@ confirm 문구는 정확한 객체 이름을 보여주고, 삭제 가능한 cool
 
 | ID | 우선 | 요구사항 | 핵심 수용 기준 |
 |---|:---:|---|---|
-| FR-CHILD-001 | MUST | Managed Child 생성 | 최소 display name/avatar만, birthdate 기본 수집 안 함 |
-| FR-CHILD-002 | MUST | guardian 연결 | 최소 한 명, 다른 가구 member 연결 불가 |
-| FR-CHILD-003 | MUST | active member mode | device별 짧은 수명 context, 화면에 지속 표시 |
-| FR-CHILD-004 | MUST | 자녀 action allowlist | 자기 항목 보기/완료 외 민감 mutation 서버 거부 |
-| FR-CHILD-005 | MUST | 보호자 gate | 설정·결제·초대·삭제 접근 차단, high-risk re-auth |
-| FR-CHILD-006 | MUST | approval workflow | 필요 항목은 awaiting approval, guardian 승인/반려 |
-| FR-CHILD-007 | MUST | audit actor 구분 | authenticated user와 acting managed member 모두 기록 |
-| FR-CHILD-008 | MUST | 자녀 삭제·익명화 | 공유 이력 무결성과 개인정보 최소화 균형 |
+| FR-CHILD-001 | P1 | Managed Child 생성 | 최소 display name/avatar만, birthdate 기본 수집 안 함 |
+| FR-CHILD-002 | P1 | guardian 연결 | 최소 한 명, 다른 가구 member 연결 불가 |
+| FR-CHILD-003 | P1 | active member mode | device별 짧은 수명 context, 화면에 지속 표시 |
+| FR-CHILD-004 | P1 | 자녀 action allowlist | 자기 항목 보기/완료 외 민감 mutation 서버 거부 |
+| FR-CHILD-005 | P1 | 보호자 gate | 설정·결제·초대·삭제 접근 차단, high-risk re-auth |
+| FR-CHILD-006 | P1 | approval workflow | 필요 항목은 awaiting approval, guardian 승인/반려 |
+| FR-CHILD-007 | P1 | audit actor 구분 | authenticated user와 acting managed member 모두 기록 |
+| FR-CHILD-008 | P1 | 자녀 삭제·익명화 | 공유 이력 무결성과 개인정보 최소화 균형 |
 
 ## 4. 집안일 (`FR-CHORE`)
 
@@ -1511,10 +1519,10 @@ processing → failed_retryable / manual_review
 | D-007 | ACCEPTED | 모델은 Freezed/json_serializable을 사용하고 generated code drift를 CI에서 검사한다. | 외부 계약 파싱과 immutable state를 일관화한다. | 코드 생성 비용이 장애일 때 |
 | D-008 | ACCEPTED | Supabase Auth/PostgreSQL/RLS/Edge Functions를 유지한다. | 기존 관계형 권한·반복·구독 모델을 보존한다. | 규모·법률·가용성 요구 변화 |
 | D-009 | ACCEPTED | Edge Functions는 TypeScript/Deno로 유지한다. | 결제 웹훅·작업 큐·관리 API 생태계와 기존 계약을 보존한다. | 서버 플랫폼 교체 시 |
-| D-010 | ACCEPTED | 역할은 Owner, Admin, Member, Managed Child다. Guest는 P1 이후다. | 범위 기반 권한 복잡도를 줄인다. | P1 |
+| D-010 | ACCEPTED | 장기 역할 모델은 Owner, Admin, Member, Managed Child다. Store MVP 활성 역할은 D-013을 따르고 Guest는 P1 이후다. | 범위 기반 권한 복잡도를 줄이면서 후속 역할 계약을 보존한다. | P1 |
 | D-011 | ACCEPTED | Managed Child는 독립 로그인하지 않는다. | 아동 동의·복구·추적 위험을 줄인다. | 독립 기기 수요 검증 후 |
 | D-012 | ACCEPTED | 공유 기기 child mode는 보호자 PIN과 server acting context를 사용한다. | 자녀가 결제·초대·삭제에 접근하지 못하게 한다. | 지속 |
-| D-013 | OPEN | 스토어 대상 연령, mixed-audience/Families 분류를 확정한다. | SDK·정책·마케팅·동의에 영향. | Phase 00 종료 |
+| D-013 | ACCEPTED | Store MVP 계정 사용자는 성인으로 한정하고 Kids Category를 선택하지 않는다. Managed Child와 child mode는 P1로 연기하며 H-05와 법률·Store 검토 후 재승인한다. | 초기 개인정보·정책·권한 surface를 줄이고 성인 2인 가설을 우선 검증한다. | P1 scope Gate / 각 Store RC |
 | D-014 | ACCEPTED | 위치·연락처·광고 SDK를 Store MVP에서 사용하지 않는다. | 데이터 최소화와 자녀 안전. | 새 기능 DPIA |
 | D-015 | ACCEPTED | 초대는 고엔트로피 링크 토큰, 짧은 코드는 보조다. | 추측·재사용 공격 방지. | 지속 |
 | D-016 | PROVISIONAL | 한 사용자 UI는 한 개 활성 household를 우선 지원한다. DB는 다중 가구를 허용한다. | Today·구독·초대 복잡도 감소. | Beta |
@@ -1540,7 +1548,7 @@ processing → failed_retryable / manual_review
 | D-036 | ACCEPTED | 영어·한국어 동시 출시, pseudo locale와 RTL 구조 검증을 수행한다. | 글로벌 확장 기반. | 추가 언어 전 |
 | D-037 | ACCEPTED | iOS/iPadOS 최소 16.0, Android 최소 API 24, target API 36을 기준으로 한다. | 2026 Store 요건과 유지보수 균형. | 각 RC |
 | D-038 | ACCEPTED | iOS 제출은 Xcode 26+/iOS 26 SDK 기준으로 검증한다. | 2026 App Store 제출 요건 대응. | 각 RC |
-| D-039 | OPEN | 최초 출시 국가와 Supabase 리전을 확정한다. | 지연·국외 이전·법률 문서 영향. | 운영 프로젝트 생성 전 |
+| D-039 | ACCEPTED | 최초 공개 출시는 대한민국 단일 시장으로 하고 Supabase production region은 Seoul `ap-northeast-2`로 한다. | 초기 고객에 가까운 리전을 사용하고 운영·법률 범위를 한 시장으로 제한한다. | 두 번째 국가 추가 전 |
 | D-040 | ACCEPTED | 계정 삭제는 앱 내 시작과 공개 웹 요청 경로를 모두 제공한다. | Store 제출과 접근성. | 지속 |
 | D-041 | ACCEPTED | 계정 삭제와 household 삭제를 분리한다. | 공동 데이터 오삭제 방지. | 지속 |
 | D-042 | ACCEPTED | DB migration은 forward-only expand/contract이며 구버전 앱 호환 기간을 둔다. | 모바일 업데이트 지연 대응. | 지속 |
@@ -1552,6 +1560,7 @@ processing → failed_retryable / manual_review
 | D-048 | ACCEPTED | 모든 mutation은 optimistic version 또는 idempotency key를 사용한다. | 중복·동시 수정 안전성. | 지속 |
 | D-049 | ACCEPTED | 사용자·가구 전환 시 local state, cache, FCM token binding, RevenueCat identity를 재조정한다. | 교차 계정 데이터 노출 방지. | 지속 |
 | D-050 | DEFERRED | 위젯, Apple Watch, Wear OS는 Store MVP 이후 quick action 범위로 검토한다. | 핵심 앱 출시 집중. | P1/P2 |
+| D-051 | ACCEPTED | 첫 제품 검증과 구현 vertical slice는 성인 2인의 가구 생성·초대 수락·집안일 3개 생성·서로 1개 이상 완료·다음 날 Today 재방문으로 제한한다. | 가족 제품의 선행 가설인 두 번째 성인의 독립 참여를 가장 작은 비용으로 검증한다. | H-01~H-03 결과 review |
 
 
 ---
@@ -1602,7 +1611,8 @@ OPEN 결정은 구현자가 임의로 확정하지 않는다. 해당 기능은 �
 
 - iPhone 및 iPad
 - Android phone 및 tablet
-- 가족 생성·초대·집안일·일정·Today·알림·구독·삭제 전체 지원
+- 성인 가구 생성·초대·집안일·일정·Today·알림·구독·삭제 지원
+- Managed Child와 child mode는 P1 계약으로 보존하되 Store MVP에는 구현·노출하지 않음(D-013)
 
 ### Tier 2: Web Companion
 
@@ -2266,9 +2276,9 @@ in-app inbox 생성이 push provider 성공에 의존하지 않는다.
 - 중복·동시 수락은 transaction/idempotency로 방지
 - 초대 URL에는 PII를 넣지 않는다.
 
-## 4. Managed Child 원칙
+## 4. Managed Child 원칙(P1 계약)
 
-Store MVP의 Managed Child는 독립 로그인 계정이 아니다.
+Managed Child는 Store MVP 비범위다. P1에서 재승인될 경우에도 독립 로그인 계정이 아니다.
 
 - 보호자가 household 안에서 만든 프로필
 - 이메일, OAuth identity, 개인 push token 없음
@@ -2277,7 +2287,7 @@ Store MVP의 Managed Child는 독립 로그인 계정이 아니다.
 - 외부 analytics는 child mode에서 기본 차단 또는 최소 집계
 - location, chat, medical, school record 수집 금지
 
-대상 연령과 mixed-audience 분류가 확정되기 전에는 자녀용 독립 계정이나 광고 SDK를 도입하지 않는다.
+Store MVP에는 자녀 프로필·child mode·자녀 대상 마케팅을 노출하지 않는다. P1은 H-05와 법률·Store 검토를 통과하기 전 production에 활성화하지 않는다.
 
 ## 5. Parental gate
 
@@ -4076,11 +4086,11 @@ UI는 nullable user 하나로 모든 상태를 추론하지 않는다.
 
 - previous household cache/provider dispose
 - notification/filter context 갱신
-- child acting mode 종료
+- P1 child acting mode 종료
 - entitlement refetch
 - Realtime channel 재구성
 
-## 8. Managed Child
+## 8. Managed Child(P1 계약, Store MVP 비범위)
 
 - auth account 없음
 - guardian가 만든 managed member row
@@ -4117,7 +4127,7 @@ UI는 nullable user 하나로 모든 상태를 추론하지 않는다.
 - account switch cache purge
 - invite before/after login
 - removed membership on resume
-- child mode route bypass
+- P1 child mode route bypass
 - reinstall와 restore
 
 
@@ -4741,7 +4751,7 @@ Beta 전 load test model과 비용 alarm을 설정한다.
 |---|---|---|
 | 00 | 제품·연령·국가·가격·기술 차단 결정 | Decision Gate |
 | 01 | Flutter/Supabase/CI 기반 | Foundation Gate |
-| 02 | 인증·가구·초대·역할·Managed Child | Household Alpha Gate |
+| 02 | 인증·가구·초대·성인 역할 | Household Alpha Gate |
 | 03 | 집안일·반복·완료·Today | Chores Value Gate |
 | 04 | 공유 일정·반복·예외·시간대 | Calendar Value Gate |
 | 05 | 알림·작업 큐·신뢰성·제한된 오프라인 | Reliability Gate |
@@ -4762,6 +4772,8 @@ Beta 전 load test model과 비용 alarm을 설정한다.
 ```
 
 Phase 03과 04의 내부 설계는 병렬 검토 가능하지만, 공통 recurrence/time model을 먼저 합의한다. Billing UI는 Phase 06 전 prototype할 수 있으나 production purchase를 열지 않는다.
+
+Managed Child/child mode는 Store MVP Phase 02~09에서 제외한다. H-05와 법률·Store 검토를 통과한 뒤 P1 계획으로 별도 승인한다(D-013).
 
 ## 3. Work Package 규칙
 
@@ -4884,11 +4896,12 @@ PoC 코드는 production architecture로 간주하지 않는다.
 
 ## Exit Gate
 
-- D-007, D-019, D-023의 launch-blocking 부분 ACCEPTED
+- D-013, D-039, D-051 ACCEPTED
 - 제품 이름/식별자 owner 결정
 - Phase 01 toolchain과 계정 준비
 - Risk Register owner 지정
 - MVP/비범위 승인
+- 성인 대상 Store questionnaire와 법률·Privacy 검토 완료
 
 ## Stop 조건
 
@@ -5002,11 +5015,11 @@ Phase 00 Gate 통과, 식별자와 toolchain 승인.
 
 ---
 
-# Phase 02 — 인증, 가구, 구성원, Managed Child
+# Phase 02 — 인증, 가구, 성인 구성원
 
 ## 목표
 
-성인 사용자가 로그인하고 가구를 만들거나 안전한 초대로 가입하며, 역할·Owner·Managed Child 경계를 RLS와 서버 transaction으로 보호한다.
+성인 사용자가 로그인하고 가구를 만들거나 안전한 초대로 가입하며, 역할·Owner 경계를 RLS와 서버 transaction으로 보호한다.
 
 ## Entry
 
@@ -5052,17 +5065,16 @@ Foundation Gate 통과, auth provider/redirect/domain 준비.
 - removed member session/cache/device cleanup
 - audit events
 
-### WP02-06 Managed Child
+### WP02-06 Adult activation handoff
 
-- guardian-managed profile
-- parental gate and mode
-- allowed action skeleton
-- acting audit
-- restricted routes/analytics
+- 초대 수락 후 성인 membership과 active household 확정
+- 빈 Today와 첫 집안일 생성으로 이어지는 handoff
+- 두 번째 성인의 첫 독립 행동 event 계약
+- Managed Child table/route/acting context는 만들지 않고 `FR-CHILD-*`를 P1로 유지
 
 ### WP02-07 End-to-end authorization
 
-- outsider/different household/removed/managed/service-role tests
+- outsider/different household/removed/service-role tests
 - body/path household injection
 - direct CRUD RPC bypass
 
@@ -5071,7 +5083,7 @@ Foundation Gate 통과, auth provider/redirect/domain 준비.
 - full Phase 02 RLS matrix
 - auth repository/use case/widget tests
 - invite concurrency/idempotency/rate limit
-- route guard/child mode
+- route guard와 account/household switch purge
 - migration clean reset
 
 ## 수동 검증
@@ -5079,7 +5091,7 @@ Foundation Gate 통과, auth provider/redirect/domain 준비.
 - two real accounts/two devices create-invite-accept
 - cold-start invite link iOS/Android
 - owner transfer/removal
-- child mode entry/timeout/exit
+- 두 번째 성인의 초대 수락 후 독립 재진입
 - account switch data purge
 
 ## Exit Gate
@@ -5087,12 +5099,11 @@ Foundation Gate 통과, auth provider/redirect/domain 준비.
 - 두 성인이 같은 가구에 참여 가능
 - household isolation 공격 test pass
 - 마지막 Owner invariant
-- managed child에 auth identity 없음
 - auth/invite deep links 실제 기기 pass
 
 ## Stop/Rollback
 
-권한 누출, token replay, cache 잔존 시 다음 Phase 금지. feature flag로 invite/child mode를 비활성화하고 migration은 forward fix한다.
+권한 누출, token replay, cache 잔존 시 다음 Phase 금지. feature flag로 invite를 비활성화하고 migration은 forward fix한다. P1 child surface는 Store MVP에서 존재하지 않아야 한다.
 
 
 ---
@@ -5433,7 +5444,7 @@ mismatch 또는 중복 결제 위험 시 purchase entry를 remote kill switch로
 
 ## 목표
 
-계정/가구 삭제와 내보내기, 보안 hardening, Managed Child 보호, EN/KO 및 접근성 품질을 Store 제출 수준으로 완성한다.
+계정/가구 삭제와 내보내기, 보안 hardening, 성인 대상 Store 선언, EN/KO 및 접근성 품질을 Store 제출 수준으로 완성한다.
 
 ## Entry
 
@@ -5465,12 +5476,12 @@ mismatch 또는 중복 결제 위험 시 purchase entry를 remote kill switch로
 - PII log scrub
 - local cache forensic
 
-### WP07-04 Child safety
+### WP07-04 Deferred child surface audit
 
-- parental gate brute force/recovery
-- child mode analytics off
-- route/action bypass
-- policy copy and guardian control
+- Managed Child/child mode route·schema·marketing surface가 production에 없음
+- feature flag와 analytics taxonomy에 child 행동 수집 없음
+- 성인 대상 Store questionnaire와 실제 기능·SDK inventory 일치
+- P1 child 계약은 G7 blocker가 아니며 별도 Gate 없이는 활성화 금지
 
 ### WP07-05 Accessibility
 
@@ -5508,7 +5519,7 @@ mismatch 또는 중복 결제 위험 시 purchase entry를 remote kill switch로
 - full deletion on two accounts/last Owner
 - export content/access expiry
 - VoiceOver/TalkBack journey
-- child gate bypass attempts
+- deferred child route/flag 노출 점검
 - legal/privacy/store questionnaire review
 
 ## Exit Gate
@@ -7075,6 +7086,8 @@ components:
 -- KinFlow core PostgreSQL schema contract v1.0
 -- This is a normative implementation skeleton, not a substitute for ordered migrations.
 -- Production changes MUST be split into forward-only Supabase migrations.
+-- D-013: managed_child, member_guardians, and acting_contexts are P1 reference only.
+-- Do not include those surfaces in Store MVP migrations without a separate P1 approval.
 
 create extension if not exists pgcrypto;
 create schema if not exists app_private;
@@ -7784,6 +7797,7 @@ on conflict (plan_code) do nothing;
 ```sql
 -- KinFlow RLS contract v1.0
 -- Apply after the core schema. This file defines minimum authorization semantics.
+-- D-013: child/guardian/acting-context policies are P1 reference only.
 
 create or replace function app_private.current_user_member_id(p_household_id uuid)
 returns uuid
@@ -8159,14 +8173,14 @@ SPEC-001,Flutter/Dart/toolchain/dependency policy,"D-001,D-006,D-007,D-029,D-037
 SPEC-002,Repository and layer boundary,D-047,docs/22_*; architecture-rules.yaml,01,architecture import tests
 SPEC-003,Native-first adaptive client and Web/Desktop Gate,"D-002,D-003,D-004,D-005",docs/20_*; docs/23_*,01-10,device/browser/desktop demand review
 SPEC-004,Database/RLS/API authority,"D-008,D-015,D-042,D-048",docs/09_*; docs/24_*; SQL/OpenAPI,02-08,pgTAP/RLS/contract/concurrency
-SPEC-005,Auth/session/invite/Managed Child,"D-010-D-016,D-040,D-049",docs/11_*; docs/25_*,02/07,auth/link/child/security E2E
+SPEC-005,Auth/session/invite; Managed Child P1,"D-010-D-016,D-040,D-049",docs/11_*; docs/25_*,02/07; P1,auth/link/security E2E; child E2E at P1 gate
 SPEC-006,Chores/calendar recurrence and time,"D-019,D-020,D-046",docs/07_*; docs/26_*,03-05,time matrix/materialization/property tests
 SPEC-007,Jobs/notifications/cache/offline,"D-017,D-018,D-021-D-023",docs/10_*; docs/26_*,05,job/push/cache actual device
 SPEC-008,Billing and household entitlement,D-024-D-028,docs/12_*; docs/27_*,06,sandbox/webhook/reconcile matrix
-SPEC-009,Privacy/delete/export/child safety,"D-011-D-014,D-035,D-040,D-041",docs/11_*; docs/17_*,07,deletion/export/security/a11y
+SPEC-009,Privacy/delete/export; child safety P1,"D-011-D-014,D-035,D-040,D-041",docs/11_*; docs/17_*,07; P1,deletion/export/security/a11y; child safety at P1 gate
 SPEC-010,CI/CD/store release,"D-029-D-033,D-037,D-038,D-042",docs/15_*; docs/28_*,01/08/09,signed builds/provenance/rollout
 SPEC-011,NFR/SLO/operations,"D-034,D-036",docs/13_*; docs/16_*; docs/29_*,08/09,dashboards/load/restore/runbooks
-SPEC-012,Open business decisions remain gated,"D-013,D-027,D-039",DECISIONS.md; Phase 00,00/06/09,decision audit and feature disabled
+SPEC-012,Remaining open business decisions stay gated,D-027,DECISIONS.md; Phase 00/06,00/06,decision audit and billing disabled
 ```
 
 
@@ -8197,8 +8211,8 @@ T-AUTH-02,Security,Session expiry/account switch purge,Mobile,G2/G7,No stale acc
 T-LINK-01,E2E,Auth cold-start link,iOS/Android,G2,Callback and safe continuation,02,Manual,evidence/test/T-LINK-01/,,NOT_RUN
 T-LINK-02,E2E,Invite cold/warm link,iOS/Android,G2,Token safe; accept/reject states,02,Mixed,evidence/test/T-LINK-02/,,NOT_RUN
 T-LINK-03,Security,Open redirect/token log,All,G2,Blocked/no raw token,02,Automated,evidence/test/T-LINK-03/,,NOT_RUN
-T-CHILD-01,Security,Child restricted routes/actions,Mobile/Server,G2/G7,All blocked server-side,02/07,Mixed,evidence/test/T-CHILD-01/,,NOT_RUN
-T-CHILD-02,Security,PIN brute force/recovery,Mobile,G7,Backoff/recovery policy,07,Mixed,evidence/test/T-CHILD-02/,,NOT_RUN
+T-CHILD-01,Security,Child restricted routes/actions,Mobile/Server,P1 child gate,All blocked server-side,P1,Mixed,evidence/p1-child/T-CHILD-01/,,DEFERRED
+T-CHILD-02,Security,PIN brute force/recovery,Mobile,P1 child gate,Backoff/recovery policy,P1,Mixed,evidence/p1-child/T-CHILD-02/,,DEFERRED
 T-CHORE-01,E2E,Create/assign/complete two devices,Mobile,G3,Consistent Today,03,Mixed,evidence/test/T-CHORE-01/,,NOT_RUN
 T-CHORE-02,Concurrency,Duplicate complete/version conflict,All,G3,Idempotent/conflict UI,03,Automated,evidence/test/T-CHORE-02/,,NOT_RUN
 T-TIME-01,Domain,DST/month-end/leap/all-day matrix,All,G4,All fixtures pass,04,Automated,evidence/test/T-TIME-01/,,NOT_RUN
@@ -8258,7 +8272,7 @@ CAP-005,In-app inbox,NotificationInboxRepository,Shared server API,Shared server
 CAP-006,Billing purchase,BillingService,RevenueCat App Store,RevenueCat Play,Unavailable in initial Beta,mobile purchase route,G6,T-BILL-01..12,server household entitlement,NOT_STARTED,
 CAP-007,Entitlement read,EntitlementRepository,Server snapshot,Server snapshot,Server snapshot,Free limits,G6/G10,T-BILL-08,never trust local SDK state,NOT_STARTED,
 CAP-008,Secure storage,SecureStorage,Keychain-backed,Keystore-backed,Browser strategy,memory + re-auth,G1,T-SEC-03,no secret in preferences,NOT_STARTED,
-CAP-009,Parental gate,ParentalGate,OS auth/PIN,OS auth/PIN,recent auth/PIN,adult re-auth,G2/G7,T-CHILD-01..04,server allowlist remains authority,NOT_STARTED,
+CAP-009,Parental gate,ParentalGate,Deferred,Deferred,Deferred,adult-only Store MVP,P1 child gate,T-CHILD-01..04,server allowlist remains authority,DEFERRED,
 CAP-010,Background execution,BackgroundScheduler,Best-effort,Best-effort,Foreground only baseline,server worker,G5,T-JOB-01,not source of notification truth,NOT_STARTED,
 CAP-011,Offline read cache,OfflineCache,Scoped cache,Scoped cache,Memory/minimal browser storage,stale + retry,G3/G4/G10,T-CACHE-01..04,user+household namespace/purge,NOT_STARTED,
 CAP-012,Safe offline mutation,MutationOutbox,Chore completion candidate,Chore completion candidate,Disabled initially,online-only,G5 optional,T-SYNC-01..05,auth/version/TTL/idempotency binding,PROVISIONAL,
@@ -8282,7 +8296,7 @@ CAP-020,Desktop native shell,DesktopCapability,N/A,N/A,N/A,Web Companion,Phase 1
 ```csv
 ID,Platform,Tier,Area,Acceptance_Criteria,Automation,Manual_Evidence,Status
 PDOD-001,iPhone,Tier1,Shell/Auth,"launch, callback, restore, logout/account isolation",Automated where possible,Required before platform Gate,NOT_STARTED
-PDOD-002,iPhone,Tier1,Household,"create, invite, join, roles, managed child allowed paths",Automated where possible,Required before platform Gate,NOT_STARTED
+PDOD-002,iPhone,Tier1,Household,"adult create, invite, join, roles",Automated where possible,Required before platform Gate,NOT_STARTED
 PDOD-003,iPhone,Tier1,Chores/Today,"create, assign, repeat, complete, stale/conflict states",Automated where possible,Required before platform Gate,NOT_STARTED
 PDOD-004,iPhone,Tier1,Calendar,timed/all-day/repeat/exception/timezone,Automated where possible,Required before platform Gate,NOT_STARTED
 PDOD-005,iPhone,Tier1,Notifications,permission/inbox/push or documented fallback/deep link,Automated where possible,Required before platform Gate,NOT_STARTED
@@ -8293,7 +8307,7 @@ PDOD-009,iPhone,Tier1,Localization,"EN/KO/pseudo, locale/timezone formatting",Au
 PDOD-010,iPhone,Tier1,Performance,startup/Today/jank/payload budget,Automated where possible,Required before platform Gate,NOT_STARTED
 PDOD-011,iPhone,Tier1,Reliability,resume/reconnect/update/version compatibility,Automated where possible,Required before platform Gate,NOT_STARTED
 PDOD-012,iPad,Tier1,Shell/Auth,"launch, callback, restore, logout/account isolation",Automated where possible,Required before platform Gate,NOT_STARTED
-PDOD-013,iPad,Tier1,Household,"create, invite, join, roles, managed child allowed paths",Automated where possible,Required before platform Gate,NOT_STARTED
+PDOD-013,iPad,Tier1,Household,"adult create, invite, join, roles",Automated where possible,Required before platform Gate,NOT_STARTED
 PDOD-014,iPad,Tier1,Chores/Today,"create, assign, repeat, complete, stale/conflict states",Automated where possible,Required before platform Gate,NOT_STARTED
 PDOD-015,iPad,Tier1,Calendar,timed/all-day/repeat/exception/timezone,Automated where possible,Required before platform Gate,NOT_STARTED
 PDOD-016,iPad,Tier1,Notifications,permission/inbox/push or documented fallback/deep link,Automated where possible,Required before platform Gate,NOT_STARTED
@@ -8304,7 +8318,7 @@ PDOD-020,iPad,Tier1,Localization,"EN/KO/pseudo, locale/timezone formatting",Auto
 PDOD-021,iPad,Tier1,Performance,startup/Today/jank/payload budget,Automated where possible,Required before platform Gate,NOT_STARTED
 PDOD-022,iPad,Tier1,Reliability,resume/reconnect/update/version compatibility,Automated where possible,Required before platform Gate,NOT_STARTED
 PDOD-023,Android Phone,Tier1,Shell/Auth,"launch, callback, restore, logout/account isolation",Automated where possible,Required before platform Gate,NOT_STARTED
-PDOD-024,Android Phone,Tier1,Household,"create, invite, join, roles, managed child allowed paths",Automated where possible,Required before platform Gate,NOT_STARTED
+PDOD-024,Android Phone,Tier1,Household,"adult create, invite, join, roles",Automated where possible,Required before platform Gate,NOT_STARTED
 PDOD-025,Android Phone,Tier1,Chores/Today,"create, assign, repeat, complete, stale/conflict states",Automated where possible,Required before platform Gate,NOT_STARTED
 PDOD-026,Android Phone,Tier1,Calendar,timed/all-day/repeat/exception/timezone,Automated where possible,Required before platform Gate,NOT_STARTED
 PDOD-027,Android Phone,Tier1,Notifications,permission/inbox/push or documented fallback/deep link,Automated where possible,Required before platform Gate,NOT_STARTED
@@ -8315,7 +8329,7 @@ PDOD-031,Android Phone,Tier1,Localization,"EN/KO/pseudo, locale/timezone formatt
 PDOD-032,Android Phone,Tier1,Performance,startup/Today/jank/payload budget,Automated where possible,Required before platform Gate,NOT_STARTED
 PDOD-033,Android Phone,Tier1,Reliability,resume/reconnect/update/version compatibility,Automated where possible,Required before platform Gate,NOT_STARTED
 PDOD-034,Android Tablet,Tier1,Shell/Auth,"launch, callback, restore, logout/account isolation",Automated where possible,Required before platform Gate,NOT_STARTED
-PDOD-035,Android Tablet,Tier1,Household,"create, invite, join, roles, managed child allowed paths",Automated where possible,Required before platform Gate,NOT_STARTED
+PDOD-035,Android Tablet,Tier1,Household,"adult create, invite, join, roles",Automated where possible,Required before platform Gate,NOT_STARTED
 PDOD-036,Android Tablet,Tier1,Chores/Today,"create, assign, repeat, complete, stale/conflict states",Automated where possible,Required before platform Gate,NOT_STARTED
 PDOD-037,Android Tablet,Tier1,Calendar,timed/all-day/repeat/exception/timezone,Automated where possible,Required before platform Gate,NOT_STARTED
 PDOD-038,Android Tablet,Tier1,Notifications,permission/inbox/push or documented fallback/deep link,Automated where possible,Required before platform Gate,NOT_STARTED
@@ -8326,7 +8340,7 @@ PDOD-042,Android Tablet,Tier1,Localization,"EN/KO/pseudo, locale/timezone format
 PDOD-043,Android Tablet,Tier1,Performance,startup/Today/jank/payload budget,Automated where possible,Required before platform Gate,NOT_STARTED
 PDOD-044,Android Tablet,Tier1,Reliability,resume/reconnect/update/version compatibility,Automated where possible,Required before platform Gate,NOT_STARTED
 PDOD-045,Web Companion,Tier2,Shell/Auth,"launch, callback, restore, logout/account isolation",Automated where possible,Required before platform Gate,NOT_STARTED
-PDOD-046,Web Companion,Tier2,Household,"create, invite, join, roles, managed child allowed paths",Automated where possible,Required before platform Gate,NOT_STARTED
+PDOD-046,Web Companion,Tier2,Household,"adult create, invite, join, roles",Automated where possible,Required before platform Gate,NOT_STARTED
 PDOD-047,Web Companion,Tier2,Chores/Today,"create, assign, repeat, complete, stale/conflict states",Automated where possible,Required before platform Gate,NOT_STARTED
 PDOD-048,Web Companion,Tier2,Calendar,timed/all-day/repeat/exception/timezone,Automated where possible,Required before platform Gate,NOT_STARTED
 PDOD-049,Web Companion,Tier2,Notifications,inbox and email/mobile fallback; Web Push not initial blocker,Automated where possible,Required before platform Gate,NOT_STARTED

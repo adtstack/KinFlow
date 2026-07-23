@@ -5,10 +5,12 @@
 - 구현 시 생성할 원본 경로: `contracts/rls-contract.sql`
 - 원본 형식: `sql`
 - 사용 방법: 아래 코드 블록의 내용을 복사하여 위 원본 경로에 저장합니다.
+- 범위 주의: Managed Child·guardian·acting context policy는 P1 참조 전용이며 Store MVP RLS migration/test Gate에서 제외한다(D-013).
 
 ```sql
 -- KinFlow RLS contract v1.0
 -- Apply after the core schema. This file defines minimum authorization semantics.
+-- D-013: child/guardian/acting-context policies are P1 reference only.
 
 create or replace function app_private.current_user_member_id(p_household_id uuid)
 returns uuid

@@ -1,0 +1,16 @@
+2026-07-23 Phase 00 documentation validation after product scope approval
+
+PASS 118 Markdown files have balanced fences
+PASS git diff --check and new Phase 00 file whitespace/fence checks
+PASS 13 embedded CSV wrappers have consistent row widths
+PASS 51 decision IDs are unique
+OPEN_COUNT=1
+PROVISIONAL_COUNT=5
+PASS 105 package manifest sizes and SHA-256 hashes
+
+Semantic checks:
+- D-013, D-039, D-051 are ACCEPTED and ADR-0001 is ACCEPTED.
+- FR-CHILD-001~008 and their traceability rows are P1/DEFERRED, not Store MVP Gate items.
+- Phase 02 implements adult auth/household/invite and does not create child surfaces.
+- Phase 00 Exit Gate now references D-013, D-039, D-051.
+- D-027 remains OPEN; price/value research and other G0 evidence remain incomplete.

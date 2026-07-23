@@ -1,6 +1,6 @@
 # 06. 기능 요구사항 상세
 
-상태는 구현 시 traceability matrix와 함께 갱신한다. 모든 `MUST` 요구사항은 Store MVP 출시 Gate다.
+상태는 구현 시 traceability matrix와 함께 갱신한다. 모든 `MUST` 요구사항은 Store MVP 출시 Gate이고 `P1`은 Store MVP 비범위다.
 
 ## 1. 인증 (`FR-AUTH`)
 
@@ -35,14 +35,14 @@
 
 | ID | 우선 | 요구사항 | 핵심 수용 기준 |
 |---|:---:|---|---|
-| FR-CHILD-001 | MUST | Managed Child 생성 | 최소 display name/avatar만, birthdate 기본 수집 안 함 |
-| FR-CHILD-002 | MUST | guardian 연결 | 최소 한 명, 다른 가구 member 연결 불가 |
-| FR-CHILD-003 | MUST | active member mode | device별 짧은 수명 context, 화면에 지속 표시 |
-| FR-CHILD-004 | MUST | 자녀 action allowlist | 자기 항목 보기/완료 외 민감 mutation 서버 거부 |
-| FR-CHILD-005 | MUST | 보호자 gate | 설정·결제·초대·삭제 접근 차단, high-risk re-auth |
-| FR-CHILD-006 | MUST | approval workflow | 필요 항목은 awaiting approval, guardian 승인/반려 |
-| FR-CHILD-007 | MUST | audit actor 구분 | authenticated user와 acting managed member 모두 기록 |
-| FR-CHILD-008 | MUST | 자녀 삭제·익명화 | 공유 이력 무결성과 개인정보 최소화 균형 |
+| FR-CHILD-001 | P1 | Managed Child 생성 | 최소 display name/avatar만, birthdate 기본 수집 안 함 |
+| FR-CHILD-002 | P1 | guardian 연결 | 최소 한 명, 다른 가구 member 연결 불가 |
+| FR-CHILD-003 | P1 | active member mode | device별 짧은 수명 context, 화면에 지속 표시 |
+| FR-CHILD-004 | P1 | 자녀 action allowlist | 자기 항목 보기/완료 외 민감 mutation 서버 거부 |
+| FR-CHILD-005 | P1 | 보호자 gate | 설정·결제·초대·삭제 접근 차단, high-risk re-auth |
+| FR-CHILD-006 | P1 | approval workflow | 필요 항목은 awaiting approval, guardian 승인/반려 |
+| FR-CHILD-007 | P1 | audit actor 구분 | authenticated user와 acting managed member 모두 기록 |
+| FR-CHILD-008 | P1 | 자녀 삭제·익명화 | 공유 이력 무결성과 개인정보 최소화 균형 |
 
 ## 4. 집안일 (`FR-CHORE`)
 

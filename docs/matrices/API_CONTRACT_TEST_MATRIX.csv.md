@@ -19,7 +19,7 @@ API-007,POST /invites/accept,concurrent double accept,"one membership, idempoten
 API-008,POST /invites/accept,wrong target email,403 INVITE_EMAIL_MISMATCH,integration,P02
 API-009,POST owner-transfer,last owner/new invalid member,"409/403, invariant preserved","DB, RLS, integration",P02
 API-010,PUT member role,outsider UUID injection,"404/403, no leak","RLS, integration",P02
-API-011,POST acting-context,non-guardian child,403 ACTING_CONTEXT_INVALID,"DB, security",P02
+API-011,POST acting-context,non-guardian child,403 ACTING_CONTEXT_INVALID,"DB, security",P1 child gate
 API-012,POST chore complete,valid expected version,200 completed + audit/outbox,"unit, DB, integration",P03
 API-013,POST chore complete,stale expected version,409 VERSION_CONFLICT,integration,P03
 API-014,POST chore complete,different household occurrence,"404/403, no mutation","RLS, integration",P03

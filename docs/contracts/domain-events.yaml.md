@@ -5,6 +5,7 @@
 - 구현 시 생성할 원본 경로: `contracts/domain-events.yaml`
 - 원본 형식: `yaml`
 - 사용 방법: 아래 코드 블록의 내용을 복사하여 위 원본 경로에 저장합니다.
+- 범위 주의: `managed_child.*` event는 P1 참조 전용이며 Store MVP producer/consumer에 등록하지 않는다(D-013).
 
 ```yaml
 version: "2026-07-21"

@@ -28,8 +28,8 @@ T-AUTH-02,Security,Session expiry/account switch purge,Mobile,G2/G7,No stale acc
 T-LINK-01,E2E,Auth cold-start link,iOS/Android,G2,Callback and safe continuation,02,Manual,evidence/test/T-LINK-01/,,NOT_RUN
 T-LINK-02,E2E,Invite cold/warm link,iOS/Android,G2,Token safe; accept/reject states,02,Mixed,evidence/test/T-LINK-02/,,NOT_RUN
 T-LINK-03,Security,Open redirect/token log,All,G2,Blocked/no raw token,02,Automated,evidence/test/T-LINK-03/,,NOT_RUN
-T-CHILD-01,Security,Child restricted routes/actions,Mobile/Server,G2/G7,All blocked server-side,02/07,Mixed,evidence/test/T-CHILD-01/,,NOT_RUN
-T-CHILD-02,Security,PIN brute force/recovery,Mobile,G7,Backoff/recovery policy,07,Mixed,evidence/test/T-CHILD-02/,,NOT_RUN
+T-CHILD-01,Security,Child restricted routes/actions,Mobile/Server,P1 child gate,All blocked server-side,P1,Mixed,evidence/p1-child/T-CHILD-01/,,DEFERRED
+T-CHILD-02,Security,PIN brute force/recovery,Mobile,P1 child gate,Backoff/recovery policy,P1,Mixed,evidence/p1-child/T-CHILD-02/,,DEFERRED
 T-CHORE-01,E2E,Create/assign/complete two devices,Mobile,G3,Consistent Today,03,Mixed,evidence/test/T-CHORE-01/,,NOT_RUN
 T-CHORE-02,Concurrency,Duplicate complete/version conflict,All,G3,Idempotent/conflict UI,03,Automated,evidence/test/T-CHORE-02/,,NOT_RUN
 T-TIME-01,Domain,DST/month-end/leap/all-day matrix,All,G4,All fixtures pass,04,Automated,evidence/test/T-TIME-01/,,NOT_RUN

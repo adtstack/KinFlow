@@ -4,9 +4,10 @@
 
 
 - 상태: `ACCEPTED — KINFLOW APP SPEC v1.0 / FLUTTER SDK 3.44.7 / MARKDOWN-ONLY PACK v1.2`
-- 기준일: 2026-07-22
+- 기준일: 2026-07-23
 - 제품 전략: 가족용 집안일·공유 일정 구독 앱
 - 출시 전략: iOS·Android 네이티브 앱 우선, Web Companion 후속, 네이티브 데스크톱은 수요 Gate 이후
+- Phase 00 제품 결정: 대한민국 단일 시장·Seoul 리전, 성인 계정 Store MVP, 성인 2인 Activation 우선; Managed Child는 P1
 
 
 ## 0. 이 압축 파일의 형식
@@ -62,12 +63,13 @@ Phase Gate의 자동·수동 검증 증거가 없으면 완료라고 하지 않�
 ## 4. 구현을 시작하기 전 반드시 확정할 항목
 
 - 앱의 최종 이름·Bundle ID·Package name·도메인
-- 최초 출시 국가와 Supabase 리전
-- 스토어 대상 연령 및 mixed-audience 여부
+- 성인 대상 Store questionnaire의 법률·Privacy 검토(D-013의 제품 범위는 승인됨)
 - Free/Plus 한도, 월간·연간 가격, 무료 체험
 - 개인정보 보관·삭제 기간
 - 보호자 PIN 복구 정책
 - Apple/Google 개발자 계정 소유 주체
+
+최초 출시 국가는 대한민국, Supabase production region은 Seoul `ap-northeast-2`로 승인됐다. 이 결정은 법적 운영 주체나 console owner 미지정을 해소하지 않는다.
 
 ## 5. 절대 하지 말아야 할 것
 

@@ -12,7 +12,7 @@
 |---|---|---|
 | 00 | 제품·연령·국가·가격·기술 차단 결정 | Decision Gate |
 | 01 | Flutter/Supabase/CI 기반 | Foundation Gate |
-| 02 | 인증·가구·초대·역할·Managed Child | Household Alpha Gate |
+| 02 | 인증·가구·초대·성인 역할 | Household Alpha Gate |
 | 03 | 집안일·반복·완료·Today | Chores Value Gate |
 | 04 | 공유 일정·반복·예외·시간대 | Calendar Value Gate |
 | 05 | 알림·작업 큐·신뢰성·제한된 오프라인 | Reliability Gate |
@@ -33,6 +33,8 @@
 ```
 
 Phase 03과 04의 내부 설계는 병렬 검토 가능하지만, 공통 recurrence/time model을 먼저 합의한다. Billing UI는 Phase 06 전 prototype할 수 있으나 production purchase를 열지 않는다.
+
+Managed Child/child mode는 Store MVP Phase 02~09에서 제외한다. H-05와 법률·Store 검토를 통과한 뒤 P1 계획으로 별도 승인한다(D-013).
 
 ## 3. Work Package 규칙
 

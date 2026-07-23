@@ -70,11 +70,11 @@ UI는 nullable user 하나로 모든 상태를 추론하지 않는다.
 
 - previous household cache/provider dispose
 - notification/filter context 갱신
-- child acting mode 종료
+- P1 child acting mode 종료
 - entitlement refetch
 - Realtime channel 재구성
 
-## 8. Managed Child
+## 8. Managed Child(P1 계약, Store MVP 비범위)
 
 - auth account 없음
 - guardian가 만든 managed member row
@@ -111,5 +111,5 @@ UI는 nullable user 하나로 모든 상태를 추론하지 않는다.
 - account switch cache purge
 - invite before/after login
 - removed membership on resume
-- child mode route bypass
+- P1 child mode route bypass
 - reinstall와 restore

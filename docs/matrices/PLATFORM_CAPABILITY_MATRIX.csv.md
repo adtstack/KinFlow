@@ -17,7 +17,7 @@ CAP-005,In-app inbox,NotificationInboxRepository,Shared server API,Shared server
 CAP-006,Billing purchase,BillingService,RevenueCat App Store,RevenueCat Play,Unavailable in initial Beta,mobile purchase route,G6,T-BILL-01..12,server household entitlement,NOT_STARTED,
 CAP-007,Entitlement read,EntitlementRepository,Server snapshot,Server snapshot,Server snapshot,Free limits,G6/G10,T-BILL-08,never trust local SDK state,NOT_STARTED,
 CAP-008,Secure storage,SecureStorage,Keychain-backed,Keystore-backed,Browser strategy,memory + re-auth,G1,T-SEC-03,no secret in preferences,NOT_STARTED,
-CAP-009,Parental gate,ParentalGate,OS auth/PIN,OS auth/PIN,recent auth/PIN,adult re-auth,G2/G7,T-CHILD-01..04,server allowlist remains authority,NOT_STARTED,
+CAP-009,Parental gate,ParentalGate,Deferred,Deferred,Deferred,adult-only Store MVP,P1 child gate,T-CHILD-01..04,server allowlist remains authority,DEFERRED,
 CAP-010,Background execution,BackgroundScheduler,Best-effort,Best-effort,Foreground only baseline,server worker,G5,T-JOB-01,not source of notification truth,NOT_STARTED,
 CAP-011,Offline read cache,OfflineCache,Scoped cache,Scoped cache,Memory/minimal browser storage,stale + retry,G3/G4/G10,T-CACHE-01..04,user+household namespace/purge,NOT_STARTED,
 CAP-012,Safe offline mutation,MutationOutbox,Chore completion candidate,Chore completion candidate,Disabled initially,online-only,G5 optional,T-SYNC-01..05,auth/version/TTL/idempotency binding,PROVISIONAL,

@@ -2,7 +2,7 @@
 
 ## 목표
 
-계정/가구 삭제와 내보내기, 보안 hardening, Managed Child 보호, EN/KO 및 접근성 품질을 Store 제출 수준으로 완성한다.
+계정/가구 삭제와 내보내기, 보안 hardening, 성인 대상 Store 선언, EN/KO 및 접근성 품질을 Store 제출 수준으로 완성한다.
 
 ## Entry
 
@@ -34,12 +34,12 @@
 - PII log scrub
 - local cache forensic
 
-### WP07-04 Child safety
+### WP07-04 Deferred child surface audit
 
-- parental gate brute force/recovery
-- child mode analytics off
-- route/action bypass
-- policy copy and guardian control
+- Managed Child/child mode route·schema·marketing surface가 production에 없음
+- feature flag와 analytics taxonomy에 child 행동 수집 없음
+- 성인 대상 Store questionnaire와 실제 기능·SDK inventory 일치
+- P1 child 계약은 G7 blocker가 아니며 별도 Gate 없이는 활성화 금지
 
 ### WP07-05 Accessibility
 
@@ -77,7 +77,7 @@
 - full deletion on two accounts/last Owner
 - export content/access expiry
 - VoiceOver/TalkBack journey
-- child gate bypass attempts
+- deferred child route/flag 노출 점검
 - legal/privacy/store questionnaire review
 
 ## Exit Gate

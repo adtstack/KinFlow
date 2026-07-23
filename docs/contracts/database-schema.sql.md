@@ -5,11 +5,14 @@
 - 구현 시 생성할 원본 경로: `contracts/database-schema.sql`
 - 원본 형식: `sql`
 - 사용 방법: 아래 코드 블록의 내용을 복사하여 위 원본 경로에 저장합니다.
+- 범위 주의: 이 골격의 Managed Child·guardian·acting context 부분은 P1 참조 전용이다. Store MVP migration에는 포함하지 않는다(D-013).
 
 ```sql
 -- KinFlow core PostgreSQL schema contract v1.0
 -- This is a normative implementation skeleton, not a substitute for ordered migrations.
 -- Production changes MUST be split into forward-only Supabase migrations.
+-- D-013: managed_child, member_guardians, and acting_contexts are P1 reference only.
+-- Do not include those surfaces in Store MVP migrations without a separate P1 approval.
 
 create extension if not exists pgcrypto;
 create schema if not exists app_private;
