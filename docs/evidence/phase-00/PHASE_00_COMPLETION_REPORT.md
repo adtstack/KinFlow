@@ -2,7 +2,7 @@
 
 - Phase: 00
 - release/commit 기준: base `7fd5729`; activation prototype change
-- reviewer: Product scope DG00-01~03 approved; remaining human reviewers pending
+- reviewer: Product scope DG00-01~04, DG00-08, DG00-10 approved; remaining human reviewers pending
 - 결과: **Incomplete**
 
 ## 완료 요구사항
@@ -19,7 +19,7 @@
 ## 변경 산출물
 
 - 제품 검증: research runbook, interview template, hypothesis scorecard, prototype/pilot result ledger
-- 결정: G0 review packet, ACCEPTED MVP scope ADR, D-013/D-039/D-051 반영
+- 결정: G0 review packet, ACCEPTED MVP scope ADR, Android-first ADR, D-013/D-039/D-051~D-054 반영
 - 위험: 30개 위험에 accountable role 지정, named owner는 미정
 - 기술: 폐기 가능한 household RLS isolation PoC, 성인 2인 Flutter prototype과 실행 evidence
 - production UI/domain/repository/provider: 변경 없음
@@ -38,7 +38,7 @@
 | Flutter test | model/widget activation 흐름 | PASS — 4/4 | `logs/activation-prototype.log` |
 | Flutter Android build | activation prototype debug APK | PASS — SHA-256 기록 | `logs/activation-prototype.log` |
 | Household RLS | PostgreSQL 16 same/cross/removed/direct-write test | PASS | `logs/rls-poc.log` |
-| iOS/Android boot | 실제 runtime/device | NOT RUN | `TECHNICAL_POC.md` |
+| Android boot | 실제 실기기 | NOT RUN | `TECHNICAL_POC.md` |
 | Auth/push/billing sandbox | provider console/device | NOT RUN | `TECHNICAL_POC.md` |
 | 실제 가족 연구 | 인터뷰/prototype/pilot | NOT RUN | `../discovery/` |
 
@@ -52,13 +52,14 @@ Waiver는 승인하지 않았다.
 
 Phase 00을 완료하려면 다음이 실제 증거로 남아야 한다.
 
-1. Product owner가 남은 DG00-04~09를 승인/수정/거절한다.
+1. Product owner가 남은 DG00-05~07과 DG00-09를 승인/수정/거절한다.
 2. 12~15명 문제 인터뷰와 8가구 14일 pilot을 실행한다.
 3. H-01, H-02, H-03을 통과하거나 Narrow/Reject 결정을 내린다.
 4. 성인 대상 Store questionnaire, 보관·삭제 정책을 legal/privacy와 승인한다.
-5. named risk/console owner를 지정한다.
-6. iOS/Android 실제 기기에서 boot, auth callback, FCM을 검증한다.
-7. sandbox RevenueCat offering을 실제 Store product와 조회한다.
+5. 개인 운영자의 console 접근, 2단계 인증과 복구 수단을 검증한다.
+6. Android 실제 기기에서 boot, Google auth와 FCM을 검증한다.
+7. 개인 Play 계정 생성일을 확인하고 적용 대상이면 12명·14일 closed test와 실기기 인증을 완료한다.
+8. Android billing 승인 시 sandbox RevenueCat offering을 실제 Play product와 조회한다.
 
 원본 Phase 00 Exit Gate의 잘못된 D-007/D-019/D-023 참조는 D-013/D-039/D-051로 교정했다. 이 문서 교정은 Phase 00 완료를 의미하지 않는다.
 
@@ -72,16 +73,16 @@ Phase 00을 완료하려면 다음이 실제 증거로 남아야 한다.
 
 ## 다음 Phase 진입 판단
 
-**NO-GO. Phase 01 진입 조건을 충족하지 않았다.**
+**NO-GO. Phase 01 전체 진입 조건을 충족하지 않았다.**
 
-Engineering은 문서 검토와 로컬 환경 보완을 준비할 수 있지만 production scaffold와 provider 연동을 Phase 01 완료 작업으로 시작해서는 안 된다. 가장 빠른 unblock은 연구 모집, 앱 식별자·console owner 결정, 실제 기기 PoC 환경 준비다.
+ADR-0002에 따라 Engineering은 승인된 식별자로 로컬·가역적인 WP01-01 foundation만 조건부 진행할 수 있다. 이를 Phase 01 완료로 보고하거나 production provider를 연결해서는 안 된다. 가장 빠른 unblock은 연구 모집, console/복구 증거와 Android 실기기 PoC다.
 
 ## 플랫폼 완료 상태
 
 | 대상 | 범위 | 검증 | 결과 | Evidence |
 |---|---|---|---|---|
 | Shared domain/API | household isolation 원칙 | PostgreSQL RLS spike | PARTIAL PASS | `TECHNICAL_POC.md` |
-| iOS | scaffold boot | runtime/device | NOT RUN | `MANUAL_SETUP_STATUS.md` |
+| iOS | 출시 범위 | N/A | DEFERRED | ADR-0002 |
 | Android | activation prototype build/boot | debug APK PASS, device 없음 | PARTIAL PASS | `TECHNICAL_POC.md` |
 | Web | Phase 00 비범위 | N/A | DEFERRED | ADR-0001 |
 | Web Companion | Phase 00 비범위 | N/A | DEFERRED | ADR-0001 |

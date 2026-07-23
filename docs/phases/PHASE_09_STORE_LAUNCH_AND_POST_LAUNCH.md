@@ -2,7 +2,7 @@
 
 ## 목표
 
-iOS/Android 앱을 정책에 맞게 제출하고 점진 배포하며, 초기 30일 동안 제품·신뢰성·구독 지표를 안정화한다.
+Android 앱을 Google Play 정책에 맞게 제출하고 점진 배포하며, 초기 30일 동안 제품·신뢰성·구독 지표를 안정화한다.
 
 ## Entry
 
@@ -19,10 +19,10 @@ Beta Exit Gate와 release decision 승인.
 
 ### WP09-02 Signed build/submission
 
-- clean reproducible IPA/AAB
+- clean reproducible AAB
 - checksum/SBOM/provenance
 - metadata/screenshots/review account
-- Apple/Google policy current check
+- Google Play policy current check
 - Fastlane upload + human review
 
 ### WP09-03 Review handling

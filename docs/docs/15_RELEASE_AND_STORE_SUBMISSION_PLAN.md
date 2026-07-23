@@ -10,14 +10,14 @@
 | Internal Alpha | 핵심 vertical slice, dev/staging | G1-G4 |
 | Family Beta | 실제 가족, TestFlight/Play internal | G5-G7 |
 | Mobile RC | signed IPA/AAB, privacy/billing/ops | G8 |
-| Store Launch | staged iOS/Android release | G9 |
+| Store Launch | staged Android release | G9 |
 | Web Companion Beta | mobile 안정화 후 browser app | G10 |
 | Desktop Review | 수요 데이터 기반 ADR | G11 |
 
 ## 2. 버전 규칙
 
 - semantic product version + monotonically increasing build number
-- iOS/Android product version은 가능한 한 정렬
+- Android versionName/versionCode는 release record와 정렬
 - DB/API contract version은 앱 version과 독립
 - release branch freeze 후 critical fix만 cherry-pick
 - feature flag로 incomplete capability를 안전하게 off
@@ -78,7 +78,7 @@
 4. 50%
 5. 100%
 
-각 단계에서 crash-free, auth, Today, mutation, notification, entitlement, support ticket를 확인한다. Apple/Google rollout 메커니즘 차이를 runbook에 반영한다.
+각 단계에서 crash-free, auth, Today, mutation, notification, entitlement, support ticket를 확인한다. Google Play internal/closed/production rollout을 runbook에 반영한다.
 
 ## 8. 중단 기준
 

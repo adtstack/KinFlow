@@ -4,28 +4,27 @@
 
 ## 1. 조직과 계정
 
-- [ ] Apple Developer 조직과 권한
-- [ ] App Store Connect 사용자/역할
-- [ ] Google Play Console 조직과 권한
-- [ ] Google Cloud/Firebase 조직과 billing
-- [ ] Supabase 조직과 production region
-- [ ] RevenueCat 조직과 project
-- [ ] GitHub organization, protected branch, environments
+- [ ] 개인 Google Play account owner, 생성일, production access
+- [ ] 개인 Google Cloud/Firebase owner와 billing
+- [ ] 개인 Supabase owner와 production region
+- [ ] 개인 GitHub owner, protected branch, environments
+- [ ] 각 계정 2단계 인증과 복구 수단
+- [ ] RevenueCat project owner(Phase 06 진입 시)
 - [ ] 도메인·DNS·support email
 
 ## 2. 앱 식별자
 
-- [ ] iOS dev/staging/prod Bundle ID
-- [ ] Android dev/staging/prod applicationId
+- [x] Android prod `me.newlines.kinflow`
+- [x] Android dev `me.newlines.kinflow.dev`
 - [ ] 앱 표시 이름과 상표 검색
 - [ ] Universal Links/App Links 도메인
 - [ ] URL scheme collision 검토
 
 ## 3. Supabase
 
-- [ ] local/staging/production project
+- [ ] local/dev/production project
 - [ ] Auth provider와 redirect allowlist
-- [ ] SMTP와 이메일 template
+- [ ] Google provider, consent screen, Android/Web OAuth client
 - [ ] migration deployment identity
 - [ ] backup/PITR 정책
 - [ ] Edge Function secrets
@@ -34,10 +33,8 @@
 
 ## 4. Firebase/Push
 
-- [ ] dev/staging/prod Firebase project
-- [ ] iOS APNs key/certificate 연결
+- [ ] dev/prod Firebase project
 - [ ] Android `google-services.json`
-- [ ] iOS `GoogleService-Info.plist`
 - [ ] notification permission 문구
 - [ ] FCM service credential server secret
 - [ ] token rotation/invalid token dashboard
@@ -50,15 +47,13 @@
 - [ ] webhook endpoint와 secret
 - [ ] sandbox/license tester 계정
 - [ ] restore/transfer policy 승인
-- [ ] Apple Family Sharing 결정
+- [ ] Android Play billing 범위 승인
 - [ ] price/trial/localization 승인
 
 ## 6. CI/CD와 서명
 
 - [ ] Flutter SDK 3.44.7 lock
-- [ ] macOS runner와 Xcode 26
 - [ ] Android keystore/Play App Signing
-- [ ] App Store API key/Fastlane auth
 - [ ] protected production environment
 - [ ] secret rotation/backup owner
 - [ ] artifact retention/provenance
@@ -77,7 +72,7 @@
 ## 8. 출시 자산
 
 - [ ] 아이콘/스플래시
-- [ ] iPhone/iPad/Android phone/tablet screenshot
+- [ ] Android phone/tablet screenshot
 - [ ] 영문·한국어 store metadata
 - [ ] review test account와 설명
 - [ ] support/privacy/terms URL

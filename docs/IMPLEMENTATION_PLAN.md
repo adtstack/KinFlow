@@ -63,7 +63,7 @@ supabase db reset
 DB/RLS/contract tests
 ```
 
-플랫폼 변경은 관련 iOS/Android build와 실제 기기 smoke를 추가한다.
+플랫폼 변경은 현재 Tier 1인 Android build와 실제 기기 smoke를 추가한다. iOS 재도입 시 해당 ADR과 build/device Gate를 함께 추가한다.
 
 ## 5. Gate 원칙
 

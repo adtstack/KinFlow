@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "KinFlow implementation baseline",
+  "version": "1.0",
+  "acceptedAt": "2026-07-23",
+  "flutter": {
+    "channel": "stable",
+    "version": "3.44.7",
+    "dart": "3.12.2 bundled with Flutter SDK 3.44.7",
+    "pinPolicy": "exact toolchain; .fvmrc and pubspec.lock committed"
+  },
+  "platforms": {
+    "storeMvp": {
+      "android": {
+        "minApi": 24,
+        "targetApi": 36,
+        "applicationId": "me.newlines.kinflow",
+        "formFactors": [
+          "phone",
+          "tablet"
+        ]
+      }
+    },
+    "deferred": [
+      "iOS",
+      "iPadOS",
+      "Web Companion",
+      "Windows native",
+      "macOS native",
+      "Linux native"
+    ]
+  },
+  "environments": {
+    "dev": {
+      "applicationId": "me.newlines.kinflow.dev"
+    },
+    "prod": {
+      "applicationId": "me.newlines.kinflow"
+    }
+  },
+  "auth": {
+    "authority": "Supabase Auth",
+    "initialProvider": "Google",
+    "accountAudience": "adults only"
+  },
+  "policies": {
+    "domainMustNotImportFlutterOrSdk": true,
+    "serverAuthoritativeAuthorization": true,
+    "noSecretInDartDefine": true,
+    "productionProviderSetupRequiresG0Closure": true
+  }
+}

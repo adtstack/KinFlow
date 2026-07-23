@@ -1,1 +1,15 @@
 .idea
+.fvm/
+
+# Local environment and provider files
+.env
+.env.*
+!.env.example
+**/google-services.json
+**/key.properties
+**/*.jks
+**/*.keystore
+
+# Flutter public config: commit examples, never local values
+apps/kinflow_app/config/*.json
+!apps/kinflow_app/config/*.example.json

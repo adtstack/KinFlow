@@ -8,6 +8,7 @@
 - `PACKAGE_INFO.md` — 문서팩 형식과 플랫폼 요약
 - `MD_ONLY_FORMAT_GUIDE.md` — 코드 블록 원본 추출 규칙
 - `DECISIONS.md` — 확정·미확정 제품/아키텍처 결정
+- `adr/ADR-0002-android-first-release.md` — Android 단일 출시·dev/prod·개인 운영·Google 로그인 근거
 - `SPEC_BASELINE.md` — 기술·품질 기준선
 - `IMPLEMENTATION_PLAN.md` — Phase 00~10 실행 순서
 - `IMPLEMENTATION_SPEC.md` — 코딩 에이전트용 단일 구현 스펙

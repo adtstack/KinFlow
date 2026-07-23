@@ -66,7 +66,7 @@ Offline mutation이 위험하거나 가치가 낮으면 read-only cache로 남�
 
 ## 수동 검증
 
-- iOS/Android actual device permission states
+- Android actual device permission states
 - foreground/background/terminated push
 - notification tap after resource delete/membership removal
 - provider/network outage

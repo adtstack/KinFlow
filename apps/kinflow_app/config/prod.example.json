@@ -1,0 +1,7 @@
+{
+  "APP_ENV": "prod",
+  "APP_ID": "me.newlines.kinflow",
+  "SUPABASE_URL": "https://example.invalid",
+  "SUPABASE_PUBLISHABLE_KEY": "replace-with-prod-publishable-key",
+  "GOOGLE_WEB_CLIENT_ID": "replace-with-prod-web-client-id.apps.googleusercontent.com"
+}

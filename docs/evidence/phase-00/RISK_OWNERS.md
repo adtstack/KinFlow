@@ -43,7 +43,7 @@ Phase Gate에서 위험이 무주인이 되지 않도록 accountable role을 먼
 | Risk | 현재 처리 | Gate 상태 |
 |---|---|---|
 | RISK-004 | 성인 대상 제품 범위 승인, 법률/Store questionnaire 검토 필요 | PARTIAL |
-| RISK-015 | 정확한 Flutter SDK는 격리 검증, 로컬 iOS/Android device runtime 미준비 | PARTIAL |
+| RISK-015 | Flutter 3.44.7 project pin과 Android build PASS; 실기기 연결/boot 미검증, iOS deferred | PARTIAL |
 | RISK-022 | ADR-0001/D-051로 adult activation slice 승인 | CONTROL ACTIVE |
 | RISK-023 | Evidence와 실패 결과를 저장하고 production code를 시작하지 않음 | CONTROL ACTIVE |
 | RISK-024 | 12~15명 인터뷰와 8가구 pilot 미실행 | BLOCKED |

@@ -72,7 +72,7 @@ Foundation Gate 통과, auth provider/redirect/domain 준비.
 ## 수동 검증
 
 - two real accounts/two devices create-invite-accept
-- cold-start invite link iOS/Android
+- cold-start invite link Android
 - owner transfer/removal
 - 두 번째 성인의 초대 수락 후 독립 재진입
 - account switch data purge

@@ -9,7 +9,7 @@
 KinFlow 아키텍처는 다음 품질을 우선한다.
 
 1. 가족 간 데이터가 household 경계를 절대 넘지 않는다.
-2. iOS와 Android에서 같은 도메인 규칙을 사용한다.
+2. Android 구현은 플랫폼 SDK와 분리된 도메인 규칙을 사용해 후속 플랫폼 확장을 막지 않는다.
 3. 모바일 Store MVP를 Web/Desktop보다 먼저 안정적으로 출시한다.
 4. 클라이언트 SDK 교체가 도메인 규칙을 흔들지 않는다.
 5. 반복 일정, 역할 변경, 결제처럼 고위험 mutation은 서버 transaction으로 처리한다.
@@ -162,8 +162,8 @@ X-KinFlow-Idempotency-Key (mutation별)
 Phase 01 종료 전 다음 증거가 필요하다.
 
 - dependency graph 검사에서 domain 금지 import 0
-- dev/staging/prod flavor 각각 boot smoke test
+- dev/prod flavor 각각 boot smoke test
 - Supabase local migration + RLS test 성공
-- iOS simulator와 Android emulator signed-in shell 실행
+- Android emulator/실기기 signed-in shell 실행
 - crash/error reporting이 개인정보 필터 후 staging으로 수집
 - generated code 재생성 후 diff 0

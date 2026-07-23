@@ -8,13 +8,13 @@
 
 | 항목 | 상태 | 필요한 증거 |
 |---|---|---|
-| 법적 운영 주체 | UNVERIFIED | 법인/개인사업자/개인 중 owner 결정 기록 |
-| Apple Developer/App Store Connect | UNVERIFIED | organization ID, account holder, 역할 export |
-| Google Play Console | UNVERIFIED | developer account owner와 역할 export |
-| Supabase organization | UNVERIFIED | organization owner와 billing owner |
-| Firebase/Google Cloud | UNVERIFIED | organization/project owner와 billing |
-| RevenueCat | UNVERIFIED | project owner와 admin 역할 |
-| GitHub organization | UNVERIFIED | owner, protected branch, environments |
+| 법적 운영 주체 | ACCEPTED — 개인 운영자 | Product owner 결정 2026-07-23 |
+| Apple Developer/App Store Connect | DEFERRED | iOS 재도입 ADR 전 생성 불필요 |
+| Google Play Console | OWNER DECIDED / ACCESS UNVERIFIED | 개인 account owner, 생성일, production access, 2FA/recovery 증거 |
+| Supabase organization | OWNER DECIDED / ACCESS UNVERIFIED | 개인 owner와 billing/recovery 증거 |
+| Firebase/Google Cloud | OWNER DECIDED / ACCESS UNVERIFIED | 개인 project owner, OAuth consent/client, billing/2FA 증거 |
+| RevenueCat | DEFERRED | Phase 06 Android billing 승인 시 project owner 확인 |
+| GitHub organization | OWNER DECIDED / ACCESS UNVERIFIED | 개인 owner, 2FA/recovery, protected branch/environments |
 | domain/DNS/support email | UNVERIFIED | registrar owner, domain, support mailbox |
 
 ## App identity
@@ -22,21 +22,21 @@
 | 항목 | 상태 | 차단 영향 |
 |---|---|---|
 | 최종 제품명/상표 검색 | OPEN | Store metadata와 domain |
-| dev/staging/prod Bundle ID | OPEN | iOS signing, Firebase, deep link |
-| dev/staging/prod applicationId | OPEN | Android signing, Firebase, Play |
+| iOS Bundle ID | DEFERRED | iOS 재도입 ADR 전 불필요 |
+| Android applicationId | ACCEPTED | prod `me.newlines.kinflow`; dev `me.newlines.kinflow.dev` |
 | Universal/App Links domain | OPEN | auth/invite cold-start PoC |
 
 ## Local technical readiness
 
 | 항목 | 상태 | 확인 결과 |
 |---|---|---|
-| Flutter 3.44.7 | PARTIAL | `/private/tmp` 격리 SDK로 버전 확인; project pin 없음 |
+| Flutter 3.44.7 | PASS | `.fvmrc`, `contracts/toolchain.json`, app `pubspec.lock`; 격리 SDK로 3.44.7/Dart 3.12.2 build PASS |
 | Xcode 26+ | PASS | Xcode 26.6 |
 | iOS Simulator | BLOCKED | 설치 runtime 0 |
 | CocoaPods | BLOCKED | 미설치 |
 | Android SDK 36 | PASS | platform/build-tools 36.0.0 |
-| Android NDK | PARTIAL | 28.2 install 손상; PoC는 정상 NDK 27.0으로 build PASS |
-| Android AVD/device | BLOCKED | AVD 0, 연결 기기 0 |
+| Android NDK | PASS | 손상된 28.2를 보존 이동 후 공식 sdkmanager로 재설치; production dev/prod build PASS |
+| Android AVD/device | PARTIAL | Product owner가 Android 실기기 보유 확인; ADB 연결·boot 증거는 아직 없음 |
 | Docker | PASS | Engine 28.3.2 |
 | Supabase CLI | PARTIAL | 임시 npm cache로 2.109.1 확인; project pin 없음 |
 | Deno | BLOCKED | 미설치 |
@@ -56,12 +56,14 @@
 
 ## G0 closure checklist
 
-- [ ] 각 organization/console에 이름이 있는 accountable owner 기록
-- [ ] 제품명·도메인·환경별 identifier 승인
+- [x] 각 대상 console의 accountable owner를 개인 운영자로 결정
+- [x] Android 제품명·dev/prod applicationId 승인
 - [x] 최초 시장·리전 제품 승인
 - [x] 성인 대상 Store MVP와 Managed Child P1 제품 승인
 - [ ] 성인 대상 Store questionnaire와 Legal/Privacy 검토
 - [ ] 보관·삭제 정책 legal review
 - [ ] Free/Plus 가설과 H-07 실험 승인
-- [ ] iOS/Android 실제 기기 PoC 환경 준비
+- [ ] Android 실제 기기 ADB 연결과 dev install/boot
 - [ ] auth/push/billing sandbox evidence 확보
+- [ ] 개인 Google Play 계정 생성일·production access·실기기 인증 상태 확인
+- [ ] 개인 운영 계정 2단계 인증·복구 수단 증거

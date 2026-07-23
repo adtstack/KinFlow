@@ -1,19 +1,19 @@
 # 20. Flutter 플랫폼·클라이언트 아키텍처
 
 - 상태: ACCEPTED
-- Tier 1: iOS/iPadOS/Android
+- Tier 1: Android
 - Tier 2: Flutter Web Companion
-- Deferred: Flutter Windows/macOS/Linux
+- Deferred: iOS/iPadOS, Flutter Windows/macOS/Linux
 
 ## 1. Native-first 원칙
 
-KinFlow의 핵심 채널은 App Store와 Google Play다. Web은 설치형 PWA 획득 채널이 아니라 PC에서 가족 일정과 집안일을 관리하는 companion이다. Flutter가 지원하는 플랫폼 수와 실제 출시 플랫폼 수를 혼동하지 않는다.
+KinFlow의 첫 핵심 채널은 Google Play다. iOS/iPadOS는 Android Beta review 뒤 별도 ADR로 재승인한다. Web은 설치형 PWA 획득 채널이 아니라 PC에서 가족 일정과 집안일을 관리하는 companion이다. Flutter가 지원하는 플랫폼 수와 실제 출시 플랫폼 수를 혼동하지 않는다.
 
 ## 2. 지원 기준
 
 | 플랫폼 | Store MVP | 최소 기준 | 검증 |
 |---|---:|---|---|
-| iPhone/iPad | 예 | iOS 16+ 제품 기준 | Xcode 26, 최신/최소 대표 기기 |
+| iPhone/iPad | 아니오, 후속 검토 | 재도입 ADR에서 결정 | Android Beta review 이후 |
 | Android phone/tablet | 예 | API 24+ runtime, target API 36 | emulator + 실제 저사양/최신 기기 |
 | Web | 후속 | 최신 주요 browser | Playwright + 수동 접근성 |
 | Windows/macOS/Linux | 아니오 | 수요 Gate 후 결정 | plugin audit/PoC 이후 |
@@ -24,7 +24,6 @@ Flutter 공식 지원 범위보다 제품 최소 버전을 높이는 것은 허�
 
 ```text
 main_dev.dart
-main_staging.dart
 main_prod.dart
       ↓
 bootstrap(AppEnvironment)

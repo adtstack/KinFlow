@@ -2,6 +2,10 @@
 
 ## Unreleased — 2026-07-23 — Phase 00 product-scope decisions
 
+- Android 단일 출시, dev/prod 두 환경, 개인 운영 주체, Google 로그인 승인(D-002, D-032, D-052~D-054, ADR-0002)
+- production `me.newlines.kinflow`, dev `me.newlines.kinflow.dev` 식별자 승인
+- iOS/iPadOS, APNs와 staging은 Android Beta review 이후로 연기
+- G0 전체 통과 전 로컬·가역적인 Phase 01 WP01-01 foundation 작업만 조건부 허용
 - 대한민국 단일 공개 출시와 Supabase Seoul `ap-northeast-2` 승인(D-039)
 - Store MVP를 성인 계정 사용자로 한정하고 Managed Child/child mode를 P1로 연기(D-013)
 - 성인 2인 Activation vertical slice 승인(D-051, ADR-0001)

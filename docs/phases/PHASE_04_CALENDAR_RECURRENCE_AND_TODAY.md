@@ -65,8 +65,8 @@ Chores Value Gate 통과, recurrence time library ADR 승인.
 
 - DST 대표 timezone device tests
 - device timezone travel change
-- iOS/Android date picker
-- iPad split view
+- Android date picker
+- Android phone/tablet adaptive layout
 - two-device concurrent edit
 
 ## Exit Gate

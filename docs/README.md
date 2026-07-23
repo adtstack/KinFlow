@@ -17,9 +17,9 @@ KinFlow는 가족이 집안일과 일정을 함께 관리하는 글로벌 구독
 
 | 등급 | 플랫폼 | 약속 |
 |---|---|---|
-| Tier 1 | iPhone, iPad, Android phone/tablet | Store MVP 전체 기능과 구독·푸시·딥링크 |
+| Tier 1 | Android phone/tablet | Store MVP 전체 기능과 구독·푸시·딥링크 |
 | Tier 2 | Flutter Web Companion | 로그인 후 일정·집안일 관리. 모바일 출시 후 독립 Beta |
-| Deferred | Windows, macOS, Linux native | Flutter Desktop 수요 Gate 통과 후 |
+| Deferred | iPhone, iPad, Windows, macOS, Linux native | Android Beta 또는 수요 Gate 통과 후 |
 | Separate | Public website | Astro 기반 정적 사이트. 제품 소개·약관·삭제·지원 |
 
 ## 확정 스택
@@ -54,4 +54,4 @@ flutter doctor -v
 supabase --version
 ```
 
-실제 앱 scaffold는 Phase 01에서 생성하며, 이 문서 패키지는 코드를 선행 생성하지 않는다. `prompts/MASTER_AGENT_PROMPT.md`를 사용하고 한 번에 한 Phase, 한 Work Package만 구현한다.
+ADR-0002의 조건부 허용에 따라 Phase 01 WP01-01 Android foundation이 생성됐다. G0 전체 통과나 provider 연결을 의미하지 않는다. `prompts/MASTER_AGENT_PROMPT.md`를 사용하고 한 번에 한 Phase, 한 Work Package만 구현한다.

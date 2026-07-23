@@ -4,7 +4,7 @@
 
 ## 1. 성인 계정
 
-Store MVP의 auth account는 성인/보호자 사용자를 위한 것이다. 이메일 OTP 또는 magic link를 기본 후보로 하고 OAuth provider는 출시 국가·지원 부담에 따라 선택한다.
+Store MVP의 auth account는 성인 사용자를 위한 것이다. ADR-0002에 따라 초기 UI는 Google 로그인만 제공하고 Supabase Auth가 session authority다. 이메일 OTP, magic link와 다른 OAuth provider는 로그인 실패율·지원 수요 review 전까지 노출하지 않는다.
 
 ## 2. Session state
 
@@ -31,11 +31,11 @@ UI는 nullable user 하나로 모든 상태를 추론하지 않는다.
 
 ## 4. 로그인 흐름
 
-1. 이메일 형식/locale
-2. server auth request
-3. generic response로 account enumeration 최소화
-4. Universal/App Link callback
-5. code/state 검증
+1. Android native Google sign-in 시작
+2. nonce와 Google ID token 검증
+3. Supabase Auth에 ID token 교환
+4. auth user/session 검증
+5. provider 실패·취소 상태 매핑
 6. profile bootstrap
 7. active household 선택 또는 onboarding
 8. RevenueCat identity login
@@ -46,7 +46,7 @@ UI는 nullable user 하나로 모든 상태를 추론하지 않는다.
 ## 5. OAuth/Deep Link
 
 - own HTTPS domain
-- iOS associated domains와 Android assetlinks
+- Android App Links/assetlinks와 exact package/SHA 설정
 - exact redirect allowlist
 - state/PKCE 검증
 - token/query 로그 금지

@@ -13,9 +13,9 @@
 
 | 등급 | 범위 |
 |---|---|
-| Tier 1 | iOS, iPadOS, Android phone, Android tablet |
+| Tier 1 | Android phone, Android tablet |
 | Tier 2 | 모바일 출시 후 Flutter Web Companion |
-| Deferred | Windows, macOS, Linux 네이티브 앱 |
+| Deferred | iOS, iPadOS, Windows, macOS, Linux 네이티브 앱 |
 | Separate | Astro 기반 공개 제품·약관·삭제·지원 사이트 |
 
 ## 이 문서팩의 형식 규칙

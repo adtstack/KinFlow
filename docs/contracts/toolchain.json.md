@@ -11,7 +11,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "name": "KinFlow Flutter implementation baseline",
   "version": "1.0",
-  "acceptedAt": "2026-07-22",
+  "acceptedAt": "2026-07-23",
   "flutter": {
     "channel": "stable",
     "version": "3.44.7",
@@ -19,41 +19,33 @@
     "pinPolicy": "exact toolchain; pubspec.lock committed and frozen in CI"
   },
   "platforms": {
-    "tier1": {
-      "ios": {
-        "productMinimum": "16.0",
-        "buildTool": "Xcode 26",
-        "formFactors": [
-          "iPhone",
-          "iPad"
-        ]
-      },
+    "storeMvp": {
       "android": {
         "minApi": 24,
         "targetApi": 36,
+        "applicationId": "me.newlines.kinflow",
         "formFactors": [
           "phone",
           "tablet"
         ]
       }
     },
-    "tier2": {
-      "web": {
-        "purpose": "companion after mobile launch",
-        "browsers": [
-          "Chrome stable",
-          "Edge stable",
-          "Firefox stable",
-          "Safari stable"
-        ],
-        "pwaIsPrimaryStrategy": false
-      }
-    },
     "deferred": [
+      "iOS",
+      "iPadOS",
+      "Web Companion",
       "Windows native",
       "macOS native",
       "Linux native"
     ]
+  },
+  "environments": {
+    "dev": {
+      "applicationId": "me.newlines.kinflow.dev"
+    },
+    "prod": {
+      "applicationId": "me.newlines.kinflow"
+    }
   },
   "client": {
     "state": [
@@ -83,6 +75,10 @@
     "edgeFunctions": "TypeScript/Deno",
     "migrations": "Supabase CLI migrations only"
   },
+  "auth": {
+    "initialProvider": "Google",
+    "accountAudience": "adults only"
+  },
   "testing": {
     "unitWidget": [
       "flutter_test",
@@ -99,7 +95,6 @@
   "delivery": {
     "ci": "GitHub Actions",
     "storeAutomation": "Fastlane with human production approval",
-    "iosArtifact": "IPA",
     "androidArtifact": "AAB",
     "web": "immutable atomic deployment",
     "runtimeCodePush": "not in MVP baseline"

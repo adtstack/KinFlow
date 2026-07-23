@@ -1,13 +1,13 @@
 # Decision Gate Review: G0
 
 - 날짜: 2026-07-23
-- 결정자: Product owner(제품 범위 2026-07-23 승인) / Legal·Privacy owner / Engineering owner 지정 필요
+- 결정자: Product owner 겸 개인 운영자(제품·플랫폼·계정 범위 2026-07-23 승인) / Legal·Privacy reviewer 지정 필요
 - 관련 ADR/요구사항: ADR-0001, PRD-G01~G07, H-01~H-08
-- 결과: **Conditional — DG00-01~03 승인, G0 외부 증거와 나머지 결정 필요**
+- 결과: **Conditional — DG00-01~04, DG00-08, DG00-10 승인; G0 연구·법률 증거와 나머지 결정 필요**
 
 ## 현재 판정
 
-Product owner는 대한민국 단일 시장·Seoul 리전, 성인 대상 Store MVP·Managed Child P1, 성인 2인 Activation slice를 승인했다. 다만 법률·Store 검토, 실제 가족 연구, 앱 식별자와 조직 계정 owner, 가격·보관 정책이 남아 있어 Phase 01 진입은 아직 승인하지 않는다. 아래 표의 미승인 항목은 구현자가 추측하지 않는다.
+Product owner는 대한민국 단일 시장·Seoul 리전, 성인 대상 Android Store MVP·Managed Child P1, 성인 2인 Activation slice, 개인 운영 주체와 앱 식별자를 승인했다. 다만 법률·Store 검토, 실제 가족 연구, 외부 console 접근 증거, 가격·보관 정책이 남아 있어 G0 전체 통과는 아직 승인하지 않는다. ADR-0002에 따라 로컬·가역적인 Phase 01 WP01-01만 조건부 허용하며 production provider 연결은 금지한다.
 
 ## 승인 요청 항목
 
@@ -16,12 +16,13 @@ Product owner는 대한민국 단일 시장·Seoul 리전, 성인 대상 Store M
 | DG00-01 | 최초 시장·리전 | 대한민국 단일 시장 + Supabase Seoul `ap-northeast-2` | ACCEPTED 2026-07-23 | D-039 ACCEPTED; 조직 owner 전 production project 생성 금지 |
 | DG00-02 | 대상 연령·아동 분류 | 계정 사용자는 성인으로 한정하고 Kids Category는 선택하지 않음. Managed Child/child mode는 P1이며 H-05와 법률/Store 검토 전 production OFF | PRODUCT ACCEPTED / LEGAL·STORE PENDING | D-013 ACCEPTED; Store questionnaire 검증 전 제출 금지 |
 | DG00-03 | MVP 가치 루프 | ADR-0001의 성인 2인 Activation slice | ACCEPTED 2026-07-23 | ADR-0001 ACCEPTED, D-051 ACCEPTED |
-| DG00-04 | 앱 이름·식별자·도메인 | `KinFlow`는 working name으로 유지. 법적 소유 주체와 도메인 확정 후 dev/staging/prod identifier 예약 | NEEDS OWNER | Bundle ID, applicationId, deep link PoC 차단 |
+| DG00-04 | 앱 이름·식별자·도메인 | `KinFlow`; Android prod `me.newlines.kinflow`, dev `me.newlines.kinflow.dev` | ACCEPTED 2026-07-23 | Play 등록 전 상표·표시 이름 확인은 별도 필요 |
 | DG00-05 | 가격·Free/Plus | 정확한 가격은 H-07 전 확정하지 않음. 한국 smoke-test 가설은 월 ₩3,900/연 ₩29,000과 월 ₩5,900/연 ₩49,000 두 셀로 검증 | EXPERIMENT | D-027 OPEN, production SKU 생성 금지 |
 | DG00-06 | 데이터 보관·삭제 | 원문 연구 데이터·자녀 실명은 저장소에 저장하지 않음. 계정/운영 데이터 보관 기간은 법률 검토 후 별도 결정 | NEEDS LEGAL | production 개인정보 처리방침 차단 |
 | DG00-07 | 보호자 PIN 복구 | 최근 인증을 마친 성인만 재설정 가능, 보안 질문·아동 단독 복구 금지, 실패 rate limit과 audit 필수 | PROPOSED | child mode production OFF |
-| DG00-08 | 계정 소유권 | Apple/Google/Supabase/Firebase/RevenueCat/GitHub는 법적 운영 주체 소유. 개인 계정 단독 소유 금지 | NEEDS OWNER | Store·production console 생성 차단 |
+| DG00-08 | 계정 소유권 | 개인 운영자를 Google Play/Google Cloud/Supabase/GitHub의 accountable owner로 지정. 2단계 인증·복구 증거 필수 | ACCEPTED OWNER / CONSOLE ACCESS UNVERIFIED | production console 연결은 접근·복구 증거 전 차단 |
 | DG00-09 | 연구 Proceed 기준 | H-01, H-02, H-03 모두 통과하고 심각한 신뢰/권한 이슈 0건일 때만 Proceed | PROPOSED | Phase 01 Gate 승인 차단 |
+| DG00-10 | 초기 플랫폼·환경·인증 | Android 단일 출시, dev/prod, Google 로그인, 성인 2인 | ACCEPTED 2026-07-23 | iOS/staging/다른 로그인 provider는 별도 ADR 전 금지 |
 
 ## Evidence
 
@@ -60,11 +61,12 @@ Product owner는 대한민국 단일 시장·Seoul 리전, 성인 대상 Store M
 
 ## 필요한 문서/코드/콘솔 변경
 
-1. Product owner가 남은 DG00-04~09에 승인/수정/거절을 기록한다.
+1. Product owner가 남은 DG00-05~07과 DG00-09에 승인/수정/거절을 기록한다.
 2. DG00-01~03은 `DECISIONS.md`, ADR, PRD, Phase와 traceability에 반영한다.
-3. 법적 운영 주체를 각 console owner로 지정한다.
+3. 개인 운영자의 각 console 접근, 2단계 인증과 복구 수단을 증거로 남긴다.
 4. 연구 결과로 scorecard와 pilot evidence를 채운다.
-5. Flutter 3.44.7을 프로젝트 단위로 고정하고 iOS/Android 테스트 기기를 준비한다.
+5. Flutter 3.44.7을 프로젝트 단위로 고정하고 Android 실기기에서 dev build를 검증한다.
+6. 신규 개인 Play 계정이면 12명 이상·14일 연속 closed test와 실기기 인증 계획을 모집 계획에 포함한다.
 
 ## 재검토 조건
 

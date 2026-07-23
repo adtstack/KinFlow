@@ -5,11 +5,11 @@
 - 제품: KinFlow(가칭)
 - 버전: 1.0
 - 기준일: 2026-07-21
-- 목표 릴리스: Flutter Mobile Store MVP, 이후 독립 Web Companion Beta
-- 플랫폼: Tier 1 iOS·iPadOS·Android, Tier 2 Web Companion, Deferred Flutter Desktop
+- 목표 릴리스: Flutter Android Store MVP, 이후 iOS 재검토와 독립 Web Companion Beta
+- 플랫폼: Tier 1 Android, Deferred iOS·iPadOS/Web Companion/Flutter Desktop
 - 초기 언어: en, ko
 - 요구사항 ID 접두사: `PRD-`, 세부 기능은 `FR-`
-- 승인 범위: 대한민국 단일 시장, 성인 계정 사용자, 성인 2인 Activation 우선(D-013, D-039, D-051)
+- 승인 범위: 대한민국 단일 시장, Android/dev·prod/Google 로그인, 개인 운영, 성인 계정 사용자와 성인 2인 Activation 우선(D-002, D-013, D-032, D-039, D-051~D-054)
 
 ## 2. 목표
 
@@ -21,7 +21,7 @@
 | PRD-G04 | P1에서 자녀에게 최소 권한으로 참여 경험 제공 | 보호자 gate 우회 0, 자녀 task completion |
 | PRD-G05 | 한 명의 결제로 선택된 한 가구에 안정적으로 Plus 제공 | entitlement mismatch, 복원 성공률 |
 | PRD-G06 | 글로벌 출시의 기본 요건인 개인정보·삭제·접근성·i18n 충족 | release gate 통과 |
-| PRD-G07 | Flutter 모바일 플랫폼에서 동일 가구 데이터·권한·entitlement를 일관되게 제공하고 후속 Web Companion으로 계약을 확장 | iOS/Android mismatch 0, Web contract parity |
+| PRD-G07 | Android에서 가구 데이터·권한·entitlement를 일관되게 제공하고 후속 플랫폼으로 계약을 확장 | Android contract test 통과, 후속 platform contract parity |
 
 ## 3. 비목표
 
@@ -55,7 +55,7 @@ Store MVP는 다음을 해결하지 않는다.
 
 ### F1. 최초 활성화
 
-1. 성인이 이메일 OTP 또는 플랫폼 로그인을 완료한다.
+1. 성인이 Google 로그인을 완료한다.
 2. 가구를 만들고 이름·기본 시간대를 설정한다.
 3. 고엔트로피 링크로 다른 성인을 초대한다.
 4. 상대가 로그인 후 초대를 확인하고 가구에 가입한다.
@@ -83,7 +83,7 @@ Store MVP는 다음을 해결하지 않는다.
 
 | 영역 | 요구사항 | 상세 |
 |---|---|---|
-| 인증 | OTP, Apple/Google, 세션 복원, 로그아웃, 계정 삭제 | FR-AUTH-* |
+| 인증 | Google 로그인, 세션 복원, 로그아웃, 계정 삭제 | FR-AUTH-* |
 | 가구 | 생성, 초대, 수락, 역할, 소유권, 구성원 제거 | FR-HH-* |
 | 자녀(P1) | 관리형 프로필, guardian 관계, member mode, parental gate | FR-CHILD-* |
 | 집안일 | CRUD, 배정, due, 반복, occurrence, 완료·승인 | FR-CHORE-* |
@@ -146,7 +146,7 @@ Store MVP UI는 한 로그인 사용자가 하나의 활성 가구에 참여하�
 
 - Phase 00~08의 종료 Gate 통과
 - Critical/High 미해결 보안·데이터 손실 버그 0건
-- 핵심 8개 E2E 흐름 iOS/Android 통과
+- 핵심 8개 E2E 흐름 Android 통과
 - sandbox 결제 lifecycle 및 webhook replay 통과
 - account deletion 앱/웹 경로 검증
 - 스토어 개인정보·Data Safety·연령 선언이 SDK inventory와 일치

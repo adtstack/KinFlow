@@ -10,6 +10,8 @@
 - 기준일: 2026-07-21
 - 변경 방식: ADR + 영향 분석 + 회귀 검증 계획
 
+> **2026-07-23 범위 변경:** ADR-0002와 D-002/D-032/D-052~D-054에 따라 첫 Store MVP는 Android, 환경은 dev/prod, 로그인은 Google로 좁힌다. 이 문서의 이전 iOS/staging 예시는 해당 ADR보다 우선하지 않는다.
+
 ## 1. 기준선 우선순위
 
 1. `DECISIONS.md`의 ACCEPTED 결정
@@ -28,7 +30,8 @@ OPEN 결정은 구현자가 임의로 확정하지 않는다. 해당 기능은 �
 | Flutter SDK | 3.44.7 stable exact pin |
 | Dart SDK | Flutter SDK 3.44.7에 포함된 Dart SDK 3.12.2, 독립 업그레이드 금지 |
 | 앱 언어 | Dart sound null safety |
-| 모바일 | iOS/iPadOS 16.0+, Android API 24+, target API 36 |
+| 모바일 Store MVP | Android API 24+, target API 36 |
+| 후속 모바일 | iOS/iPadOS는 Android Beta review 이후 별도 ADR |
 | Web Companion | Chrome/Edge/Firefox 최신 2개 major, Safari 16.4+ |
 | 상태·DI | Riverpod 3 stable 계열 |
 | 라우팅 | go_router stable 계열 |
@@ -36,7 +39,7 @@ OPEN 결정은 구현자가 임의로 확정하지 않는다. 해당 기능은 �
 | 백엔드 | Supabase Auth, PostgreSQL, RLS, Edge Functions |
 | 서버 함수 언어 | TypeScript/Deno |
 | 구독 | RevenueCat Flutter SDK + 서버 household entitlement |
-| 원격 알림 | Firebase Cloud Messaging, APNs 연동 |
+| 원격 알림 | Android FCM; APNs는 iOS 재도입 시 추가 |
 | 로컬 알림 | flutter_local_notifications |
 | 오류 추적 | Sentry Flutter |
 | 배포 | GitHub Actions + Fastlane; Web immutable deployment |
@@ -48,10 +51,13 @@ OPEN 결정은 구현자가 임의로 확정하지 않는다. 해당 기능은 �
 
 ### Tier 1: Store MVP
 
-- iPhone 및 iPad
 - Android phone 및 tablet
 - 성인 가구 생성·초대·집안일·일정·Today·알림·구독·삭제 지원
 - Managed Child와 child mode는 P1 계약으로 보존하되 Store MVP에는 구현·노출하지 않음(D-013)
+
+### Deferred mobile
+
+- iPhone 및 iPad는 Android Beta 증거와 운영 여력을 검토한 뒤 별도 ADR로 재승인
 
 ### Tier 2: Web Companion
 
@@ -69,7 +75,7 @@ Flutter가 Windows/macOS/Linux를 지원하더라도 첫 출시 범위가 아니
 ```text
 /
 ├─ apps/
-│  ├─ kinflow_app/              # Flutter: ios/android/web 우선
+│  ├─ kinflow_app/              # Flutter: Android 우선
 │  └─ public_site/              # Astro: marketing/legal/delete/support
 ├─ supabase/
 │  ├─ migrations/
@@ -98,7 +104,7 @@ lib/
 │     ├─ application/
 │     ├─ data/
 │     └─ presentation/
-└─ main_{dev,staging,prod}.dart
+└─ main_{dev,prod}.dart
 ```
 
 ## 5. 비협상 아키텍처 규칙
@@ -158,11 +164,11 @@ flutter test integration_test -d <configured-device>
 dart run build_runner build --delete-conflicting-outputs
 supabase db reset
 supabase test db
-flutter build appbundle --flavor staging
-flutter build web --release --dart-define-from-file=config/staging.json
+flutter build appbundle --flavor dev --target lib/main_dev.dart
+flutter build appbundle --flavor prod --target lib/main_prod.dart
 ```
 
-모든 PR에서 iOS archive를 만들 필요는 없지만 RC에서는 macOS runner에서 `flutter build ipa`가 필수다.
+Android RC에서는 prod application ID, release signing, Play internal/closed track 설치를 검증한다. iOS와 Web build는 현재 Store MVP Gate가 아니다.
 
 ## 9. 출시 Gate
 

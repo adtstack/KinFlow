@@ -1,0 +1,7 @@
+{
+  "APP_ENV": "dev",
+  "APP_ID": "me.newlines.kinflow.dev",
+  "SUPABASE_URL": "https://example.invalid",
+  "SUPABASE_PUBLISHABLE_KEY": "replace-with-dev-publishable-key",
+  "GOOGLE_WEB_CLIENT_ID": "replace-with-dev-web-client-id.apps.googleusercontent.com"
+}

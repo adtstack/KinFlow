@@ -6,7 +6,7 @@
 - DB schema/migration head: no production migration; isolated PostgreSQL 16 RLS PoC
 - Environment: local macOS 26.4.1 arm64
 - 검증일: 2026-07-23
-- 검증자/reviewer: Codex local audit / Product scope DG00-01~03 approved / remaining sign-off pending
+- 검증자/reviewer: Codex local audit / Product scope DG00-01~04, DG00-08, DG00-10 approved / remaining sign-off pending
 
 ## Scope / Requirements
 
@@ -16,7 +16,7 @@
 | WP00-02 MVP와 성공 기준 | ACCEPTED | `../../adr/ADR-0001-mvp-scope.md`, D-051 |
 | WP00-03 출시 시장과 아동 분류 | PARTIAL | D-013/D-039 제품 승인; 법률·Store questionnaire와 보관 정책 미완료 |
 | WP00-04 가격과 구독 정책 | PARTIAL | 경쟁 가격 참고 및 smoke-test 셀 정의, H-06/H-07 미실행 |
-| WP00-05 기술·계정 준비 | PARTIAL | `MANUAL_SETUP_STATUS.md` |
+| WP00-05 기술·계정 준비 | PARTIAL | Android 식별자·개인 owner 승인; console/2FA/device access 미검증, `MANUAL_SETUP_STATUS.md` |
 | WP00-06 위험 PoC | PARTIAL | `TECHNICAL_POC.md`; RLS/analyze/test/Android APK PASS, provider/device boot NOT RUN |
 
 ## Automated Commands
@@ -44,8 +44,8 @@
 
 | 기기/OS | 흐름 | 결과 | 증거 |
 |---|---|---|---|
-| iOS | Flutter boot/auth callback/push | NOT RUN | Simulator runtime와 실제 기기 없음 |
-| Android | Flutter boot/push | NOT RUN | AVD와 실제 기기 없음 |
+| iOS | 출시 범위 | DEFERRED | ADR-0002 |
+| Android | Flutter boot/push | NOT RUN | 실기기 보유 확인, ADB 연결 증거 없음 |
 | Store sandbox | RevenueCat catalog | NOT RUN | Store/RevenueCat project와 SKU 없음 |
 
 ## Accessibility / Localization
@@ -64,7 +64,7 @@
 ## Store / Console Manual Work
 
 - 외부 console 변경 없음.
-- 계정과 owner는 모두 UNVERIFIED로 기록했다.
+- 개인 운영자를 accountable owner로 승인했지만 외부 console 생성·접근·2FA/recovery는 UNVERIFIED다.
 
 ## Known Issues / Risks
 
@@ -73,9 +73,9 @@
 | Critical | H-02 실제 가족 참여 증거 없음 | Product Research | G0 |
 | Critical | H-07 반복 지불 가치 증거 없음 | Product/Growth | G0 hypothesis / G6 price |
 | High | 성인 대상 Store questionnaire와 법률 검토 미완료 | Legal/Privacy | G0 / Store RC |
-| High | 앱 식별자와 production console named owner 미지정 | Product/Engineering | production project 전 |
-| High | iOS/Android 실제 기기 PoC 불가 | Mobile Platform | G0 |
-| Medium | 가격·보관·console ownership 결정 미완료 | Product/Legal/Operations | 관련 Gate 전 |
+| High | production console 접근·2FA·recovery 증거 없음 | Individual operator | production project 전 |
+| High | Android 실제 기기 install/boot 미검증 | Mobile Platform | G0 |
+| Medium | 가격·보관 정책과 console 실재 여부 미완료 | Product/Legal/Operations | 관련 Gate 전 |
 
 ## Rollback Evidence
 
@@ -94,14 +94,14 @@
 ## Platform / Release Gate Evidence
 
 - 대상 Gate: G0 Decision Gate
-- target platforms: iOS/Android risk PoC
+- target platforms: Android risk PoC; iOS deferred by ADR-0002
 - web release ID/URL: N/A
-- iOS build: NOT RUN
+- iOS build: DEFERRED
 - Android build: PASS, debug APK 생성
 
 | Platform | Build/export | E2E | 수동 환경 | 결과 | Evidence |
 |---|---|---|---|---|---|
-| iOS | NOT RUN | N/A | runtime 없음 | BLOCKED | `TECHNICAL_POC.md` |
+| iOS | 비범위 | N/A | N/A | DEFERRED | ADR-0002 |
 | Android | PASS, debug APK | N/A | AVD/device 없음 | PARTIAL | `TECHNICAL_POC.md` |
 | Web | 비범위 | N/A | N/A | N/A | ADR-0001 |
 | Web Companion | 비범위 | N/A | N/A | N/A | ADR-0001 |
@@ -111,5 +111,5 @@
 | Capability | Provider | Unsupported/Denied State | Fallback Verified | Evidence |
 |---|---|---|---|---|
 | Auth deep link | Supabase | project/identifier 미결정 | 아니오 | `TECHNICAL_POC.md` |
-| Push | FCM/APNs | project/device 미준비 | 아니오 | `TECHNICAL_POC.md` |
+| Push | FCM | project/device 미준비 | 아니오 | `TECHNICAL_POC.md` |
 | Billing catalog | RevenueCat | project/SKU 미준비 | production OFF | `DECISION_GATE_REVIEW.md` |

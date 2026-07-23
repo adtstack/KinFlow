@@ -9,8 +9,10 @@
 - 기준일: 2026-07-21
 - 계약 버전: 2026-07-21
 - 제품: 글로벌 가족 집안일·공유 일정 구독 앱
-- 플랫폼: Flutter iOS/Android 우선, Web Companion 후속
-- 최근 제품 범위 결정: 2026-07-23 — 대한민국 단일 시장·Seoul 리전, 성인 2인 Activation 우선, Managed Child P1
+- 플랫폼: Flutter Android 우선, iOS/Web Companion 후속 Gate
+- 최근 제품 범위 결정: 2026-07-23 — 대한민국 단일 시장·Seoul 리전, Android 단일 출시, dev/prod, 개인 운영, Google 로그인, 성인 2인 Activation 우선, Managed Child P1
+
+> ADR-0002와 `DECISIONS.md`의 D-002/D-032/D-052~D-054가 이 합본 안의 이전 iOS 동시 출시·staging·인증 provider 예시보다 우선한다.
 
 
 ---
@@ -20,8 +22,8 @@
 - 상태: `ACCEPTED — FLUTTER IMPLEMENTATION BASELINE`
 - 기준일: 2026-07-23
 - 제품 전략: 가족용 집안일·공유 일정 구독 앱
-- 출시 전략: iOS·Android 네이티브 앱 우선, Web Companion 후속, 네이티브 데스크톱은 수요 Gate 이후
-- Phase 00 제품 결정: 대한민국 단일 시장·Seoul 리전, 성인 계정 Store MVP, 성인 2인 Activation 우선; Managed Child는 P1
+- 출시 전략: Android 단일 출시, dev/prod, Google 로그인 우선; iOS·Web Companion·네이티브 데스크톱은 후속 Gate
+- Phase 00 제품 결정: 대한민국 단일 시장·Seoul 리전, 개인 운영, 성인 계정 Store MVP, 성인 2인 Activation 우선; Managed Child는 P1
 
 ## 1. 무엇이 바뀌었나
 

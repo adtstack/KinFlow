@@ -6,7 +6,7 @@
 
 - pull request: untrusted, production secret 없음
 - main: dev artifact와 docs
-- release/*: staging/RC
+- release/*: prod application ID의 Play internal/closed RC
 - production environment: 보호 승인과 최소 secret
 
 ## 2. CI jobs
@@ -30,8 +30,6 @@
 ### Platform
 
 - Android debug/build
-- iOS simulator build on macOS
-- scheduled Web build/test
 - integration smoke
 
 ### RC
@@ -74,7 +72,7 @@
 ## 5. Flavor
 
 - Dart entrypoint + native scheme/build variant
-- unique display suffix/icon for dev/staging
+- unique display suffix/icon for dev
 - separate Firebase config
 - separate deep link hosts 또는 path
 - production에서 debug menu/verbose log 제거
@@ -84,7 +82,6 @@
 권장 lane:
 
 ```text
-ios beta / ios release / ios metadata
 android internal / android release / android metadata
 ```
 

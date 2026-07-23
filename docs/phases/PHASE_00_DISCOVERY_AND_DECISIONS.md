@@ -46,14 +46,14 @@
 
 - Flutter baseline 승인
 - Bundle ID/package/domain
-- Apple/Google/Supabase/Firebase/RevenueCat/GitHub 조직
-- CI macOS runner와 signing ownership
+- 개인 Google Play/Google Cloud/Supabase/GitHub accountable owner와 복구 수단
+- Android signing ownership; RevenueCat은 Phase 06, Apple은 iOS 재도입 시 준비
 
 ### WP00-06 위험 PoC
 
 실제 작은 PoC로 다음을 검증한다.
 
-- Flutter iOS/Android boot
+- Flutter Android boot
 - Supabase auth callback deep link
 - Firebase notification 실제 기기 수신
 - RevenueCat sandbox catalog load

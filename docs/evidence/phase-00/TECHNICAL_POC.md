@@ -10,7 +10,7 @@
 
 | 항목 | 요구 기준 | 확인 결과 | 판정 |
 |---|---|---|---|
-| Flutter | 3.44.7 stable | 공용 SDK는 3.32.8/Dart 3.8.1; 격리 SDK tag `84fc5cbb`는 Flutter 3.44.7/Dart 3.12.2 | PARTIAL — project pin 필요 |
+| Flutter | 3.44.7 stable | 공용 SDK는 3.32.8/Dart 3.8.1; 격리 SDK tag `84fc5cbb`는 Flutter 3.44.7/Dart 3.12.2 | RESOLVED — WP01-01 `.fvmrc`/contract/lock/build evidence |
 | Xcode | 26+ / iOS 26 SDK | Xcode 26.6 build 17F113 | PASS |
 | iOS runtime | iOS simulator 또는 실제 기기 | 설치된 Simulator runtime 0, CocoaPods 없음 | BLOCKED |
 | Android | SDK 36, API 24+ | SDK 36.0.0, build-tools 36.0.0, license accepted | PASS |
@@ -76,7 +76,7 @@ ROLLBACK
 3. Android API 24 또는 저사양 대표 AVD와 실제 기기 1대를 준비하고 생성된 APK를 설치한다.
 4. legal entity/domain/identifier 승인 후 dev Supabase/Firebase/RevenueCat project를 만든다.
 5. 각 provider PoC는 production secret 없이 dev/sandbox에서 실행한다.
-6. 손상된 local NDK 28.2 설치를 복구한다. Prototype은 정상 설치된 NDK 27.0으로만 우회했으며 production scaffold는 Flutter 기본 NDK를 사용해야 한다.
+6. RESOLVED 2026-07-23 — 손상된 local NDK 28.2를 보존 이동 후 공식 sdkmanager로 재설치했다. Production scaffold는 Flutter 기본 NDK로 dev/prod build PASS했다. Prototype의 NDK 27 pin은 당시 PoC 재현용으로만 남긴다.
 
 ## Rollback
 
