@@ -24,6 +24,10 @@
   "@retryAction": {
     "description": "Retries app dependency initialization"
   },
+  "retryActionHint": "Runs this check again",
+  "@retryActionHint": {
+    "description": "Accessible hint for retry buttons"
+  },
   "foundationReadyTitle": "KinFlow is ready",
   "@foundationReadyTitle": {
     "description": "Temporary foundation shell success title"
@@ -31,6 +35,16 @@
   "foundationReadyBody": "The app foundation and code boundaries are running. Product features can now be added safely.",
   "@foundationReadyBody": {
     "description": "Temporary foundation shell success message"
+  },
+  "foundationLayoutCount": "{count, plural, =1{1 adaptive layout is ready.} other{{count} adaptive layouts are ready.}}",
+  "@foundationLayoutCount": {
+    "description": "Foundation message proving ICU plural generation",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
   },
   "foundationLoadingLabel": "Checking the app foundation",
   "@foundationLoadingLabel": {
@@ -55,5 +69,13 @@
   "goHomeAction": "Go home",
   "@goHomeAction": {
     "description": "Navigates from an unknown route to the shell home"
+  },
+  "primaryNavigationLabel": "Primary navigation",
+  "@primaryNavigationLabel": {
+    "description": "Accessible label for the primary navigation region"
+  },
+  "homeNavigationLabel": "Home",
+  "@homeNavigationLabel": {
+    "description": "Navigation destination for the foundation home route"
   }
 }

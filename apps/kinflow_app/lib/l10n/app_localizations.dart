@@ -95,6 +95,7 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
+    Locale('en', 'XA'),
     Locale('ko'),
   ];
 
@@ -134,6 +135,12 @@ abstract class AppLocalizations {
   /// **'Try again'**
   String get retryAction;
 
+  /// Accessible hint for retry buttons
+  ///
+  /// In en, this message translates to:
+  /// **'Runs this check again'**
+  String get retryActionHint;
+
   /// Temporary foundation shell success title
   ///
   /// In en, this message translates to:
@@ -145,6 +152,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The app foundation and code boundaries are running. Product features can now be added safely.'**
   String get foundationReadyBody;
+
+  /// Foundation message proving ICU plural generation
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 adaptive layout is ready.} other{{count} adaptive layouts are ready.}}'**
+  String foundationLayoutCount(int count);
 
   /// Message while the architecture sample loads
   ///
@@ -181,6 +194,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Go home'**
   String get goHomeAction;
+
+  /// Accessible label for the primary navigation region
+  ///
+  /// In en, this message translates to:
+  /// **'Primary navigation'**
+  String get primaryNavigationLabel;
+
+  /// Navigation destination for the foundation home route
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get homeNavigationLabel;
 }
 
 class _AppLocalizationsDelegate
@@ -201,6 +226,18 @@ class _AppLocalizationsDelegate
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
+  // Lookup logic when language+country codes are specified.
+  switch (locale.languageCode) {
+    case 'en':
+      {
+        switch (locale.countryCode) {
+          case 'XA':
+            return AppLocalizationsEnXa();
+        }
+        break;
+      }
+  }
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
     case 'en':

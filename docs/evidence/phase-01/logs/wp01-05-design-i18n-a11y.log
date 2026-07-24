@@ -1,0 +1,54 @@
+WP01-05 Design/i18n/a11y validation summary
+Date: 2026-07-24 Asia/Seoul
+Base: b89538d
+Flutter: 3.44.7 stable
+Dart: 3.12.2
+
+[format]
+command: dart format --output=none --set-exit-if-changed lib test tool
+result: PASS
+output: Formatted 46 files (0 changed)
+
+[analyzer]
+command: flutter analyze --fatal-infos --fatal-warnings
+result: PASS
+output: No issues found
+
+[targeted tests]
+command: flutter test test/app/adaptive_accessibility_test.dart test/app/theme/app_tokens_test.dart test/localization/localization_contract_test.dart
+result: PASS
+output: 16 tests passed
+coverage: exact breakpoint boundaries; Material 3/semantic contrast; reduced motion; EN/KO/en_XA exact keys and ICU; 30% pseudo expansion; responsive layouts; semantics; 48dp; 200% text; forced RTL mirror
+
+[full Flutter regression]
+command: flutter test --coverage
+result: PASS
+output: 37 passed, 1 skipped
+skip: opt-in local Supabase connectivity (no URL/key dart-defines in default suite)
+coverage: LH=406 LF=454, 89.4%
+
+[generated drift]
+command: dart run tool/verify_codegen.dart
+result: PASS
+output: flutter gen-l10n + build_runner wrote 0 outputs; drift check passed for 5 generated files
+
+[APK]
+dev command: flutter build apk --debug --flavor dev --target lib/main_dev.dart --dart-define-from-file=config/dev.example.json
+dev: PASS; me.newlines.kinflow.dev; min/target/compile API 24/36/36; 184881896 bytes; sha256 d82bec9850aaaa0e22d3790d09cdff62778455f3363b9a7f29f3ecd757953abe
+prod command: flutter build apk --debug --flavor prod --target lib/main_prod.dart --dart-define-from-file=config/prod.example.json
+prod: PASS; me.newlines.kinflow; min/target/compile API 24/36/36; 184881815 bytes; sha256 71fe37f353e561540dd1e0c837cc1a06bc37aaad45f5ea70b54d4825d37358d3
+permission audit: INTERNET plus package-scoped DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION; no new dangerous runtime permission
+
+[manual Android]
+command: adb devices -l
+result: no devices attached
+device boot / TalkBack / physical font and split-screen: NOT RUN
+
+[clean staged-index]
+result: PASS
+offline pub get: PASS; pubspec.lock sha256 8561ec37fb36a843723232293a3b6e89c5c950d740b3a1e7a3084be3cc7ee6d9
+format: PASS; 46 files, changed 0
+analyzer: PASS; issue 0
+tests: PASS; 37 passed, opt-in local connectivity 1 skipped; LH=407 LF=454, 89.6%
+generated drift: PASS; 5 generated files byte-stable
+dev APK: PASS; me.newlines.kinflow.dev; min/target/compile API 24/36/36; 153611173 bytes; sha256 63a26623164368c341f2753bd987c17b0a86c5412cb8bcf2fe2a35cc389969df

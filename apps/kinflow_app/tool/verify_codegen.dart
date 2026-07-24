@@ -2,6 +2,18 @@ import 'dart:io';
 
 Future<void> main() async {
   final Map<String, List<int>> before = await _generatedFiles();
+  final ProcessResult localizationGeneration = await Process.run(
+    _flutterExecutable(),
+    <String>['gen-l10n'],
+  );
+
+  stdout.write(localizationGeneration.stdout);
+  stderr.write(localizationGeneration.stderr);
+  if (localizationGeneration.exitCode != 0) {
+    exitCode = localizationGeneration.exitCode;
+    return;
+  }
+
   final ProcessResult generation = await Process.run(
     Platform.resolvedExecutable,
     <String>['run', 'build_runner', 'build'],
@@ -42,7 +54,8 @@ Future<Map<String, List<int>>> _generatedFiles() async {
           .where(
             (File file) =>
                 file.path.endsWith('.g.dart') ||
-                file.path.endsWith('.freezed.dart'),
+                file.path.endsWith('.freezed.dart') ||
+                _isGeneratedLocalization(file.path),
           )
           .toList()
         ..sort((File left, File right) => left.path.compareTo(right.path));
@@ -52,6 +65,27 @@ Future<Map<String, List<int>>> _generatedFiles() async {
     contents[file.path] = await file.readAsBytes();
   }
   return contents;
+}
+
+bool _isGeneratedLocalization(String path) {
+  final String normalized = path.replaceAll('\\', '/');
+  return normalized.startsWith('lib/l10n/app_localizations') &&
+      normalized.endsWith('.dart');
+}
+
+String _flutterExecutable() {
+  final String executableName = Platform.isWindows ? 'flutter.bat' : 'flutter';
+  final String? flutterRoot = Platform.environment['FLUTTER_ROOT'];
+  if (flutterRoot != null && flutterRoot.isNotEmpty) {
+    return '$flutterRoot${Platform.pathSeparator}bin${Platform.pathSeparator}'
+        '$executableName';
+  }
+
+  final File dartExecutable = File(
+    File(Platform.resolvedExecutable).resolveSymbolicLinksSync(),
+  );
+  final Directory flutterBin = dartExecutable.parent.parent.parent.parent;
+  return '${flutterBin.path}${Platform.pathSeparator}$executableName';
 }
 
 bool _sameBytes(List<int>? left, List<int>? right) {

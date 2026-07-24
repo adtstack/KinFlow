@@ -6,12 +6,16 @@
   "startupErrorTitle": "KinFlow를 시작하지 못했습니다",
   "startupErrorBody": "다시 시도해 주세요. 문제가 계속되면 앱을 다시 실행해 주세요.",
   "retryAction": "다시 시도",
+  "retryActionHint": "이 확인을 다시 실행합니다",
   "foundationReadyTitle": "KinFlow를 사용할 준비가 되었습니다",
   "foundationReadyBody": "앱 기반과 코드 경계가 정상적으로 실행 중입니다. 이제 제품 기능을 안전하게 추가할 수 있습니다.",
+  "foundationLayoutCount": "{count, plural, =1{반응형 레이아웃 1개를 사용할 수 있습니다.} other{반응형 레이아웃 {count}개를 사용할 수 있습니다.}}",
   "foundationLoadingLabel": "앱 기반을 확인하는 중입니다",
   "foundationErrorTitle": "앱 기반을 확인할 수 없습니다",
   "foundationErrorBody": "기반 확인을 다시 시도해 주세요.",
   "pageNotFoundTitle": "페이지를 찾을 수 없습니다",
   "pageNotFoundBody": "이 페이지는 사용할 수 없습니다.",
-  "goHomeAction": "홈으로 이동"
+  "goHomeAction": "홈으로 이동",
+  "primaryNavigationLabel": "주요 탐색",
+  "homeNavigationLabel": "홈"
 }

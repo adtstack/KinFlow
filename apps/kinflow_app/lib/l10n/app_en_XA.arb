@@ -1,0 +1,21 @@
+{
+  "@@locale": "en_XA",
+  "appTitle": "[!! ĶîñFłôŵ adaptive preview !!]",
+  "developmentBanner": "[!! ĐĒVĒŁÔPMĒÑŢ !!]",
+  "startupLoadingLabel": "[!! Šţåŕţîñĝ ĶîñFłôŵ — please wait !!]",
+  "startupErrorTitle": "[!! ĶîñFłôŵ çôûłđ ñôţ šţåŕţ correctly !!]",
+  "startupErrorBody": "[!! Płēåšē ţŕŷ åĝåîñ. Îƒ ţĥē pŕôɓłēm çôñţîñûēš, fully restart the application. !!]",
+  "retryAction": "[!! Ţŕŷ ţĥîš åĝåîñ !!]",
+  "retryActionHint": "[!! Ŕûñš ţĥîš complete foundation check åĝåîñ !!]",
+  "foundationReadyTitle": "[!! ĶîñFłôŵ îš completely ŕēåđŷ !!]",
+  "foundationReadyBody": "[!! Ţĥē åpp ƒôûñđåţîôñ åñđ çôđē ɓôûñđåŕîēš åŕē ŕûññîñĝ. Product features can now be added safely and confidently across every adaptive layout. !!]",
+  "foundationLayoutCount": "{count, plural, =1{[!! 1 expanded adaptive layout is completely ready. !!]} other{[!! {count} expanded adaptive layouts are completely ready. !!]}}",
+  "foundationLoadingLabel": "[!! Çĥēçķîñĝ ţĥē complete åpp ƒôûñđåţîôñ !!]",
+  "foundationErrorTitle": "[!! Ţĥē åpp ƒôûñđåţîôñ îš currently ûñåvåîłåɓłē !!]",
+  "foundationErrorBody": "[!! Płēåšē ŕûñ ţĥē complete ƒôûñđåţîôñ çĥēçķ åĝåîñ. !!]",
+  "pageNotFoundTitle": "[!! Ţĥîš requested påĝē çôûłđ ñôţ ɓē ƒôûñđ !!]",
+  "pageNotFoundBody": "[!! Ţĥîš requested påĝē îš currently ûñåvåîłåɓłē. !!]",
+  "goHomeAction": "[!! Ĝô ɓåçķ ţô Ĥômē !!]",
+  "primaryNavigationLabel": "[!! Pŕîmåŕŷ åppłîçåţîôñ ñåvîĝåţîôñ !!]",
+  "homeNavigationLabel": "[!! Ĥômē page !!]"
+}

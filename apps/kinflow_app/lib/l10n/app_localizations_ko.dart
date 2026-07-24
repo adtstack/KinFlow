@@ -27,11 +27,25 @@ class AppLocalizationsKo extends AppLocalizations {
   String get retryAction => '다시 시도';
 
   @override
+  String get retryActionHint => '이 확인을 다시 실행합니다';
+
+  @override
   String get foundationReadyTitle => 'KinFlow를 사용할 준비가 되었습니다';
 
   @override
   String get foundationReadyBody =>
       '앱 기반과 코드 경계가 정상적으로 실행 중입니다. 이제 제품 기능을 안전하게 추가할 수 있습니다.';
+
+  @override
+  String foundationLayoutCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '반응형 레이아웃 $count개를 사용할 수 있습니다.',
+      one: '반응형 레이아웃 1개를 사용할 수 있습니다.',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get foundationLoadingLabel => '앱 기반을 확인하는 중입니다';
@@ -50,4 +64,10 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get goHomeAction => '홈으로 이동';
+
+  @override
+  String get primaryNavigationLabel => '주요 탐색';
+
+  @override
+  String get homeNavigationLabel => '홈';
 }

@@ -2,7 +2,7 @@
 
 KinFlow는 성인 2인이 가구를 만들고 집안일을 나누어 완료하는 Android-first 가족 협업 앱이다.
 
-현재 구현 범위는 Phase 01 WP01-04 Supabase Local까지의 로컬 foundation이다. G0 연구·법률 Gate 전체 통과나 production provider 연결을 의미하지 않는다.
+현재 구현 범위는 Phase 01 WP01-05 Design/i18n/a11y까지의 로컬 foundation이다. G0 연구·법률 Gate 전체 통과나 production provider 연결을 의미하지 않는다.
 
 ## Accepted baseline
 
@@ -14,7 +14,9 @@ KinFlow는 성인 2인이 가구를 만들고 집안일을 나누어 완료하�
 - Riverpod/go_router App Shell with safe startup recovery
 - domain/application/data/presentation feature boundary with repository port/adapter DI
 - Freezed/json_serializable DTO generation and drift verification
-- English/Korean Flutter gen_l10n skeleton
+- Material 3 design token과 available-width 기반 compact/medium/expanded shell
+- English/Korean Flutter gen_l10n과 test-only `en_XA` pseudo locale
+- 48dp touch target, semantics, reduced-motion, RTL mirror, 200% text-scale smoke
 - adult two-person activation slice
 - project-scoped Supabase CLI와 local PostgreSQL/RLS/Edge Function baseline
 - 성인 2인 seed와 별도 household를 이용한 cross-household 격리 검증

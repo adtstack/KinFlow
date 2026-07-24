@@ -47,6 +47,23 @@
     "theme": "Material 3 light/dark system mode",
     "supabaseFlutter": "2.16.0"
   },
+  "ui": {
+    "designSystem": "Material 3",
+    "breakpointsLogicalPx": {
+      "mediumMin": 600,
+      "expandedMin": 840
+    },
+    "minimumTouchTargetDp": 48,
+    "maximumTestedTextScale": 2.0,
+    "storeLocales": [
+      "en",
+      "ko"
+    ],
+    "testPseudoLocales": [
+      "en_XA"
+    ],
+    "rtlValidation": "forced widget Directionality; no unsupported RTL locale declared"
+  },
   "backend": {
     "scope": "local development only",
     "supabaseCli": "2.109.1",

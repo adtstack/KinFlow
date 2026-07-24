@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kinflow_app/app/presentation/widgets/scrollable_status_layout.dart';
+import 'package:kinflow_app/app/theme/app_tokens.dart';
 import 'package:kinflow_app/l10n/app_localizations.dart';
 
 class StartupFailureScreen extends StatelessWidget {
@@ -14,35 +16,52 @@ class StartupFailureScreen extends StatelessWidget {
     return Scaffold(
       key: const Key('startup.failure'),
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  const Icon(Icons.error_outline, size: 48),
-                  const SizedBox(height: 16),
-                  Text(
+        child: ScrollableStatusLayout(
+          maxWidth: AppLayoutTokens.dialogContentMaxWidth,
+          child: Semantics(
+            container: true,
+            explicitChildNodes: true,
+            liveRegion: true,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                const ExcludeSemantics(
+                  child: Icon(
+                    Icons.error_outline,
+                    size: AppTouchTarget.minimum,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Semantics(
+                  header: true,
+                  child: Text(
                     localizations.startupErrorTitle,
                     style: textTheme.headlineSmall,
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    localizations.startupErrorBody,
-                    textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  localizations.startupErrorBody,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Semantics(
+                  key: const Key('startup.retry'),
+                  button: true,
+                  enabled: true,
+                  hint: localizations.retryActionHint,
+                  label: localizations.retryAction,
+                  onTap: onRetry,
+                  child: ExcludeSemantics(
+                    child: FilledButton.icon(
+                      onPressed: onRetry,
+                      icon: const Icon(Icons.refresh),
+                      label: Text(localizations.retryAction),
+                    ),
                   ),
-                  const SizedBox(height: 24),
-                  FilledButton.icon(
-                    key: const Key('startup.retry'),
-                    onPressed: onRetry,
-                    icon: const Icon(Icons.refresh),
-                    label: Text(localizations.retryAction),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
