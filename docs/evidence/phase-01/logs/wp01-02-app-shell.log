@@ -1,0 +1,70 @@
+KinFlow Phase 01 WP01-02 App Shell validation
+Date: 2026-07-24
+Base commit: 51aac4f
+
+Toolchain
+- Flutter 3.44.7 revision 84fc5cbb22
+- Dart 3.12.2
+- Android compile/target API 36, min API 24
+- NDK 28.2.13676358
+
+Dependency resolution
+- flutter_riverpod 3.3.2 / MIT
+- go_router 17.3.0 / BSD-3-Clause
+- flutter_localizations from Flutter SDK / BSD-3-Clause
+- intl 0.20.2 / BSD-3-Clause
+- initial intl 0.20.3 resolution conflicted with Flutter SDK localization pin
+- resolved by pinning intl 0.20.2
+- native permission/network/PII added: none
+
+Implementation
+- MaterialApp.router + Riverpod-owned GoRouter
+- loading/fatal recovery/retry bootstrap gate
+- raw startup error hidden from UI
+- dev-only environment banner
+- Material 3 light/dark theme skeleton
+- English/Korean ARB and generated localizations
+- safe home/not-found routes
+
+Formatting / analysis / tests
+- dart format check: PASS, 19 files, 0 changed
+- flutter analyze --fatal-infos --fatal-warnings: PASS, no issues
+- flutter test --coverage: PASS, 7/7
+- coverage: 161/171 lines, 94.2%
+
+Android dev build
+- result: PASS
+- APK: build/app/outputs/flutter-apk/app-dev-debug.apk
+- bytes: 165172630
+- SHA-256: 5d4ad8889b321ae72ee6590bfd3eef46228e1bac3c0d0c8f12aee9c662f6ad8a
+- package: me.newlines.kinflow.dev
+
+Android prod build
+- result: PASS
+- APK: build/app/outputs/flutter-apk/app-prod-debug.apk
+- bytes: 165172682
+- SHA-256: e1b78b3e0a296ebd3a7032c6ae255c6962fe2e9926a4ac30b696c4f8f1770b5a
+- package: me.newlines.kinflow
+
+Device
+- adb devices -l: command PASS
+- connected devices: 0
+- install/boot/manual locale/theme: NOT RUN
+
+Clean staged-index bootstrap
+- status: PASS
+- staged index exported to fresh /private/tmp directory
+- flutter pub get --offline: PASS
+- flutter gen-l10n: PASS; generated localization and lockfile byte-identical
+- flutter analyze --fatal-infos --fatal-warnings: PASS, no issues
+- flutter test: PASS, 7/7
+- dev APK build: PASS
+- clean dev APK bytes: 150683666
+- clean dev APK SHA-256: 539a4f187c46fe56a5c94b1678729f63cedf320dfc1a575e0a676af8a03026a0
+- clean dev APK package: me.newlines.kinflow.dev
+
+Provider / data / signing
+- external provider SDK/config: none
+- DB/API/migration: none
+- production signing: NOT CONFIGURED
+- secrets added: none

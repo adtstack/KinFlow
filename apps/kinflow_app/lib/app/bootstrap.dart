@@ -1,21 +1,19 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kinflow_app/app/app.dart';
 import 'package:kinflow_app/app/app_environment.dart';
+import 'package:kinflow_app/app/providers/app_providers.dart';
 
-void bootstrap(AppEnvironment environment) {
+void bootstrap(AppEnvironment environment, {AppInitializer? initializer}) {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(KinFlowFoundationApp(environment: environment));
-}
-
-class KinFlowFoundationApp extends StatelessWidget {
-  const KinFlowFoundationApp({required this.environment, super.key});
-
-  final AppEnvironment environment;
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: !environment.isProduction,
-      home: const Scaffold(body: SizedBox.expand()),
-    );
-  }
+  runApp(
+    ProviderScope(
+      overrides: [
+        appEnvironmentProvider.overrideWithValue(environment),
+        if (initializer != null)
+          appInitializerProvider.overrideWithValue(initializer),
+      ],
+      child: const KinFlowApp(),
+    ),
+  );
 }

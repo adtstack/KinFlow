@@ -38,6 +38,12 @@
       "applicationId": "me.newlines.kinflow"
     }
   },
+  "client": {
+    "dependencyAssembly": "flutter_riverpod 3.3.2",
+    "routing": "go_router 17.3.0",
+    "localization": "Flutter gen_l10n + intl 0.20.2",
+    "theme": "Material 3 light/dark system mode"
+  },
   "auth": {
     "authority": "Supabase Auth",
     "initialProvider": "Google",

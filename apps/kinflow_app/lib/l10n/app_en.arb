@@ -1,0 +1,47 @@
+{
+  "@@locale": "en",
+  "appTitle": "KinFlow",
+  "@appTitle": {
+    "description": "Application title"
+  },
+  "developmentBanner": "DEV",
+  "@developmentBanner": {
+    "description": "Banner shown only in development builds"
+  },
+  "startupLoadingLabel": "Starting KinFlow",
+  "@startupLoadingLabel": {
+    "description": "Accessible label and message while app dependencies initialize"
+  },
+  "startupErrorTitle": "KinFlow couldn't start",
+  "@startupErrorTitle": {
+    "description": "Generic startup failure title"
+  },
+  "startupErrorBody": "Please try again. If the problem continues, restart the app.",
+  "@startupErrorBody": {
+    "description": "Generic startup failure body without raw exception details"
+  },
+  "retryAction": "Try again",
+  "@retryAction": {
+    "description": "Retries app dependency initialization"
+  },
+  "foundationReadyTitle": "KinFlow is ready",
+  "@foundationReadyTitle": {
+    "description": "Temporary foundation shell success title"
+  },
+  "foundationReadyBody": "The app foundation is running. Sign-in comes next.",
+  "@foundationReadyBody": {
+    "description": "Temporary foundation shell success message"
+  },
+  "pageNotFoundTitle": "Page not found",
+  "@pageNotFoundTitle": {
+    "description": "Safe title for unknown routes"
+  },
+  "pageNotFoundBody": "This page is unavailable.",
+  "@pageNotFoundBody": {
+    "description": "Safe body for unknown routes"
+  },
+  "goHomeAction": "Go home",
+  "@goHomeAction": {
+    "description": "Navigates from an unknown route to the shell home"
+  }
+}
