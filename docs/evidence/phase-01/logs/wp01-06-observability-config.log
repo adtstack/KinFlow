@@ -1,0 +1,77 @@
+WP01-06 Observability/config validation summary
+Date: 2026-07-25 Asia/Seoul
+Base: c9d92f8
+Flutter: 3.44.7 stable
+Dart: 3.12.2
+Sentry Flutter: 9.25.0 exact, MIT
+
+[format]
+command: dart format --output=none --set-exit-if-changed lib test tool
+result: PASS
+output: Formatted 66 files (0 changed)
+
+[analyzer]
+command: flutter analyze --fatal-infos --fatal-warnings
+result: PASS
+output: No issues found
+
+[targeted tests]
+command: flutter test config/logger/Sentry/scanner/architecture/bootstrap/app-shell test files
+result: PASS
+output: 28 tests passed
+coverage: exact public config allowlist; environment/transport/placeholder failures; structured correlation/redaction; sink isolation; prod console exclusion; Sentry privacy options/filter/init fallback; secret scanner; SDK boundary; safe bootstrap
+
+[full Flutter regression]
+command: flutter test --coverage
+result: PASS
+output: 59 passed, 1 skipped
+skip: opt-in local Supabase connectivity (no URL/key dart-defines in default suite)
+coverage: LH=767 LF=862, 88.98%
+
+[public config validator]
+command: dart run tool/validate_public_config.dart
+result: PASS
+output: Public configuration examples are valid and allowlisted.
+
+[secret scan]
+command: dart run tool/scan_secrets.dart
+result: PASS
+output: No high-confidence secrets found.
+
+[generated drift]
+command: dart run tool/verify_codegen.dart
+result: PASS
+output: generated code drift check passed for 5 files
+
+[dependency]
+direct: sentry_flutter 9.25.0 exact
+license: MIT
+resolved: sentry 9.25.0; jni 0.14.2; package_info_plus 10.2.1; win32 6.3.0; ffi_leak_tracker 0.1.2
+lockfile sha256: 1d733753db145eb8e08e9697df31e6e8dc5ac7f4a3b768766f54024af33f3950
+build warning: sentry_flutter applies legacy Kotlin Gradle Plugin; current Flutter build passes, future built-in Kotlin migration requires recheck
+
+[APK]
+dev command: flutter build apk --debug --no-pub --flavor dev --target lib/main_dev.dart --dart-define-from-file=config/dev.example.json
+dev: PASS; me.newlines.kinflow.dev; min/target/compile API 24/36/36; 184883497 bytes; sha256 7404dd0dc2ab71b2cb215bd3dcd974dfeb08be4363ab1d3e88e1a4206a12fb1f
+prod command: flutter build apk --debug --no-pub --flavor prod --target lib/main_prod.dart --dart-define-from-file=config/prod.example.json
+prod: PASS; me.newlines.kinflow; min/target/compile API 24/36/36; 184883416 bytes; sha256 607b2bad6b8018e9e337188a640bd14afa46fe23e7419045b27c721af8b8c1d8
+permission audit: INTERNET plus package-scoped DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION; no dangerous runtime permission
+native audit: Sentry Android/native libraries are packaged
+
+[manual Android / Sentry]
+command: adb devices -l
+result: no devices attached
+device boot / lifecycle crash: NOT RUN
+remote Sentry receive/redaction/retention: NOT RUN; no approved project or DSN
+
+[clean staged-index]
+result: PASS
+export: final staged index only to /private/tmp/kinflow-wp01-06-final.nlNEUc
+offline pub get: PASS; pubspec.lock sha256 1d733753db145eb8e08e9697df31e6e8dc5ac7f4a3b768766f54024af33f3950
+format: PASS; 66 files, changed 0
+analyzer: PASS; issue 0
+tests: PASS; 59 passed, opt-in local connectivity 1 skipped; LH=767 LF=862, 88.98%
+public config validator: PASS
+secret scan: PASS; high-confidence finding 0
+generated drift: PASS; 5 generated files byte-stable
+dev APK: PASS; me.newlines.kinflow.dev; min/target/compile API 24/36/36; 165445321 bytes; sha256 44b3cbf649d03533e79e4a2da5451b97ed0809cae25c037ec4837682ddac00d9

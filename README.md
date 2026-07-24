@@ -2,7 +2,7 @@
 
 KinFlow는 성인 2인이 가구를 만들고 집안일을 나누어 완료하는 Android-first 가족 협업 앱이다.
 
-현재 구현 범위는 Phase 01 WP01-05 Design/i18n/a11y까지의 로컬 foundation이다. G0 연구·법률 Gate 전체 통과나 production provider 연결을 의미하지 않는다.
+현재 구현 범위는 Phase 01 WP01-06 Observability/config까지의 로컬 foundation이다. G0 연구·법률 Gate 전체 통과나 production provider 연결을 의미하지 않는다.
 
 ## Accepted baseline
 
@@ -18,6 +18,9 @@ KinFlow는 성인 2인이 가구를 만들고 집안일을 나누어 완료하�
 - English/Korean Flutter gen_l10n과 test-only `en_XA` pseudo locale
 - 48dp touch target, semantics, reduced-motion, RTL mirror, 200% text-scale smoke
 - adult two-person activation slice
+- exact allowlist 기반 공개 client config loader/validator
+- PII-safe structured logger와 optional Sentry error boundary
+- repository high-confidence secret scanner
 - project-scoped Supabase CLI와 local PostgreSQL/RLS/Edge Function baseline
 - 성인 2인 seed와 별도 household를 이용한 cross-household 격리 검증
 - Flutter Supabase infrastructure adapter와 local health connectivity test
@@ -68,8 +71,12 @@ fvm dart format --output=none --set-exit-if-changed lib test tool
 fvm flutter analyze --fatal-infos --fatal-warnings
 fvm flutter test
 fvm dart run tool/verify_codegen.dart
+fvm dart run tool/validate_public_config.dart
+fvm dart run tool/scan_secrets.dart
 fvm flutter build apk --debug --flavor dev --target lib/main_dev.dart --dart-define-from-file=config/dev.example.json
 fvm flutter build apk --debug --flavor prod --target lib/main_prod.dart --dart-define-from-file=config/prod.example.json
 ```
 
-실제 환경 파일, OAuth client secret, Supabase service role key, signing key는 커밋하지 않는다.
+예제 config는 공개 client 값만 정의한다. placeholder Supabase publishable key는 정적 예제 검증에는 허용되지만 runtime에서는 fail-closed 한다. `SENTRY_DSN`이 비어 있으면 Sentry SDK와 네트워크 전송은 시작하지 않는다.
+
+실제 환경 파일, OAuth client secret, Supabase service role key, Sentry auth token, signing key는 커밋하지 않는다.

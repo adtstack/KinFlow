@@ -1,7 +1,16 @@
 {
   "APP_ENV": "dev",
   "APP_ID": "me.newlines.kinflow.dev",
+  "APP_VERSION": "0.1.0-dev+1",
+  "CONTRACT_VERSION": "2026-07-25",
   "SUPABASE_URL": "http://10.0.2.2:54321",
   "SUPABASE_PUBLISHABLE_KEY": "replace-with-local-publishable-key",
-  "GOOGLE_WEB_CLIENT_ID": "replace-with-dev-web-client-id.apps.googleusercontent.com"
+  "GOOGLE_WEB_CLIENT_ID": "replace-with-dev-web-client-id.apps.googleusercontent.com",
+  "REVENUECAT_ANDROID_PUBLIC_SDK_KEY": "",
+  "SENTRY_DSN": "",
+  "PUBLIC_SITE_URL": "https://example.invalid",
+  "AUTH_REDIRECT_HOST": "auth.example.invalid",
+  "SUPPORT_URL": "https://example.invalid/support",
+  "PRIVACY_REQUEST_URL": "https://example.invalid/privacy-request",
+  "FEATURE_CONFIG_URL": ""
 }

@@ -15,6 +15,7 @@ class AppBootstrapGate extends ConsumerStatefulWidget {
 
 class _AppBootstrapGateState extends ConsumerState<AppBootstrapGate> {
   late Future<void> _initialization;
+  var _attempt = 0;
 
   @override
   void initState() {
@@ -22,8 +23,39 @@ class _AppBootstrapGateState extends ConsumerState<AppBootstrapGate> {
     _initialization = _initialize();
   }
 
-  Future<void> _initialize() {
-    return Future<void>.sync(ref.read(appInitializerProvider));
+  Future<void> _initialize() async {
+    _attempt += 1;
+    final logger = ref.read(appLoggerProvider);
+    logger.info(
+      'application.initialization.started',
+      attributes: <String, Object?>{
+        'operation': 'dependency_initialization',
+        'result': 'started',
+        'retry_count': _attempt - 1,
+      },
+    );
+    try {
+      await Future<void>.sync(ref.read(appInitializerProvider));
+      logger.info(
+        'application.initialization.succeeded',
+        attributes: <String, Object?>{
+          'operation': 'dependency_initialization',
+          'result': 'succeeded',
+          'retry_count': _attempt - 1,
+        },
+      );
+    } on Object {
+      logger.error(
+        'application.initialization.failed',
+        code: 'dependency_initialization_failed',
+        attributes: <String, Object?>{
+          'operation': 'dependency_initialization',
+          'result': 'failed',
+          'retry_count': _attempt - 1,
+        },
+      );
+      rethrow;
+    }
   }
 
   void _retry() {

@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kinflow.invalid/contracts/client-public-config.schema.json",
+  "title": "KinFlow client public configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "APP_ENV",
+    "APP_ID",
+    "APP_VERSION",
+    "CONTRACT_VERSION",
+    "SUPABASE_URL",
+    "SUPABASE_PUBLISHABLE_KEY",
+    "GOOGLE_WEB_CLIENT_ID",
+    "REVENUECAT_ANDROID_PUBLIC_SDK_KEY",
+    "SENTRY_DSN",
+    "PUBLIC_SITE_URL",
+    "AUTH_REDIRECT_HOST",
+    "SUPPORT_URL",
+    "PRIVACY_REQUEST_URL",
+    "FEATURE_CONFIG_URL"
+  ],
+  "properties": {
+    "APP_ENV": {
+      "type": "string",
+      "enum": [
+        "dev",
+        "prod"
+      ]
+    },
+    "APP_ID": {
+      "type": "string",
+      "enum": [
+        "me.newlines.kinflow.dev",
+        "me.newlines.kinflow"
+      ]
+    },
+    "APP_VERSION": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$"
+    },
+    "CONTRACT_VERSION": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "SUPABASE_URL": {
+      "type": "string",
+      "format": "uri"
+    },
+    "SUPABASE_PUBLISHABLE_KEY": {
+      "type": "string",
+      "minLength": 1
+    },
+    "GOOGLE_WEB_CLIENT_ID": {
+      "type": "string"
+    },
+    "REVENUECAT_ANDROID_PUBLIC_SDK_KEY": {
+      "type": "string"
+    },
+    "SENTRY_DSN": {
+      "type": "string"
+    },
+    "PUBLIC_SITE_URL": {
+      "type": "string",
+      "format": "uri"
+    },
+    "AUTH_REDIRECT_HOST": {
+      "type": "string",
+      "pattern": "^(localhost|(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,63})$"
+    },
+    "SUPPORT_URL": {
+      "type": "string",
+      "format": "uri"
+    },
+    "PRIVACY_REQUEST_URL": {
+      "type": "string",
+      "format": "uri"
+    },
+    "FEATURE_CONFIG_URL": {
+      "type": "string"
+    }
+  }
+}

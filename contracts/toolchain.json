@@ -45,7 +45,8 @@
     "codegen": "build_runner 2.15.1 + freezed 3.2.5 + json_serializable 6.14.0",
     "localization": "Flutter gen_l10n + intl 0.20.2",
     "theme": "Material 3 light/dark system mode",
-    "supabaseFlutter": "2.16.0"
+    "supabaseFlutter": "2.16.0",
+    "sentryFlutter": "9.25.0"
   },
   "ui": {
     "designSystem": "Material 3",
@@ -75,6 +76,17 @@
     "authority": "Supabase Auth",
     "initialProvider": "Google",
     "accountAudience": "adults only"
+  },
+  "observability": {
+    "provider": "Sentry",
+    "environments": [
+      "dev",
+      "prod"
+    ],
+    "piiPolicy": "exact attribute allowlist plus before-send redaction",
+    "tracing": false,
+    "sessionReplay": false,
+    "screenshots": false
   },
   "policies": {
     "domainMustNotImportFlutterOrSdk": true,

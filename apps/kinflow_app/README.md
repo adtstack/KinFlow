@@ -1,6 +1,6 @@
 # KinFlow Android app
 
-Phase 01 WP01-05 Design/i18n/a11y foundation. Flutter SDK 3.44.7/Dart 3.12.2로만 실행한다.
+Phase 01 WP01-06 Observability/config foundation. Flutter SDK 3.44.7/Dart 3.12.2로만 실행한다.
 
 현재 포함 범위:
 
@@ -18,6 +18,10 @@ Phase 01 WP01-05 Design/i18n/a11y foundation. Flutter SDK 3.44.7/Dart 3.12.2로�
 - Freezed/json_serializable DTO, architecture import test, codegen drift verifier
 - `infrastructure/supabase`의 SDK 격리 adapter와 exact health response mapper
 - local Supabase를 실제 호출하는 opt-in Flutter connectivity test
+- compile-time 공개 config exact allowlist와 dev/prod identity/transport 검증
+- allowlisted structured JSON log, redaction, sink failure isolation
+- PII capture를 기본 차단한 optional Sentry error reporting adapter
+- config validator와 high-confidence repository secret scanner
 
 ## Environments
 
@@ -35,6 +39,8 @@ flutter pub get
 flutter analyze --fatal-infos --fatal-warnings
 flutter test
 dart run tool/verify_codegen.dart
+dart run tool/validate_public_config.dart
+dart run tool/scan_secrets.dart
 flutter build apk --debug --flavor dev --target lib/main_dev.dart --dart-define-from-file=config/dev.example.json
 flutter build apk --debug --flavor prod --target lib/main_prod.dart --dart-define-from-file=config/prod.example.json
 ```
@@ -44,3 +50,5 @@ flutter build apk --debug --flavor prod --target lib/main_prod.dart --dart-defin
 `en_XA`는 번역·overflow 검증용 pseudo locale이며 Store 지원 언어는 영어와 한국어다. Arabic locale은 지원 목록에 선언하지 않는다. shell은 `LayoutBuilder`가 제공한 영역 너비를 사용하므로 tablet, 회전, split view에도 같은 breakpoint를 적용한다.
 
 Android `dev` flavor만 emulator loopback(`10.0.2.2`)과 localhost cleartext를 허용하고 `prod`에는 cleartext 예외가 없다. 현재 foundation은 실제 로그인·세션을 만들지 않으며 health payload에도 개인정보가 없다. Google/Supabase 로그인은 별도 후속 Work Package에서 세션 제거 테스트와 함께 구현한다. release signing에 debug key를 사용하지 않으며 실제 signing 설정은 저장소 밖에서 공급한다.
+
+`config/*.example.json`은 client bundle에 공개해도 되는 값만 포함한다. placeholder Supabase key는 runtime에서 거부된다. `SENTRY_DSN`이 비어 있으면 Sentry를 초기화하지 않으며, 설정하더라도 user/request/extra payload, screenshot, view hierarchy, tracing, replay는 수집하지 않는다. Sentry auth token과 provider server secret은 client config 금지 목록에 포함된다.
