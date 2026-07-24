@@ -28,9 +28,21 @@
   "@foundationReadyTitle": {
     "description": "Temporary foundation shell success title"
   },
-  "foundationReadyBody": "The app foundation is running. Sign-in comes next.",
+  "foundationReadyBody": "The app foundation and code boundaries are running. Product features can now be added safely.",
   "@foundationReadyBody": {
     "description": "Temporary foundation shell success message"
+  },
+  "foundationLoadingLabel": "Checking the app foundation",
+  "@foundationLoadingLabel": {
+    "description": "Message while the architecture sample loads"
+  },
+  "foundationErrorTitle": "The app foundation is unavailable",
+  "@foundationErrorTitle": {
+    "description": "Generic architecture sample failure title"
+  },
+  "foundationErrorBody": "Please try the check again.",
+  "@foundationErrorBody": {
+    "description": "Generic architecture sample failure body without raw details"
   },
   "pageNotFoundTitle": "Page not found",
   "@pageNotFoundTitle": {

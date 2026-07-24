@@ -32,7 +32,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get foundationReadyBody =>
-      'The app foundation is running. Sign-in comes next.';
+      'The app foundation and code boundaries are running. Product features can now be added safely.';
+
+  @override
+  String get foundationLoadingLabel => 'Checking the app foundation';
+
+  @override
+  String get foundationErrorTitle => 'The app foundation is unavailable';
+
+  @override
+  String get foundationErrorBody => 'Please try the check again.';
 
   @override
   String get pageNotFoundTitle => 'Page not found';

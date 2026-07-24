@@ -30,7 +30,17 @@ class AppLocalizationsKo extends AppLocalizations {
   String get foundationReadyTitle => 'KinFlow를 사용할 준비가 되었습니다';
 
   @override
-  String get foundationReadyBody => '앱 기반이 정상적으로 실행 중입니다. 다음 단계에서 로그인을 연결합니다.';
+  String get foundationReadyBody =>
+      '앱 기반과 코드 경계가 정상적으로 실행 중입니다. 이제 제품 기능을 안전하게 추가할 수 있습니다.';
+
+  @override
+  String get foundationLoadingLabel => '앱 기반을 확인하는 중입니다';
+
+  @override
+  String get foundationErrorTitle => '앱 기반을 확인할 수 없습니다';
+
+  @override
+  String get foundationErrorBody => '기반 확인을 다시 시도해 주세요.';
 
   @override
   String get pageNotFoundTitle => '페이지를 찾을 수 없습니다';

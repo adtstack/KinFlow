@@ -143,8 +143,26 @@ abstract class AppLocalizations {
   /// Temporary foundation shell success message
   ///
   /// In en, this message translates to:
-  /// **'The app foundation is running. Sign-in comes next.'**
+  /// **'The app foundation and code boundaries are running. Product features can now be added safely.'**
   String get foundationReadyBody;
+
+  /// Message while the architecture sample loads
+  ///
+  /// In en, this message translates to:
+  /// **'Checking the app foundation'**
+  String get foundationLoadingLabel;
+
+  /// Generic architecture sample failure title
+  ///
+  /// In en, this message translates to:
+  /// **'The app foundation is unavailable'**
+  String get foundationErrorTitle;
+
+  /// Generic architecture sample failure body without raw details
+  ///
+  /// In en, this message translates to:
+  /// **'Please try the check again.'**
+  String get foundationErrorBody;
 
   /// Safe title for unknown routes
   ///

@@ -1,0 +1,18 @@
+version: 1
+layers:
+  presentation:
+    may_import: [application, domain, design_system]
+    forbidden_direct_imports: [supabase_flutter, purchases_flutter, firebase_messaging]
+  application:
+    may_import: [domain]
+    forbidden_imports: [flutter, flutter_riverpod, riverpod, supabase_flutter, purchases_flutter, firebase_messaging]
+  domain:
+    may_import: [dart_core]
+    forbidden_imports: [flutter, flutter_riverpod, riverpod, supabase_flutter, purchases_flutter, firebase_core, firebase_messaging, dart_html]
+  data:
+    may_import: [application, domain, approved_sdk_adapters]
+policies:
+  dto_must_not_escape_data_layer: true
+  widget_must_not_call_sdk_directly: true
+  server_authoritative_household_and_entitlement: true
+  generated_files_committed: true

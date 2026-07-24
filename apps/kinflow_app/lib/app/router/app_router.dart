@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:kinflow_app/app/presentation/screens/foundation_home_screen.dart';
 import 'package:kinflow_app/app/presentation/screens/not_found_screen.dart';
+import 'package:kinflow_app/features/foundation/presentation/screens/foundation_home_screen.dart';
 
 abstract final class AppRoutes {
   static const String home = '/';

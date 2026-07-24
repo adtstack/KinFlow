@@ -1,0 +1,78 @@
+KinFlow Phase 01 WP01-03 Architecture Boundary validation
+Date: 2026-07-24
+Base commit: bd1f535
+
+Toolchain
+- Flutter 3.44.7 revision 84fc5cbb22
+- Dart 3.12.2
+- Android compile/target API 36, min API 24
+
+Dependencies
+- freezed_annotation 3.1.0 / MIT
+- json_annotation 4.12.0 / BSD-3-Clause
+- build_runner 2.15.1 / BSD-3-Clause / dev only
+- freezed 3.2.5 exact / MIT / dev only
+- json_serializable 6.14.0 / BSD-3-Clause / dev only
+- initial resolver selected freezed 3.2.6-dev.1
+- corrected to official stable 3.2.5 exact pin
+- native permission/network/PII added: none
+
+Implementation
+- pure Dart foundation domain entity/value object/failure/result/repository port
+- application use case imports domain only
+- local fixture datasource -> generated DTO -> mapper -> repository adapter
+- app composition Riverpod repository override
+- presentation async loading/ready/generic failure/retry
+- test fake repository for override and retry sequence
+- materialized contracts/architecture-rules.yaml
+- architecture current-tree and negative detector tests
+- byte snapshot codegen drift verifier
+
+Formatting / analysis / tests
+- dart format: PASS
+- flutter analyze --fatal-infos --fatal-warnings: PASS, no issues
+- flutter test --coverage: PASS, 18/18
+- coverage: 243/266 lines, 91.4%
+- architecture forbidden imports: 0
+- codegen drift: PASS, 2 generated files, byte-identical
+
+Android dev build
+- result: PASS
+- APK: build/app/outputs/flutter-apk/app-dev-debug.apk
+- bytes: 165234113
+- SHA-256: 15b5e6f5a5838eb06bbe318bbd29f0bad83ca18237d17272514d9781a7287d55
+- package: me.newlines.kinflow.dev
+- min/target/compile API: 24/36/36
+
+Android prod build
+- result: PASS
+- APK: build/app/outputs/flutter-apk/app-prod-debug.apk
+- bytes: 165234179
+- SHA-256: e0a342f3707d9aa9ed3873ebe85428922619c4b138cee3978fb4bcd6912b66f8
+- package: me.newlines.kinflow
+- min/target/compile API: 24/36/36
+
+Device
+- adb devices -l: command PASS
+- connected devices: 0
+- install/boot/manual state validation: NOT RUN
+
+Clean staged-index reproduction
+- status: PASS
+- staged index exported to fresh /private/tmp directory
+- flutter pub get --offline: PASS
+- flutter gen-l10n: PASS
+- codegen verifier: PASS, generated source byte-identical
+- localization generated source and pubspec.lock: byte-identical
+- flutter analyze --fatal-infos --fatal-warnings: PASS, no issues
+- flutter test: PASS, 18/18
+- dev APK build: PASS
+- clean dev APK bytes: 150747190
+- clean dev APK SHA-256: 862fce985e74c1c8b7400384e0d7bf30234ff49101b8f80bb6d75617085c4d82
+- clean dev APK package: me.newlines.kinflow.dev
+
+Provider / data / signing
+- external provider SDK/config: none
+- DB/API/migration: none
+- production signing: NOT CONFIGURED
+- secrets added: none

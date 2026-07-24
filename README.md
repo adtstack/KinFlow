@@ -2,7 +2,7 @@
 
 KinFlow는 성인 2인이 가구를 만들고 집안일을 나누어 완료하는 Android-first 가족 협업 앱이다.
 
-현재 구현 범위는 Phase 01 WP01-02 App Shell까지의 로컬 foundation이다. G0 연구·법률 Gate 전체 통과나 production provider 연결을 의미하지 않는다.
+현재 구현 범위는 Phase 01 WP01-03 Architecture Boundary까지의 로컬 foundation이다. G0 연구·법률 Gate 전체 통과나 production provider 연결을 의미하지 않는다.
 
 ## Accepted baseline
 
@@ -12,6 +12,8 @@ KinFlow는 성인 2인이 가구를 만들고 집안일을 나누어 완료하�
 - dev: `me.newlines.kinflow.dev`
 - dev/prod two environments
 - Riverpod/go_router App Shell with safe startup recovery
+- domain/application/data/presentation feature boundary with repository port/adapter DI
+- Freezed/json_serializable DTO generation and drift verification
 - English/Korean Flutter gen_l10n skeleton
 - adult two-person activation slice
 - Google login through Supabase Auth in Phase 02
@@ -44,9 +46,10 @@ cd apps/kinflow_app
 
 ```bash
 cd apps/kinflow_app
-fvm dart format --output=none --set-exit-if-changed lib test
+fvm dart format --output=none --set-exit-if-changed lib test tool
 fvm flutter analyze --fatal-infos --fatal-warnings
 fvm flutter test
+fvm dart run tool/verify_codegen.dart
 fvm flutter build apk --debug --flavor dev --target lib/main_dev.dart --dart-define-from-file=config/dev.example.json
 fvm flutter build apk --debug --flavor prod --target lib/main_prod.dart --dart-define-from-file=config/prod.example.json
 ```
