@@ -44,7 +44,15 @@
     "models": "freezed_annotation 3.1.0 + json_annotation 4.12.0",
     "codegen": "build_runner 2.15.1 + freezed 3.2.5 + json_serializable 6.14.0",
     "localization": "Flutter gen_l10n + intl 0.20.2",
-    "theme": "Material 3 light/dark system mode"
+    "theme": "Material 3 light/dark system mode",
+    "supabaseFlutter": "2.16.0"
+  },
+  "backend": {
+    "scope": "local development only",
+    "supabaseCli": "2.109.1",
+    "postgresMajor": 17,
+    "edgeRuntime": "Deno 2",
+    "remoteProjectLinked": false
   },
   "auth": {
     "authority": "Supabase Auth",

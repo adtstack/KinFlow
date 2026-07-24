@@ -2,7 +2,7 @@
 
 KinFlow는 성인 2인이 가구를 만들고 집안일을 나누어 완료하는 Android-first 가족 협업 앱이다.
 
-현재 구현 범위는 Phase 01 WP01-03 Architecture Boundary까지의 로컬 foundation이다. G0 연구·법률 Gate 전체 통과나 production provider 연결을 의미하지 않는다.
+현재 구현 범위는 Phase 01 WP01-04 Supabase Local까지의 로컬 foundation이다. G0 연구·법률 Gate 전체 통과나 production provider 연결을 의미하지 않는다.
 
 ## Accepted baseline
 
@@ -16,7 +16,10 @@ KinFlow는 성인 2인이 가구를 만들고 집안일을 나누어 완료하�
 - Freezed/json_serializable DTO generation and drift verification
 - English/Korean Flutter gen_l10n skeleton
 - adult two-person activation slice
-- Google login through Supabase Auth in Phase 02
+- project-scoped Supabase CLI와 local PostgreSQL/RLS/Edge Function baseline
+- 성인 2인 seed와 별도 household를 이용한 cross-household 격리 검증
+- Flutter Supabase infrastructure adapter와 local health connectivity test
+- Google 로그인은 후속 Work Package로 연기
 
 자세한 변경 근거는 `docs/adr/ADR-0002-android-first-release.md`를 따른다.
 
@@ -41,6 +44,19 @@ cd apps/kinflow_app
 ```
 
 버전 출력은 Flutter 3.44.7과 Dart 3.12.2여야 한다.
+
+로컬 Supabase foundation을 실행하는 경우 Docker가 필요하다.
+
+```bash
+npm ci
+npx supabase start
+npm run supabase:reset
+npm run supabase:test
+npm run supabase:health
+npm run supabase:flutter-health
+```
+
+마지막 명령은 `flutter`가 PATH에 있어야 한다. 다른 위치의 SDK는 `KINFLOW_FLUTTER_BIN=/absolute/path/to/flutter`로 지정할 수 있다. 로컬 publishable key는 실행 중인 stack에서 읽고 출력하거나 파일에 저장하지 않는다.
 
 ## Verify
 

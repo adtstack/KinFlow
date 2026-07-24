@@ -1,0 +1,70 @@
+KinFlow Phase 01 WP01-04 validation summary
+Date: 2026-07-24 23:40:04 KST
+Base commit: ec4229f4003f574bec5c4c4061845dbd84c8adcb
+Environment: macOS arm64; Node 24.15.0; npm 11.12.1; Docker 28.3.2; Supabase CLI 2.109.1; Flutter 3.44.7; Dart 3.12.2
+Secrets: REDACTED / not recorded
+
+[PASS exit 0] npx supabase start
+- PostgreSQL image initialized.
+- 20260724000000_foundation.sql applied.
+- supabase/seed.sql applied.
+- local service health checks passed.
+
+[PASS exit 0] npx supabase db reset
+- Local database recreated from empty state.
+- migration and seed reapplied.
+
+[PASS exit 0] npx supabase test db
+- foundation_rls.test.sql: Files=1, Tests=37, Result=PASS.
+
+[PASS exit 0] npx supabase db lint --schema public,app_private --level error --fail-on error
+- public/app_private schema errors: 0.
+- An earlier unscoped diagnostic included pgTAP extension internals; application schemas were unaffected.
+
+[PASS exit 0] npm run supabase:health
+- exact JSON schema, content type, cache-control, request id and safe 405 response passed.
+
+[PASS exit 0] npm run supabase:flutter-health
+- Flutter Supabase SDK reached local health Edge Function: 1/1.
+
+[PASS exit 0] dart format --output=none --set-exit-if-changed lib test tool
+- 40 files, changed 0.
+
+[PASS exit 0] dart run tool/verify_codegen.dart
+- generated code drift: 0.
+
+[PASS exit 0] flutter analyze --fatal-infos --fatal-warnings
+- issues: 0.
+
+[PASS exit 0] flutter test --coverage
+- 21 passed, opt-in live test 1 skipped without dart-defines.
+- line coverage: 264/293, 90.1%.
+
+[PASS exit 0] flutter build apk --debug --flavor dev --target lib/main_dev.dart --dart-define-from-file=config/dev.example.json
+- app-dev-debug.apk: 184881896 bytes.
+- SHA-256: 74c3432821bf5d6e777c43cb2fc920421f629730fd6040cf7aaa728fba6a25c8.
+- package me.newlines.kinflow.dev; min 24; target/compile 36.
+
+[PASS exit 0] flutter build apk --debug --flavor prod --target lib/main_prod.dart --dart-define-from-file=config/prod.example.json
+- app-prod-debug.apk: 184881815 bytes.
+- SHA-256: 265682ce0499a0212d266f51aae07c5912ff96e683abce24347b737dc028607c.
+- package me.newlines.kinflow; min 24; target/compile 36.
+
+[PASS] merged manifest audit
+- dev: INTERNET plus local-only network security config.
+- prod: INTERNET and no cleartext/network security override.
+- no additional dangerous runtime permission.
+
+[NOT RUN] Android device boot smoke
+- adb devices -l: connected devices 0.
+
+[PASS] staged-index clean reproduction
+- git checkout-index export to a new /private/tmp directory.
+- npm ci: 15 packages, audit vulnerabilities 0.
+- flutter pub get --offline: PASS; lockfiles and regenerated lib sources byte-identical.
+- clean db reset, pgTAP 37/37, application schema lint error 0.
+- clean Node health contract and Flutter live connectivity: PASS.
+- clean codegen drift 0, analyzer issue 0, Flutter tests 21 passed + 1 opt-in skip.
+- clean dev APK: 153594389 bytes.
+- clean dev SHA-256: 73bbfcbb75c64ff3c94f55a8749fa4bea207d31391e66aca2ca6fb8f959d54a6.
+- clean dev package me.newlines.kinflow.dev; min 24; target/compile 36.

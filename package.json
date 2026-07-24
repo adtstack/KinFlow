@@ -1,0 +1,17 @@
+{
+  "name": "kinflow-workspace",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "supabase": "supabase",
+    "supabase:flutter-health": "scripts/verify-local-supabase-flutter.sh",
+    "supabase:reset": "supabase db reset",
+    "supabase:test": "supabase test db",
+    "supabase:health": "node supabase/tests/health-contract.mjs"
+  },
+  "devDependencies": {
+    "supabase": "2.109.1"
+  }
+}

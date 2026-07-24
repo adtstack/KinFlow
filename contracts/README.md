@@ -4,5 +4,6 @@
 
 - `toolchain.json`: Flutter/Dart, Android, 환경과 identifier 기준
 - `architecture-rules.yaml`: Flutter feature layer 의존 방향과 금지 import 기준
+- `supabase-health.schema.json`: local Edge Function health response의 exact JSON 계약
 
 DB/API/domain 계약은 해당 Work Package에서 Markdown 원본과 일치하도록 materialize하고 검증한다.

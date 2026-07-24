@@ -1,5 +1,7 @@
 .idea
 .fvm/
+node_modules/
+supabase/.temp/
 
 # Local environment and provider files
 .env
