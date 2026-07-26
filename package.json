@@ -5,6 +5,9 @@
     "node": ">=20"
   },
   "scripts": {
+    "ci:dependency": "node scripts/ci/dependency-audit.mjs && scripts/ci/osv-offline-scan.sh",
+    "ci:test": "node --test scripts/ci/*.test.mjs",
+    "ci:workflow": "node scripts/ci/workflow-contract.mjs",
     "supabase": "supabase",
     "supabase:flutter-health": "scripts/verify-local-supabase-flutter.sh",
     "supabase:reset": "supabase db reset",

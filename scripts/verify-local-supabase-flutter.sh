@@ -25,6 +25,7 @@ fi
 
 cd "$kinflow_repo_root/apps/kinflow_app"
 "$kinflow_flutter_bin" test \
+  --no-pub \
   test/infrastructure/supabase_connectivity_live_test.dart \
   --dart-define="KINFLOW_LOCAL_SUPABASE_URL=$kinflow_supabase_url" \
   --dart-define="KINFLOW_LOCAL_SUPABASE_PUBLISHABLE_KEY=$kinflow_supabase_key"

@@ -2,6 +2,7 @@
 .fvm/
 node_modules/
 supabase/.temp/
+ci-reports/
 
 # Local environment and provider files
 .env

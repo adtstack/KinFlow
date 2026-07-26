@@ -1,0 +1,88 @@
+WP01-07 CI validation summary
+Date: 2026-07-25 Asia/Seoul
+Base: 32de58c
+Flutter: 3.44.7 stable
+Dart: 3.12.2
+Node: 24.15.0
+Java clean build: 21.0.9
+Supabase CLI: 2.109.1
+
+[CI self-test]
+command: npm run ci:test
+result: PASS
+output: 9 tests passed; workflow mutation and supply-chain negative cases included
+
+[workflow contract]
+command: npm run ci:workflow
+result: PASS
+output: 5 jobs; 17 full-SHA action uses; contents:read; no secret/write/pull_request_target/bypass; safe npm and offline OSV contract
+
+[workflow syntax]
+command: actionlint 1.7.12 .github/workflows/ci.yml
+result: PASS
+output: finding 0
+
+[dependency license]
+command: node scripts/ci/dependency-audit.mjs --report ci-reports/dependency/dependency-audit.json
+result: PASS
+output: hosted Pub 130; npm 15; allowed Apache-2.0/BSD-2-Clause/BSD-3-Clause/MIT/MPL-2.0
+
+[dependency vulnerability]
+command: scripts/ci/osv-offline-scan.sh
+result: PASS
+scanner: OSV-Scanner 2.3.8 checksum verified
+database: public npm/Pub fixture download; 2 isolated cache files
+actual scan: --offline --offline-vulnerabilities --data-source native --no-resolve
+output: npm 15 + Pub 135 exact versions; known vulnerability finding 0
+
+[format]
+command: dart format --output=none --set-exit-if-changed lib test tool
+result: PASS
+output: Formatted 66 files (0 changed)
+
+[analyzer]
+command: flutter analyze --fatal-infos --fatal-warnings
+result: PASS
+output: No issues found
+
+[full Flutter regression]
+command: flutter test --coverage
+result: PASS
+output: 59 passed, 1 skipped
+skip: opt-in local Supabase connectivity; backend job executes it with local process-only public config
+coverage: LH=769 LF=862, 89.21%
+
+[public config / secret / generated drift]
+result: PASS
+output: public examples exact-allowlisted; high-confidence secret finding 0; 5 generated files byte-stable
+
+[backend]
+command: scripts/ci/supabase-backend.sh
+result: PASS
+db reset: migration 20260724000000_foundation.sql + seed applied
+db lint: schema errors 0
+pgTAP/RLS: 37/37
+Edge health contract: PASS
+Flutter live adapter: 1/1
+migration sha256: 650cc415a72f87584ffb262d303dfe28341dc6770ef1efe870218281fbea79a0
+
+[Android workspace]
+dev: PASS; me.newlines.kinflow.dev; API 24/36/36; 184883497 bytes; sha256 7404dd0dc2ab71b2cb215bd3dcd974dfeb08be4363ab1d3e88e1a4206a12fb1f
+prod: PASS; me.newlines.kinflow; API 24/36/36; 184883416 bytes; sha256 607b2bad6b8018e9e337188a640bd14afa46fe23e7419045b27c721af8b8c1d8
+permissions: INTERNET plus package-scoped DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION only
+warning: sentry_flutter applies legacy Kotlin Gradle Plugin; current build passes
+
+[clean staged-index implementation]
+export: /private/tmp/kinflow-wp01-07-final.jgifiN
+quality: PASS; self-test 9/9; actionlint; format; analyzer 0; Flutter 59 + opt-in 1 skip; coverage 769/862; config/secret/codegen
+dependency: PASS; Pub/npm license and network-disabled OSV scan
+Java: 21.0.9
+dev APK: PASS; 165445357 bytes; sha256 fc0a43a8a4086f842b328ceac2bf4b131b524cf1f168776fdfa470bdeb1bebde
+prod APK: PASS; 165444764 bytes; sha256 020558942b651c924c097007e869fd0072f518fd11c1d776b2dddf6433723844
+post-pass hardening: analyze/test/live adapter gained --no-pub; bash/Node/workflow contract and Flutter option parsing rechecked
+
+[manual / remote]
+adb devices -l: 0 devices
+Android shell smoke: NOT RUN
+GitHub Actions run URL/artifact: NOT RUN; commit not pushed
+branch protection/ruleset: NOT CHANGED

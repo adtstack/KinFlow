@@ -2,7 +2,7 @@
 
 KinFlow는 성인 2인이 가구를 만들고 집안일을 나누어 완료하는 Android-first 가족 협업 앱이다.
 
-현재 구현 범위는 Phase 01 WP01-06 Observability/config까지의 로컬 foundation이다. G0 연구·법률 Gate 전체 통과나 production provider 연결을 의미하지 않는다.
+현재 구현 범위는 Phase 01 WP01-07 CI까지의 repository-local foundation이다. G0 연구·법률 Gate 전체 통과, 원격 CI green, branch protection 또는 production provider 연결을 의미하지 않는다.
 
 ## Accepted baseline
 
@@ -21,6 +21,9 @@ KinFlow는 성인 2인이 가구를 만들고 집안일을 나누어 완료하�
 - exact allowlist 기반 공개 client config loader/validator
 - PII-safe structured logger와 optional Sentry error boundary
 - repository high-confidence secret scanner
+- read-only/secret-free GitHub Actions quality·dependency·backend·Android gate
+- checksum-pinned action/tool과 metadata egress 없는 offline vulnerability scan
+- dev/prod debug APK metadata·permission·SHA-256 audit와 14일 artifact policy
 - project-scoped Supabase CLI와 local PostgreSQL/RLS/Edge Function baseline
 - 성인 2인 seed와 별도 household를 이용한 cross-household 격리 검증
 - Flutter Supabase infrastructure adapter와 local health connectivity test
@@ -80,3 +83,28 @@ fvm flutter build apk --debug --flavor prod --target lib/main_prod.dart --dart-d
 예제 config는 공개 client 값만 정의한다. placeholder Supabase publishable key는 정적 예제 검증에는 허용되지만 runtime에서는 fail-closed 한다. `SENTRY_DSN`이 비어 있으면 Sentry SDK와 네트워크 전송은 시작하지 않는다.
 
 실제 환경 파일, OAuth client secret, Supabase service role key, Sentry auth token, signing key는 커밋하지 않는다.
+
+## CI
+
+GitHub Actions는 PR, `main` push와 수동 실행에서 다음 job을 병렬 수행하고 단일 `CI gate`로 집계한다.
+
+- format/analyzer/unit·widget·architecture/codegen/config/secret와 coverage report
+- Pub/npm license allowlist와 OSV offline vulnerability scan
+- Supabase reset/lint, 37개 pgTAP RLS, Edge health와 Flutter live adapter contract
+- Android dev/prod debug APK build와 package/API/permission/checksum audit
+
+PR workflow 권한은 `contents: read`뿐이며 production secret을 참조하지 않는다. action과 다운로드 도구는 release commit 또는 checksum으로 고정한다. OSV database는 공개 fixture로 받은 뒤 실제 lockfile scan을 network-disabled mode에서 실행한다. 실패한 Android build의 APK는 업로드하지 않는다.
+
+로컬에서 CI 계약과 개별 gate를 재현할 수 있다.
+
+```bash
+npm run ci:test
+npm run ci:workflow
+scripts/ci/flutter-quality.sh
+npm run ci:dependency
+scripts/ci/supabase-backend.sh
+scripts/ci/android-build.sh dev
+scripts/ci/android-build.sh prod
+```
+
+Flutter package cache만 사용하는 검증은 `KINFLOW_PUB_OFFLINE=1`을 추가한다. 실제 GitHub run URL과 branch protection은 commit push 이후 별도 확인한다.

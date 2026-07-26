@@ -91,6 +91,7 @@ final class SecretScanner {
     '.idea',
     'build',
     'coverage',
+    'ci-reports',
     'node_modules',
   };
   static const Set<String> _ignoredFiles = <String>{'.DS_Store'};
