@@ -1,10 +1,10 @@
 # Phase 02 WP02-01 Evidence
 
 - Work Package: WP02-01 Auth lifecycle — provider-independent local foundation
-- 기준 commit: base `7493c32`; implementation commit은 이 문서가 포함된 commit
+- 기준 commit: base `7493c32`; implementation `77430a6`
 - 검증일: 2026-07-28
 - 환경: macOS arm64, Flutter 3.44.7, Dart 3.12.2, Node 24.15.0
-- 결과: **LOCAL FOUNDATION PASS / GOOGLE·SECURE STORAGE·ANDROID DEVICE PENDING**
+- 결과: **LOCAL + REMOTE FOUNDATION PASS / GOOGLE·SECURE STORAGE·ANDROID DEVICE PENDING**
 - 범위 근거: Phase 01 Completion Report의 `CONDITIONAL GO`만 사용
 
 ## Requirements
@@ -47,8 +47,11 @@
 | secret scanner | PASS, high-confidence secret 0 |
 | codegen validator | PASS, generated localization/Freezed/JSON drift 0, generated files 5 |
 | architecture boundary | PASS, feature dependency direction과 provider SDK 격리 |
+| GitHub Actions CI | PASS, run `30337864111`; quality, dependency, backend contract, dev/prod Android debug APK, final gate 모두 성공 |
 
 상세 실행 요약은 `logs/wp02-01-auth-foundation.log`에 있다. CI report와 coverage 원본은 ignored local artifact이며 repository에는 token, provider payload, crash log를 추가하지 않았다.
+
+Remote run: <https://github.com/adtstack/KinFlow/actions/runs/30337864111>
 
 ## Data / API / Dependency Review
 

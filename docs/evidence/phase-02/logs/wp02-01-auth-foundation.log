@@ -44,4 +44,14 @@ Manual
 - adb devices -l: 0 devices
 - Google provider, secure storage, real account, redirect/App Link: NOT RUN / PENDING
 
-Result: LOCAL FOUNDATION PASS; WP02-01 provider/device completion remains pending.
+Remote CI
+- implementation commit: 77430a6
+- GitHub Actions run: 30337864111
+- quality and tests: PASS
+- dependency vulnerability and license audit: PASS
+- Supabase DB, RLS, and contract: PASS
+- Android dev debug APK build and audit: PASS
+- Android prod debug APK build and audit: PASS
+- final CI gate: PASS
+
+Result: LOCAL + REMOTE FOUNDATION PASS; WP02-01 provider/device completion remains pending.
