@@ -192,11 +192,13 @@ jobs:
           DEPENDENCY_RESULT: ${{ needs.dependency_audit.result }}
           QUALITY_RESULT: ${{ needs.quality.result }}
         run: |
-          printf '%s\n' '## KinFlow CI gate' >> "$GITHUB_STEP_SUMMARY"
-          printf '%s\n' "- quality: $QUALITY_RESULT" >> "$GITHUB_STEP_SUMMARY"
-          printf '%s\n' "- dependency audit: $DEPENDENCY_RESULT" >> "$GITHUB_STEP_SUMMARY"
-          printf '%s\n' "- backend: $BACKEND_RESULT" >> "$GITHUB_STEP_SUMMARY"
-          printf '%s\n' "- Android matrix: $ANDROID_RESULT" >> "$GITHUB_STEP_SUMMARY"
+          {
+            printf '%s\n' '## KinFlow CI gate'
+            printf '%s\n' "- quality: $QUALITY_RESULT"
+            printf '%s\n' "- dependency audit: $DEPENDENCY_RESULT"
+            printf '%s\n' "- backend: $BACKEND_RESULT"
+            printf '%s\n' "- Android matrix: $ANDROID_RESULT"
+          } >> "$GITHUB_STEP_SUMMARY"
           test "$QUALITY_RESULT" = success
           test "$DEPENDENCY_RESULT" = success
           test "$BACKEND_RESULT" = success
