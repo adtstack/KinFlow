@@ -11,6 +11,7 @@
 - 성인 2인 Activation vertical slice 승인(D-051, ADR-0001)
 - PRD, roadmap, requirements, Phase 00/02/07, traceability와 release checklist를 승인 범위에 맞게 정렬
 - 사용자 연구, 법률·Store 검토, 가격·보관 정책, 앱 식별자·console owner, 실제 기기/provider PoC는 미완료 상태 유지
+- WP02-01 인증 session/PKCE 저장에 Android Keystore-backed `flutter_secure_storage 10.3.1`을 고정하고 Supabase runtime composition과 backup-disabled 계약 추가
 
 ## v1.2 — 2026-07-22 — Version terminology and SDK patch correction
 

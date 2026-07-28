@@ -120,6 +120,13 @@ printf '%s\n' "$kinflow_badging" | grep -F "sdkVersion:'24'" >/dev/null
 printf '%s\n' "$kinflow_badging" | grep -F "targetSdkVersion:'36'" >/dev/null
 printf '%s\n' "$kinflow_badging" | grep -F "application-label:'$kinflow_label'" >/dev/null
 
+kinflow_manifest="$($kinflow_aapt_bin dump xmltree "$kinflow_apk" AndroidManifest.xml)"
+if ! printf '%s\n' "$kinflow_manifest" \
+  | grep -Eq 'A: android:allowBackup\([^)]*\)=\(type 0x12\)0x0'; then
+  printf '%s\n' 'APK backup contract changed: android:allowBackup must be false.' >&2
+  exit 1
+fi
+
 kinflow_permissions="$($kinflow_aapt_bin dump permissions "$kinflow_apk")"
 kinflow_expected_permissions="$(printf '%s\n' \
   "package: $kinflow_package" \
@@ -141,6 +148,7 @@ kinflow_bytes="$(wc -c <"$kinflow_apk" | tr -d ' ')"
   printf 'min_api=24\n'
   printf 'target_api=36\n'
   printf 'compile_api=36\n'
+  printf 'android_backup=disabled\n'
   printf 'permissions=INTERNET,package-scoped-dynamic-receiver\n'
   printf 'bytes=%s\n' "$kinflow_bytes"
   printf 'sha256=%s\n' "$kinflow_sha256"

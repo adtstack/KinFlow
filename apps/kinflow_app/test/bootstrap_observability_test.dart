@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kinflow_app/app/app_environment.dart';
 import 'package:kinflow_app/app/bootstrap.dart';
 import 'package:kinflow_app/app/config/app_public_configuration.dart';
 import 'package:kinflow_app/app/observability/app_logger.dart';
+import 'package:kinflow_app/app/providers/auth_dependencies.dart';
 import 'package:kinflow_app/infrastructure/observability/sentry_observability.dart';
 
 import 'support/fixtures/app_public_configuration_fixture.dart';
@@ -19,6 +22,7 @@ void main() {
       configurationValues: publicConfigurationValues(),
       initializer: _successfulInitialization,
       observabilityRunner: observability,
+      authDependenciesFactory: _loadUnavailableAuthDependencies,
     );
     await tester.pumpAndSettle();
 
@@ -42,12 +46,80 @@ void main() {
       configurationValues: invalid,
       initializer: _successfulInitialization,
       observabilityRunner: invalidObservability,
+      authDependenciesFactory: _loadUnavailableAuthDependencies,
     );
     await tester.pumpAndSettle();
 
     expect(invalidObservability.runCount, 0);
     expect(find.byKey(const Key('startup.failure')), findsOneWidget);
     expect(find.textContaining('replace-with-environment-key'), findsNothing);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+  });
+
+  testWidgets('auth runtime initialization fails closed and retries', (
+    WidgetTester tester,
+  ) async {
+    var attempt = 0;
+
+    await bootstrap(
+      AppEnvironment.dev,
+      configurationValues: publicConfigurationValues(),
+      initializer: _successfulInitialization,
+      observabilityRunner: _FakeObservabilityRunner(),
+      authDependenciesFactory: (AppPublicConfiguration configuration) async {
+        attempt += 1;
+        if (attempt == 1) {
+          throw StateError('provider detail must stay private');
+        }
+        return createUnavailableAuthDependencies();
+      },
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('startup.failure')), findsOneWidget);
+    expect(find.textContaining('provider detail'), findsNothing);
+    expect(find.byKey(const Key('auth.signIn')), findsNothing);
+
+    await tester.tap(find.byKey(const Key('startup.retry')));
+    await tester.pumpAndSettle();
+
+    expect(attempt, 2);
+    expect(find.byKey(const Key('startup.failure')), findsNothing);
+    expect(find.byKey(const Key('auth.signIn')), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+  });
+
+  testWidgets('auth runtime blocks the router while loading', (
+    WidgetTester tester,
+  ) async {
+    final Completer<AuthDependencies> dependencies =
+        Completer<AuthDependencies>();
+
+    await bootstrap(
+      AppEnvironment.dev,
+      configurationValues: publicConfigurationValues(),
+      initializer: _successfulInitialization,
+      observabilityRunner: _FakeObservabilityRunner(),
+      authDependenciesFactory: (AppPublicConfiguration configuration) {
+        return dependencies.future;
+      },
+    );
+    await tester.pump();
+
+    expect(find.byKey(const Key('startup.loading')), findsOneWidget);
+    expect(find.byKey(const Key('auth.loading')), findsNothing);
+    expect(find.byKey(const Key('auth.signIn')), findsNothing);
+    expect(find.byKey(const Key('foundation.home')), findsNothing);
+
+    dependencies.complete(createUnavailableAuthDependencies());
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('startup.loading')), findsNothing);
+    expect(find.byKey(const Key('auth.signIn')), findsOneWidget);
 
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
@@ -73,3 +145,9 @@ final class _FakeObservabilityRunner implements AppObservabilityRunner {
 }
 
 Future<void> _successfulInitialization() async {}
+
+Future<AuthDependencies> _loadUnavailableAuthDependencies(
+  AppPublicConfiguration configuration,
+) async {
+  return createUnavailableAuthDependencies();
+}

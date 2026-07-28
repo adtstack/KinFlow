@@ -46,6 +46,7 @@
     "localization": "Flutter gen_l10n + intl 0.20.2",
     "theme": "Material 3 light/dark system mode",
     "supabaseFlutter": "2.16.0",
+    "secureStorage": "flutter_secure_storage 10.3.1",
     "sentryFlutter": "9.25.0"
   },
   "ui": {

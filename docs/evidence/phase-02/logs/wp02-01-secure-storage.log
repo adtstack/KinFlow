@@ -1,0 +1,56 @@
+WP02-01 Android secure storage and Supabase runtime composition validation
+Date: 2026-07-28
+Base: 85be5b9
+
+Toolchain
+- Flutter 3.44.7 / Dart 3.12.2
+- Node v24.15.0
+
+Repository quality gate
+- npm CI self-tests: PASS 9/9
+- workflow contract: PASS (5 jobs, 17 pinned actions, contents:read)
+- actionlint: PASS
+- Dart format: PASS (97 files, drift 0)
+- Flutter fatal analyze: PASS (issue 0)
+- full Flutter suite: PASS (101 tests, 1 opt-in local connectivity skip)
+- coverage: 1273/1499 lines (84.92%)
+- public configuration allowlist: PASS
+- high-confidence secret scan: PASS (finding 0)
+- generated code drift: PASS (5 generated files)
+
+Secure auth validation
+- FlutterSecureStringStore readiness and CRUD delegation: PASS
+- dev/prod storage namespace isolation: PASS
+- RSA-OAEP SHA-256 and AES-GCM option contract: PASS
+- secure Supabase session persist/read/remove: PASS
+- PKCE key encoding and session-key isolation: PASS
+- full auth namespace purge participant: PASS
+- secure storage readiness failure has no fallback persistence: PASS
+- runtime composes ProviderAuthSessionRepository after secure initialization: PASS
+- runtime loading blocks auth/protected router: PASS
+- initialization failure hides raw detail and retry recovers: PASS
+- Google sign-in launcher remains unavailable: PASS
+
+Dependency and supply chain
+- flutter_secure_storage: exact 10.3.1, BSD-3-Clause
+- dependency license audit: PASS (143 Pub, 15 npm)
+- OSV-Scanner: 2.3.8, verified SHA-256 a8cd6507b06239f463a7642430cfd2d154882f150f6e30cdc0653e28dfc34216
+- offline vulnerability scan: PASS (lockfile only, actual scan network disabled)
+
+Android APK gates
+- dev: PASS; me.newlines.kinflow.dev; 215866132 bytes
+- dev SHA-256: 8ca208b263a67eb32b98265ebda79d9db92bcc17111ab39393278e8013c65ab9
+- prod: PASS; me.newlines.kinflow; 215866043 bytes
+- prod SHA-256: e5d294e8fa6b5ffea2427bc340a9deb53fdbed0ec43e460e80560c8c4afe84e1
+- binary manifest android:allowBackup=false: PASS for dev and prod
+- permissions: PASS (INTERNET and package-scoped dynamic receiver only)
+- existing sentry_flutter future Built-in Kotlin migration warning: NON-BLOCKING
+
+Manual and remote
+- adb devices -l: 0 devices
+- actual Keystore/process-death/reinstall/backup forensic: NOT RUN
+- actual remote Supabase session restore/refresh: PENDING
+- Google provider/SDK/real adult accounts/callback: PENDING
+- GitHub Actions implementation run: PENDING
+
+Result: LOCAL AUTOMATED SECURE STORAGE PASS; Android device, Google provider, and remote CI remain pending.
