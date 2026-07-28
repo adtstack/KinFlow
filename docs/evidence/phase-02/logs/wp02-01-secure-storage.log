@@ -51,6 +51,8 @@ Manual and remote
 - actual Keystore/process-death/reinstall/backup forensic: NOT RUN
 - actual remote Supabase session restore/refresh: PENDING
 - Google provider/SDK/real adult accounts/callback: PENDING
-- GitHub Actions implementation run: PENDING
+- implementation commit: fae115d
+- GitHub Actions run 30342570943: PASS
+- quality, dependency, backend contract, Android dev/prod, final CI gate: PASS
 
-Result: LOCAL AUTOMATED SECURE STORAGE PASS; Android device, Google provider, and remote CI remain pending.
+Result: LOCAL + REMOTE AUTOMATED SECURE STORAGE PASS; Android device and Google provider remain pending.

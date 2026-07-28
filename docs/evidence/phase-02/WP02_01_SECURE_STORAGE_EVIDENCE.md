@@ -1,10 +1,10 @@
 # Phase 02 WP02-01 Secure Storage Evidence
 
 - Work Package: WP02-01 Auth lifecycle — Android secure storage and Supabase runtime composition
-- 기준 commit: base `85be5b9`; implementation commit은 remote CI 확인 후 기록
+- 기준 commit: base `85be5b9`; implementation `fae115d`
 - 검증일: 2026-07-28
 - 환경: macOS arm64, Flutter 3.44.7, Dart 3.12.2, Node 24.15.0
-- 결과: **LOCAL AUTOMATED SECURE STORAGE PASS / ANDROID DEVICE·GOOGLE PENDING**
+- 결과: **LOCAL + REMOTE AUTOMATED SECURE STORAGE PASS / ANDROID DEVICE·GOOGLE PENDING**
 - 선행 근거: provider-independent auth foundation `LOCAL + REMOTE FOUNDATION PASS`
 
 ## Requirements
@@ -45,9 +45,11 @@
 | Android dev debug APK | PASS, `me.newlines.kinflow.dev`, 215,866,132 bytes, SHA-256 `8ca208b263a67eb32b98265ebda79d9db92bcc17111ab39393278e8013c65ab9` |
 | Android prod debug APK | PASS, `me.newlines.kinflow`, 215,866,043 bytes, SHA-256 `e5d294e8fa6b5ffea2427bc340a9deb53fdbed0ec43e460e80560c8c4afe84e1` |
 | final APK manifest / permissions | PASS, backup disabled; `INTERNET` + package-scoped dynamic receiver only |
-| GitHub Actions CI | PENDING — implementation commit push 후 기록 |
+| GitHub Actions CI | PASS, run `30342570943`; quality, dependency, backend, dev/prod APK와 final gate 성공 |
 
 상세 실행 요약은 `logs/wp02-01-secure-storage.log`에 있다. CI report, coverage와 APK 원본은 ignored local artifact이며 repository에는 session, token, provider payload 또는 credential을 추가하지 않았다.
+
+Remote run: <https://github.com/adtstack/KinFlow/actions/runs/30342570943>
 
 ## Dependency Review
 
@@ -89,6 +91,6 @@
 
 ## Next Entry Condition
 
-- 먼저 implementation commit을 push하고 GitHub Actions의 quality, dependency, backend, dev/prod APK와 final gate를 모두 확인한다.
+- implementation commit `fae115d`와 GitHub Actions run `30342570943`의 모든 required job 및 final gate가 확인됐다.
 - 실제 Google sign-in은 dev Google/Supabase provider, exact `me.newlines.kinflow.dev` package/SHA, approved callback/domain, Android device와 성인 테스트 계정이 준비된 뒤 별도 slice로 시작한다.
 - 그 전에는 WP02-01 전체 PASS 또는 실제 device PASS를 선언하지 않는다.

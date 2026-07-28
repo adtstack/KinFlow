@@ -3,7 +3,7 @@
 - 작성일: 2026-07-28
 - 기준 commit: `85be5b9`
 - Work Package: WP02-01 Auth lifecycle — Android secure storage and Supabase runtime composition
-- 상태: COMPLETE — LOCAL AUTOMATED SLICE PASS / ANDROID DEVICE·GOOGLE PENDING
+- 상태: COMPLETE — LOCAL + REMOTE AUTOMATED SLICE PASS / ANDROID DEVICE·GOOGLE PENDING
 - 선행 결과: provider-independent auth foundation `LOCAL + REMOTE FOUNDATION PASS`
 
 ## Requirements
