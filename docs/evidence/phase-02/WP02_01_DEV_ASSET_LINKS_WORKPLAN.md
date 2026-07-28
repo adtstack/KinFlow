@@ -3,7 +3,7 @@
 - 작성일: 2026-07-29
 - 기준 commit: `ac3098d`
 - Work Package: WP02-01 / WP02-04 — deployable dev Digital Asset Links contract
-- 상태: LOCAL PASS / REMOTE CI PENDING
+- 상태: SLICE COMPLETE (LOCAL + REMOTE PASS) / OWNED HOST DEPLOYMENT PENDING
 
 ## Requirements
 

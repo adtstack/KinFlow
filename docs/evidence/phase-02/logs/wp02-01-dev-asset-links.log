@@ -1,0 +1,74 @@
+WP02-01 dev Digital Asset Links validation
+Date: 2026-07-29
+Base: ac3098d
+Implementation: 25f81f6d76e51ecf2a7e274c8c617a7d0226bfec
+
+Static association
+- path: apps/public_site/public/.well-known/assetlinks.json
+- environment: dev only
+- package: me.newlines.kinflow.dev
+- relation: delegate_permission/common.handle_all_urls
+- namespace: android_app
+- SHA-256: 6A:C5:22:6C:F7:1B:20:1C:99:49:E8:1F:75:14:49:AD:94:53:64:A9:46:5C:ED:0C:69:19:00:51:C5:6E:C7:D5
+- statement count: 1
+- prod deployment allowed: NO
+
+Validator contract
+- JSON root array and exact statement/target keys: PASS
+- exact relation and android_app namespace: PASS
+- exact environment package: PASS
+- uppercase colon-delimited 32-byte SHA-256: PASS
+- malformed/duplicate fingerprint: REJECTED
+- unknown relation/namespace/field: REJECTED
+- additional app association: REJECTED
+- checked-in file read by automated test: PASS
+
+APK comparison
+- dev APK package versus statement: PASS
+- dev APK signer versus statement SHA-256: PASS
+- signer count: 1
+- prod debug APK as production association input: EXPECTED FAIL
+- signing private material read or copied: NO
+
+Android artifacts
+- dev APK bytes: 216120695
+- dev APK SHA-256: 50348407a63b1c535f350ccec4082919b6a3788ecb8a3024d75d98f1e0cfcc4d
+- prod debug APK bytes: 216120615
+- prod debug APK SHA-256: 6a54dbd776e2906a6efe99f0fdc2f197b0ef08ca44c894556fd35ecfb6be55b0
+- min/target/compile API: 24/36/36
+- App Link binary manifest: VIEW, DEFAULT, BROWSABLE, HTTPS, exact host, /invite/, autoVerify
+- result: PASS
+
+Flutter quality
+- npm run ci:test: PASS 18/18
+- Asset Links tests: PASS 5/5
+- workflow/actionlint contract: PASS
+- Dart format: PASS, 158 files / 0 changed
+- Flutter fatal analyze: PASS, issue 0
+- full Flutter suite: PASS, 176 tests / 1 opt-in local connectivity skip
+- coverage: 2393/3091 lines, 77.42%
+- public config examples: PASS
+- high-confidence secret findings: 0
+- generated code drift: 0
+
+Remote
+- GitHub Actions run 30386059527: PASS
+- implementation commit: 25f81f6d76e51ecf2a7e274c8c617a7d0226bfec
+- dependency audit: PASS 1m09s
+- quality: PASS 3m20s
+- backend: PASS 4m08s
+- Android dev: PASS 5m00s
+- Android prod: PASS 5m25s
+- final CI gate: PASS 3s
+- URL: https://github.com/adtstack/KinFlow/actions/runs/30386059527
+
+External state not exercised
+- owned HTTPS host/DNS/hosting: NOT CONFIGURED
+- live /.well-known/assetlinks.json fetch: NOT RUN
+- Digital Asset Links API statement verification: NOT RUN
+- Android OS verified state: NOT RUN
+- real Google/Supabase provider: NOT CONFIGURED
+- two adult accounts/two Android devices: NOT RUN
+- production deploy/customer data: NOT USED
+
+Result: LOCAL + REMOTE DEV ASSOCIATION ARTIFACT PASS; owned host deployment, OS verified link, provider and two-adult completion pending.
