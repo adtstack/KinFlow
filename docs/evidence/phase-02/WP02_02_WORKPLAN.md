@@ -3,7 +3,7 @@
 - 작성일: 2026-07-28
 - 기준 commit: `e27b4a8`
 - Work Package: WP02-02 Household schema/RLS
-- 상태: LOCAL COMPLETE / REMOTE CI PENDING
+- 상태: COMPLETE
 - 선행 결과: WP02-01 local + remote automated secure-storage slice PASS; Google/provider/device validation DEFERRED
 
 ## Requirements

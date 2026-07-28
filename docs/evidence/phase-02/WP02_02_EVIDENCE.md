@@ -1,10 +1,10 @@
 # Phase 02 WP02-02 Evidence
 
 - Work Package: WP02-02 Household schema/RLS
-- 기준 commit: base `e27b4a8`; implementation `PENDING`
+- 기준 commit: base `e27b4a8`; implementation `3016979`
 - 검증일: 2026-07-28
 - 환경: macOS arm64, Flutter 3.44.7, Dart 3.12.2, Node 24.15.0, Supabase CLI 2.109.1, PostgreSQL 17, Docker 28.3.2
-- 결과: **LOCAL AUTOMATED PASS / REMOTE CI PENDING / GOOGLE·ANDROID DEVICE DEFERRED**
+- 결과: **LOCAL + REMOTE AUTOMATED PASS / GOOGLE·ANDROID DEVICE DEFERRED**
 
 ## Requirements
 
@@ -40,9 +40,11 @@
 | repository quality | PASS, 101 Flutter tests + 1 opt-in skip, analyze issue 0, coverage 1,271/1,499 (84.79%) |
 | config / secret / codegen | PASS, high-confidence secret 0, generated drift 0 |
 | dependency license / OSV | PASS, Pub 143 / npm 15, lockfile offline vulnerability scan |
-| GitHub Actions CI | PENDING implementation push |
+| GitHub Actions CI | PASS, run `30367899904`; quality, dependency, backend, dev/prod Android와 final gate 성공 |
 
 상세 실행 요약은 `logs/wp02-02-household-authorization.log`에 있다. CI report와 coverage 원본은 ignored local artifact다.
+
+Remote run: <https://github.com/adtstack/KinFlow/actions/runs/30367899904>
 
 ## Data / API / Privacy
 
@@ -55,7 +57,7 @@
 
 - Google provider, 실제 Supabase session, Android device와 실제 성인 2인 검증은 사용자 결정에 따라 Phase 02 마지막 통합 단계까지 **DEFERRED**다.
 - remote project migration rehearsal, backup/restore, production query plan은 **NOT RUN**이다.
-- dev/prod APK와 final CI gate는 implementation push 후 GitHub Actions에서 검증한다.
+- dev/prod APK와 final CI gate는 implementation run `30367899904`에서 통과했다.
 
 ## Remaining Risks / Completion Boundary
 
@@ -71,5 +73,6 @@
 
 ## Next Entry Condition
 
-- implementation commit의 GitHub Actions quality, dependency, backend, dev/prod Android build와 final gate가 모두 green이어야 WP02-03으로 진입한다.
+- implementation commit `3016979`의 GitHub Actions quality, dependency, backend, dev/prod Android build와 final gate가 모두 green이다.
+- 다음 순차 작업은 WP02-03 first-household onboarding이다.
 - Google provider/device는 계속 deferred이며 이를 WP02-02 또는 Phase 02 전체 완료로 간주하지 않는다.
