@@ -7,17 +7,22 @@ import 'package:kinflow_app/features/auth/domain/failures/auth_failure.dart';
 import 'package:kinflow_app/features/auth/domain/repositories/auth_session_repository.dart';
 import 'package:kinflow_app/features/auth/domain/services/auth_sign_in_launcher.dart';
 import 'package:kinflow_app/features/auth/domain/value_objects/auth_user_id.dart';
+import 'package:kinflow_app/features/household/domain/entities/active_household.dart';
+import 'package:kinflow_app/features/household/domain/failures/household_failure.dart';
+import 'package:kinflow_app/features/household/domain/repositories/household_repository.dart';
 
 final class AuthLifecycleController {
   factory AuthLifecycleController({
     required AuthSessionRepository repository,
     required AuthSignInLauncher signInLauncher,
     required SensitiveLocalStatePurger localStatePurger,
+    required HouseholdRepository householdRepository,
   }) {
     return AuthLifecycleController._(
       repository,
       signInLauncher,
       localStatePurger,
+      householdRepository,
     );
   }
 
@@ -25,11 +30,13 @@ final class AuthLifecycleController {
     this._repository,
     this._signInLauncher,
     this._localStatePurger,
+    this._householdRepository,
   );
 
   final AuthSessionRepository _repository;
   final AuthSignInLauncher _signInLauncher;
   final SensitiveLocalStatePurger _localStatePurger;
+  final HouseholdRepository _householdRepository;
   final StreamController<AuthLifecycleState> _states =
       StreamController<AuthLifecycleState>.broadcast(sync: true);
 
@@ -37,7 +44,6 @@ final class AuthLifecycleController {
   StreamSubscription<AuthSessionEvent>? _sessionSubscription;
   Future<void> _pendingOperation = Future<void>.value();
   AuthUserId? _currentUserId;
-  var _hasActiveHousehold = false;
   var _providerEventRevision = 0;
   var _started = false;
   var _disposed = false;
@@ -126,7 +132,7 @@ final class AuthLifecycleController {
         return;
       }
 
-      _emit(AuthRefreshing(session));
+      _emit(AuthRefreshing(session, activeHousehold: _state.activeHousehold));
       final AuthSessionResult result = await _refreshSafely();
       await _applySessionResult(result, fromRefresh: true);
     });
@@ -142,7 +148,6 @@ final class AuthLifecycleController {
       }
 
       _currentUserId = null;
-      _hasActiveHousehold = false;
       final AuthFailure? failure = switch (signOutResult) {
         AuthSignOutCompleted() => null,
         AuthSignOutFailed(:final failure) => failure,
@@ -151,13 +156,25 @@ final class AuthLifecycleController {
     });
   }
 
-  void markActiveHousehold() {
-    final AuthSession? session = _state.session;
-    if (session == null || _currentUserId == null) {
-      return;
-    }
-    _hasActiveHousehold = true;
-    _emit(AuthAuthenticatedActiveHousehold(session));
+  Future<void> markActiveHousehold(ActiveHousehold household) {
+    return _enqueue(() async {
+      final AuthSession? session = _state.session;
+      if (session == null || _currentUserId != session.userId) {
+        return;
+      }
+      _emit(AuthAuthenticatedActiveHousehold(session, household));
+    });
+  }
+
+  Future<void> retryHouseholdResolution() {
+    return _enqueue(() async {
+      final AuthLifecycleState current = _state;
+      if (current is! AuthHouseholdResolutionFailed ||
+          _currentUserId != current.session.userId) {
+        return;
+      }
+      await _resolveActiveHousehold(current.session);
+    });
   }
 
   Future<void> waitForPendingOperations() async {
@@ -228,15 +245,23 @@ final class AuthLifecycleController {
       if (!purged) {
         return;
       }
-      _hasActiveHousehold = false;
     }
 
     _currentUserId = session.userId;
-    if (_hasActiveHousehold && previousUserId == session.userId) {
-      _emit(AuthAuthenticatedActiveHousehold(session));
-      return;
+    await _resolveActiveHousehold(session);
+  }
+
+  Future<void> _resolveActiveHousehold(AuthSession session) async {
+    _emit(AuthResolvingHousehold(session));
+    final LoadActiveHouseholdResult result = await _loadHouseholdSafely();
+    switch (result) {
+      case ActiveHouseholdLoaded(:final household):
+        _emit(AuthAuthenticatedActiveHousehold(session, household));
+      case NoActiveHousehold():
+        _emit(AuthAuthenticatedNoHousehold(session));
+      case LoadActiveHouseholdFailed(:final failure):
+        _emit(AuthHouseholdResolutionFailed(session, failure));
     }
-    _emit(AuthAuthenticatedNoHousehold(session));
   }
 
   Future<void> _terminateSession(AuthSessionTerminationReason reason) async {
@@ -284,7 +309,6 @@ final class AuthLifecycleController {
       return;
     }
     _currentUserId = null;
-    _hasActiveHousehold = false;
     _emit(target);
   }
 
@@ -325,6 +349,16 @@ final class AuthLifecycleController {
       return await _repository.refreshSession();
     } on Object {
       return const AuthSessionFailed(AuthFailure(AuthFailureKind.internal));
+    }
+  }
+
+  Future<LoadActiveHouseholdResult> _loadHouseholdSafely() async {
+    try {
+      return await _householdRepository.loadActiveHousehold();
+    } on Object {
+      return const LoadActiveHouseholdFailed(
+        HouseholdFailure(HouseholdFailureKind.internal),
+      );
     }
   }
 

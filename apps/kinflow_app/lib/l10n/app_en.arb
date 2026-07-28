@@ -60,6 +60,90 @@
   "@authLogoutAction": {
     "description": "Signs out and clears local account-scoped state"
   },
+  "householdLookupErrorTitle": "We couldn't load your household",
+  "@householdLookupErrorTitle": {
+    "description": "Safe recovery title when active household resolution fails"
+  },
+  "householdLookupErrorBody": "Check your connection and try again. Your household data has not been changed.",
+  "@householdLookupErrorBody": {
+    "description": "Safe recovery guidance without exposing provider errors"
+  },
+  "householdOnboardingTitle": "Set up your household",
+  "@householdOnboardingTitle": {
+    "description": "App bar title for first household onboarding"
+  },
+  "householdOnboardingHeading": "Create a shared home",
+  "@householdOnboardingHeading": {
+    "description": "Heading for first household onboarding"
+  },
+  "householdOnboardingBody": "Confirm your name, language, and IANA timezone. You will become the household Owner.",
+  "@householdOnboardingBody": {
+    "description": "Explains the first household creation result"
+  },
+  "ownerDisplayNameLabel": "Your display name",
+  "@ownerDisplayNameLabel": {
+    "description": "Label for the adult Owner display name"
+  },
+  "householdNameLabel": "Household name",
+  "@householdNameLabel": {
+    "description": "Label for the new household name"
+  },
+  "householdNameValidation": "Enter 1–80 characters without control characters.",
+  "@householdNameValidation": {
+    "description": "Validation message shared by household and display names"
+  },
+  "householdLocaleLabel": "Language",
+  "@householdLocaleLabel": {
+    "description": "Label for the adult profile locale"
+  },
+  "householdTimezoneLabel": "Timezone",
+  "@householdTimezoneLabel": {
+    "description": "Label for the household IANA timezone"
+  },
+  "householdTimezoneHint": "Use an IANA name such as Asia/Seoul.",
+  "@householdTimezoneHint": {
+    "description": "Guidance for the household timezone input"
+  },
+  "householdTimezoneValidation": "Enter an IANA timezone.",
+  "@householdTimezoneValidation": {
+    "description": "Validation message for an empty timezone"
+  },
+  "householdCreateAction": "Create household",
+  "@householdCreateAction": {
+    "description": "Submits first household onboarding"
+  },
+  "householdCreatingAction": "Creating household",
+  "@householdCreatingAction": {
+    "description": "Status shown while first household creation is pending"
+  },
+  "householdInvalidInputError": "Check the highlighted details and try again.",
+  "@householdInvalidInputError": {
+    "description": "Safe message for server-rejected onboarding input"
+  },
+  "householdAlreadyExistsError": "This account already has an active household. Reload your household to continue.",
+  "@householdAlreadyExistsError": {
+    "description": "Safe message when a second first-household request is rejected"
+  },
+  "householdRequestConflictError": "These details changed during a retry. Review them and submit again.",
+  "@householdRequestConflictError": {
+    "description": "Safe message for an idempotency request conflict"
+  },
+  "householdCreateError": "We couldn't create the household. Your request is safe to retry.",
+  "@householdCreateError": {
+    "description": "Generic first household creation failure"
+  },
+  "todayTitle": "Today",
+  "@todayTitle": {
+    "description": "Title for the Today destination"
+  },
+  "todayEmptyTitle": "Nothing is scheduled for today",
+  "@todayEmptyTitle": {
+    "description": "Heading for the initial empty Today state"
+  },
+  "todayEmptyBody": "Your shared household is ready. Chores will appear here when they are added.",
+  "@todayEmptyBody": {
+    "description": "Body for the initial empty Today state"
+  },
   "retryAction": "Try again",
   "@retryAction": {
     "description": "Retries app dependency initialization"
@@ -117,5 +201,9 @@
   "homeNavigationLabel": "Home",
   "@homeNavigationLabel": {
     "description": "Navigation destination for the foundation home route"
+  },
+  "todayNavigationLabel": "Today",
+  "@todayNavigationLabel": {
+    "description": "Navigation destination for the Today route"
   }
 }

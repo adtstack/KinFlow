@@ -3,13 +3,17 @@ import 'package:kinflow_app/features/auth/application/auth_lifecycle_state.dart'
 final class AuthRouteGuard {
   AuthRouteGuard({
     required this.authLoadingPath,
-    required this.homePath,
+    required this.householdOnboardingPath,
+    required this.rootPath,
     required this.signInPath,
+    required this.todayPath,
   });
 
   final String authLoadingPath;
-  final String homePath;
+  final String householdOnboardingPath;
+  final String rootPath;
   final String signInPath;
+  final String todayPath;
 
   String? _intendedPath;
 
@@ -17,25 +21,40 @@ final class AuthRouteGuard {
     final String currentPath = location.path;
     final bool isAuthLoading = currentPath == authLoadingPath;
     final bool isSignIn = currentPath == signInPath;
+    final bool isHouseholdOnboarding = currentPath == householdOnboardingPath;
+    final bool isRoot = currentPath == rootPath;
     final bool isPublicAuthPath = isAuthLoading || isSignIn;
 
-    if (authState is AuthBootstrapping) {
-      if (!isPublicAuthPath) {
+    if (authState is AuthBootstrapping ||
+        authState is AuthResolvingHousehold ||
+        authState is AuthHouseholdResolutionFailed) {
+      if (!isPublicAuthPath && !isHouseholdOnboarding) {
         _rememberIntendedPath(location);
       }
       return isAuthLoading ? null : authLoadingPath;
     }
 
-    if (authState.permitsProtectedRoutes) {
-      if (!isPublicAuthPath) {
+    final bool hasActiveHousehold =
+        authState is AuthAuthenticatedActiveHousehold ||
+        authState is AuthRefreshing && authState.activeHousehold != null;
+    if (hasActiveHousehold) {
+      if (!isPublicAuthPath && !isHouseholdOnboarding && !isRoot) {
         return null;
       }
-      final String target = _intendedPath ?? homePath;
+      final String target = _intendedPath ?? todayPath;
       _intendedPath = null;
       return target == currentPath ? null : target;
     }
 
-    if (!isPublicAuthPath) {
+    final bool needsFirstHousehold =
+        authState is AuthAuthenticatedNoHousehold ||
+        authState is AuthRefreshing;
+    if (needsFirstHousehold) {
+      _intendedPath = null;
+      return isHouseholdOnboarding ? null : householdOnboardingPath;
+    }
+
+    if (!isPublicAuthPath && !isHouseholdOnboarding) {
       _rememberIntendedPath(location);
       return signInPath;
     }
@@ -53,8 +72,10 @@ final class AuthRouteGuard {
         path.contains(r'\') ||
         path.length > 512 ||
         path == authLoadingPath ||
-        path == signInPath) {
-      _intendedPath = homePath;
+        path == signInPath ||
+        path == householdOnboardingPath ||
+        path == rootPath) {
+      _intendedPath = todayPath;
       return;
     }
     _intendedPath = path;

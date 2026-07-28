@@ -189,6 +189,132 @@ abstract class AppLocalizations {
   /// **'Sign out'**
   String get authLogoutAction;
 
+  /// Safe recovery title when active household resolution fails
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t load your household'**
+  String get householdLookupErrorTitle;
+
+  /// Safe recovery guidance without exposing provider errors
+  ///
+  /// In en, this message translates to:
+  /// **'Check your connection and try again. Your household data has not been changed.'**
+  String get householdLookupErrorBody;
+
+  /// App bar title for first household onboarding
+  ///
+  /// In en, this message translates to:
+  /// **'Set up your household'**
+  String get householdOnboardingTitle;
+
+  /// Heading for first household onboarding
+  ///
+  /// In en, this message translates to:
+  /// **'Create a shared home'**
+  String get householdOnboardingHeading;
+
+  /// Explains the first household creation result
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your name, language, and IANA timezone. You will become the household Owner.'**
+  String get householdOnboardingBody;
+
+  /// Label for the adult Owner display name
+  ///
+  /// In en, this message translates to:
+  /// **'Your display name'**
+  String get ownerDisplayNameLabel;
+
+  /// Label for the new household name
+  ///
+  /// In en, this message translates to:
+  /// **'Household name'**
+  String get householdNameLabel;
+
+  /// Validation message shared by household and display names
+  ///
+  /// In en, this message translates to:
+  /// **'Enter 1–80 characters without control characters.'**
+  String get householdNameValidation;
+
+  /// Label for the adult profile locale
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get householdLocaleLabel;
+
+  /// Label for the household IANA timezone
+  ///
+  /// In en, this message translates to:
+  /// **'Timezone'**
+  String get householdTimezoneLabel;
+
+  /// Guidance for the household timezone input
+  ///
+  /// In en, this message translates to:
+  /// **'Use an IANA name such as Asia/Seoul.'**
+  String get householdTimezoneHint;
+
+  /// Validation message for an empty timezone
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an IANA timezone.'**
+  String get householdTimezoneValidation;
+
+  /// Submits first household onboarding
+  ///
+  /// In en, this message translates to:
+  /// **'Create household'**
+  String get householdCreateAction;
+
+  /// Status shown while first household creation is pending
+  ///
+  /// In en, this message translates to:
+  /// **'Creating household'**
+  String get householdCreatingAction;
+
+  /// Safe message for server-rejected onboarding input
+  ///
+  /// In en, this message translates to:
+  /// **'Check the highlighted details and try again.'**
+  String get householdInvalidInputError;
+
+  /// Safe message when a second first-household request is rejected
+  ///
+  /// In en, this message translates to:
+  /// **'This account already has an active household. Reload your household to continue.'**
+  String get householdAlreadyExistsError;
+
+  /// Safe message for an idempotency request conflict
+  ///
+  /// In en, this message translates to:
+  /// **'These details changed during a retry. Review them and submit again.'**
+  String get householdRequestConflictError;
+
+  /// Generic first household creation failure
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t create the household. Your request is safe to retry.'**
+  String get householdCreateError;
+
+  /// Title for the Today destination
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get todayTitle;
+
+  /// Heading for the initial empty Today state
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is scheduled for today'**
+  String get todayEmptyTitle;
+
+  /// Body for the initial empty Today state
+  ///
+  /// In en, this message translates to:
+  /// **'Your shared household is ready. Chores will appear here when they are added.'**
+  String get todayEmptyBody;
+
   /// Retries app dependency initialization
   ///
   /// In en, this message translates to:
@@ -266,6 +392,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Home'**
   String get homeNavigationLabel;
+
+  /// Navigation destination for the Today route
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get todayNavigationLabel;
 }
 
 class _AppLocalizationsDelegate

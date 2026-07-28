@@ -56,6 +56,74 @@ class AppLocalizationsKo extends AppLocalizations {
   String get authLogoutAction => '로그아웃';
 
   @override
+  String get householdLookupErrorTitle => '가구 정보를 불러오지 못했습니다';
+
+  @override
+  String get householdLookupErrorBody =>
+      '연결 상태를 확인하고 다시 시도해 주세요. 가구 데이터는 변경되지 않았습니다.';
+
+  @override
+  String get householdOnboardingTitle => '가구 설정';
+
+  @override
+  String get householdOnboardingHeading => '함께 사용할 집 만들기';
+
+  @override
+  String get householdOnboardingBody =>
+      '이름, 언어와 IANA 시간대를 확인해 주세요. 이 가구의 Owner가 됩니다.';
+
+  @override
+  String get ownerDisplayNameLabel => '내 표시 이름';
+
+  @override
+  String get householdNameLabel => '가구 이름';
+
+  @override
+  String get householdNameValidation => '제어 문자를 제외한 1~80자를 입력해 주세요.';
+
+  @override
+  String get householdLocaleLabel => '언어';
+
+  @override
+  String get householdTimezoneLabel => '시간대';
+
+  @override
+  String get householdTimezoneHint => 'Asia/Seoul 같은 IANA 이름을 사용하세요.';
+
+  @override
+  String get householdTimezoneValidation => 'IANA 시간대를 입력해 주세요.';
+
+  @override
+  String get householdCreateAction => '가구 만들기';
+
+  @override
+  String get householdCreatingAction => '가구를 만드는 중';
+
+  @override
+  String get householdInvalidInputError => '입력한 내용을 확인하고 다시 시도해 주세요.';
+
+  @override
+  String get householdAlreadyExistsError =>
+      '이 계정에는 이미 활성 가구가 있습니다. 가구 정보를 다시 불러와 주세요.';
+
+  @override
+  String get householdRequestConflictError =>
+      '재시도 중 입력 내용이 변경되었습니다. 내용을 확인하고 다시 제출해 주세요.';
+
+  @override
+  String get householdCreateError =>
+      '가구를 만들지 못했습니다. 같은 요청을 안전하게 다시 시도할 수 있습니다.';
+
+  @override
+  String get todayTitle => '오늘';
+
+  @override
+  String get todayEmptyTitle => '오늘 예정된 일이 없습니다';
+
+  @override
+  String get todayEmptyBody => '함께 사용할 가구가 준비되었습니다. 집안일을 추가하면 여기에 표시됩니다.';
+
+  @override
   String get retryAction => '다시 시도';
 
   @override
@@ -102,4 +170,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get homeNavigationLabel => '홈';
+
+  @override
+  String get todayNavigationLabel => '오늘';
 }

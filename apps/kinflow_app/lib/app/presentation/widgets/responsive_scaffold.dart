@@ -116,10 +116,13 @@ class _RailScaffold extends StatelessWidget {
                       NavigationRailDestination(
                         icon: const Icon(Icons.home_outlined),
                         selectedIcon: const Icon(Icons.home),
-                        label: Text(
-                          localizations.homeNavigationLabel,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                        label: SizedBox(
+                          width: AppLayoutTokens.navigationRailLabelWidth,
+                          child: Text(
+                            localizations.todayNavigationLabel,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ),
                     ],

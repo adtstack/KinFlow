@@ -11,6 +11,7 @@ import 'package:kinflow_app/app/providers/auth_dependencies.dart';
 import 'package:kinflow_app/app/providers/foundation_dependencies.dart';
 import 'package:kinflow_app/features/auth/presentation/providers/auth_providers.dart';
 import 'package:kinflow_app/features/foundation/presentation/providers/foundation_providers.dart';
+import 'package:kinflow_app/features/household/presentation/providers/household_providers.dart';
 import 'package:kinflow_app/infrastructure/observability/app_logging_composition.dart';
 import 'package:kinflow_app/infrastructure/observability/sentry_observability.dart';
 
@@ -99,6 +100,12 @@ void _runKinFlowApp({
             ),
             sensitiveLocalStatePurgerProvider.overrideWithValue(
               dependencies.localStatePurger,
+            ),
+            householdRepositoryProvider.overrideWithValue(
+              dependencies.householdRepository,
+            ),
+            householdCreationIdGeneratorProvider.overrideWithValue(
+              dependencies.householdCreationIdGenerator,
             ),
             foundationRepositoryProvider.overrideWithValue(
               createFoundationRepository(),

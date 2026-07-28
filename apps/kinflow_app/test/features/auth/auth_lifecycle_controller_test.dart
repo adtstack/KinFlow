@@ -8,8 +8,11 @@ import 'package:kinflow_app/features/auth/domain/entities/auth_session.dart';
 import 'package:kinflow_app/features/auth/domain/failures/auth_failure.dart';
 import 'package:kinflow_app/features/auth/domain/repositories/auth_session_repository.dart';
 import 'package:kinflow_app/features/auth/domain/services/auth_sign_in_launcher.dart';
+import 'package:kinflow_app/features/household/domain/repositories/household_repository.dart';
+import 'package:kinflow_app/features/household/domain/failures/household_failure.dart';
 
 import '../../support/fakes/fake_auth_dependencies.dart';
+import '../../support/fakes/fake_household_dependencies.dart';
 
 void main() {
   group('AuthLifecycleController', () {
@@ -62,6 +65,99 @@ void main() {
         expect(purger.purgeCount, 0);
       },
     );
+
+    test('restores the server-selected active household', () async {
+      final AuthSession session = authSessionFixture();
+      final FakeAuthSessionRepository repository = FakeAuthSessionRepository(
+        restoreResult: AuthSessionAvailable(session),
+      );
+      final FakeHouseholdRepository householdRepository =
+          FakeHouseholdRepository(
+            defaultLoadResult: ActiveHouseholdLoaded(activeHouseholdFixture()),
+          );
+      final AuthLifecycleController controller = _controller(
+        repository: repository,
+        householdRepository: householdRepository,
+      );
+      addTearDown(() async {
+        await controller.dispose();
+        await repository.close();
+      });
+
+      await controller.start();
+
+      expect(controller.state, isA<AuthAuthenticatedActiveHousehold>());
+      expect(controller.state.activeHousehold, activeHouseholdFixture());
+      expect(householdRepository.loadCount, 1);
+    });
+
+    test(
+      'household lookup failure stays closed until retry succeeds',
+      () async {
+        final AuthSession session = authSessionFixture();
+        final FakeAuthSessionRepository repository = FakeAuthSessionRepository(
+          restoreResult: AuthSessionAvailable(session),
+        );
+        final FakeHouseholdRepository householdRepository =
+            FakeHouseholdRepository(
+              loadResults: <LoadActiveHouseholdResult>[
+                const LoadActiveHouseholdFailed(
+                  HouseholdFailure(HouseholdFailureKind.temporarilyUnavailable),
+                ),
+                ActiveHouseholdLoaded(activeHouseholdFixture()),
+              ],
+            );
+        final AuthLifecycleController controller = _controller(
+          repository: repository,
+          householdRepository: householdRepository,
+        );
+        addTearDown(() async {
+          await controller.dispose();
+          await repository.close();
+        });
+
+        await controller.start();
+
+        expect(controller.state, isA<AuthHouseholdResolutionFailed>());
+        expect(controller.state.permitsProtectedRoutes, isFalse);
+        expect(
+          controller.state.householdFailure?.kind,
+          HouseholdFailureKind.temporarilyUnavailable,
+        );
+
+        await controller.retryHouseholdResolution();
+
+        expect(controller.state, isA<AuthAuthenticatedActiveHousehold>());
+        expect(householdRepository.loadCount, 2);
+      },
+    );
+
+    test('repository exceptions cannot be mistaken for no household', () async {
+      final FakeAuthSessionRepository repository = FakeAuthSessionRepository(
+        restoreResult: AuthSessionAvailable(authSessionFixture()),
+      );
+      final AuthLifecycleController controller = _controller(
+        repository: repository,
+        householdRepository: FakeHouseholdRepository(
+          loadCallback: () async {
+            throw StateError('raw-household-provider-detail');
+          },
+        ),
+      );
+      addTearDown(() async {
+        await controller.dispose();
+        await repository.close();
+      });
+
+      await controller.start();
+
+      expect(controller.state, isA<AuthHouseholdResolutionFailed>());
+      expect(
+        controller.state.householdFailure?.kind,
+        HouseholdFailureKind.internal,
+      );
+      expect(controller.state, isNot(isA<AuthAuthenticatedNoHousehold>()));
+    });
 
     test('locks when restore cannot safely determine the session', () async {
       final FakeAuthSessionRepository repository = FakeAuthSessionRepository(
@@ -388,11 +484,13 @@ AuthLifecycleController _controller({
   required FakeAuthSessionRepository repository,
   SensitiveLocalStatePurger? purger,
   AuthSignInLauncher? launcher,
+  HouseholdRepository? householdRepository,
 }) {
   return AuthLifecycleController(
     repository: repository,
     signInLauncher: launcher ?? FakeAuthSignInLauncher(),
     localStatePurger: purger ?? RecordingSensitiveLocalStatePurger(),
+    householdRepository: householdRepository ?? FakeHouseholdRepository(),
   );
 }
 

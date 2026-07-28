@@ -6,6 +6,8 @@ import 'package:kinflow_app/features/auth/application/auth_lifecycle_state.dart'
 import 'package:kinflow_app/features/auth/application/ports/sensitive_local_state_purger.dart';
 import 'package:kinflow_app/features/auth/domain/repositories/auth_session_repository.dart';
 import 'package:kinflow_app/features/auth/domain/services/auth_sign_in_launcher.dart';
+import 'package:kinflow_app/features/household/domain/entities/active_household.dart';
+import 'package:kinflow_app/features/household/presentation/providers/household_providers.dart';
 
 final authSessionRepositoryProvider = Provider<AuthSessionRepository>((ref) {
   throw StateError('AuthSessionRepository override is required.');
@@ -28,6 +30,7 @@ final authLifecycleControllerProvider = Provider<AuthLifecycleController>((
     repository: ref.watch(authSessionRepositoryProvider),
     signInLauncher: ref.watch(authSignInLauncherProvider),
     localStatePurger: ref.watch(sensitiveLocalStatePurgerProvider),
+    householdRepository: ref.watch(householdRepositoryProvider),
   );
   ref.onDispose(() => unawaited(controller.dispose()));
   return controller;
@@ -72,5 +75,15 @@ final class AuthLifecycleNotifier extends Notifier<AuthLifecycleState> {
 
   Future<void> logout() {
     return ref.read(authLifecycleControllerProvider).logout();
+  }
+
+  Future<void> markActiveHousehold(ActiveHousehold household) {
+    return ref
+        .read(authLifecycleControllerProvider)
+        .markActiveHousehold(household);
+  }
+
+  Future<void> retryHouseholdResolution() {
+    return ref.read(authLifecycleControllerProvider).retryHouseholdResolution();
   }
 }

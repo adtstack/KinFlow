@@ -56,9 +56,11 @@ abstract final class AppLayoutTokens {
   static const double pageContentMaxWidth = 960;
   static const double navigationRailWidth = 72;
   static const double extendedNavigationRailWidth = 224;
+  static const double navigationRailLabelWidth = 128;
 }
 
 abstract final class AppIconSize {
+  static const double inline = 20;
   static const double status = 56;
 }
 

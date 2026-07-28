@@ -59,6 +59,77 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authLogoutAction => 'Sign out';
 
   @override
+  String get householdLookupErrorTitle => 'We couldn\'t load your household';
+
+  @override
+  String get householdLookupErrorBody =>
+      'Check your connection and try again. Your household data has not been changed.';
+
+  @override
+  String get householdOnboardingTitle => 'Set up your household';
+
+  @override
+  String get householdOnboardingHeading => 'Create a shared home';
+
+  @override
+  String get householdOnboardingBody =>
+      'Confirm your name, language, and IANA timezone. You will become the household Owner.';
+
+  @override
+  String get ownerDisplayNameLabel => 'Your display name';
+
+  @override
+  String get householdNameLabel => 'Household name';
+
+  @override
+  String get householdNameValidation =>
+      'Enter 1–80 characters without control characters.';
+
+  @override
+  String get householdLocaleLabel => 'Language';
+
+  @override
+  String get householdTimezoneLabel => 'Timezone';
+
+  @override
+  String get householdTimezoneHint => 'Use an IANA name such as Asia/Seoul.';
+
+  @override
+  String get householdTimezoneValidation => 'Enter an IANA timezone.';
+
+  @override
+  String get householdCreateAction => 'Create household';
+
+  @override
+  String get householdCreatingAction => 'Creating household';
+
+  @override
+  String get householdInvalidInputError =>
+      'Check the highlighted details and try again.';
+
+  @override
+  String get householdAlreadyExistsError =>
+      'This account already has an active household. Reload your household to continue.';
+
+  @override
+  String get householdRequestConflictError =>
+      'These details changed during a retry. Review them and submit again.';
+
+  @override
+  String get householdCreateError =>
+      'We couldn\'t create the household. Your request is safe to retry.';
+
+  @override
+  String get todayTitle => 'Today';
+
+  @override
+  String get todayEmptyTitle => 'Nothing is scheduled for today';
+
+  @override
+  String get todayEmptyBody =>
+      'Your shared household is ready. Chores will appear here when they are added.';
+
+  @override
   String get retryAction => 'Try again';
 
   @override
@@ -105,6 +176,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeNavigationLabel => 'Home';
+
+  @override
+  String get todayNavigationLabel => 'Today';
 }
 
 /// The translations for English (`en_XA`).
@@ -165,6 +239,86 @@ class AppLocalizationsEnXa extends AppLocalizationsEn {
   String get authLogoutAction => '[!! Šîĝñ ôûţ securely !!]';
 
   @override
+  String get householdLookupErrorTitle =>
+      '[!! Ŵē çôûłđ ñôţ safely łôåđ ŷôûŕ complete shared household information !!]';
+
+  @override
+  String get householdLookupErrorBody =>
+      '[!! Çĥēçķ ŷôûŕ network connection and try the secure household lookup again. Your shared household data has not been changed anywhere. !!]';
+
+  @override
+  String get householdOnboardingTitle =>
+      '[!! Šēţ ûp ŷôûŕ complete shared household securely !!]';
+
+  @override
+  String get householdOnboardingHeading =>
+      '[!! Çŕēåţē å šĥåŕēđ family home together !!]';
+
+  @override
+  String get householdOnboardingBody =>
+      '[!! Çôñƒîŕm ŷôûŕ display name, preferred language, åñđ complete ÎÅÑÅ timezone. You will securely become the Owner of this shared household across every adaptive layout. !!]';
+
+  @override
+  String get ownerDisplayNameLabel =>
+      '[!! Ŷôûŕ åđûłţ display name for the household !!]';
+
+  @override
+  String get householdNameLabel => '[!! Šĥåŕēđ household display name !!]';
+
+  @override
+  String get householdNameValidation =>
+      '[!! Ēñţēŕ between 1 and 80 readable characters without any hidden control characters. !!]';
+
+  @override
+  String get householdLocaleLabel => '[!! Pŕēƒēŕŕēđ application language !!]';
+
+  @override
+  String get householdTimezoneLabel => '[!! Šĥåŕēđ household timezone !!]';
+
+  @override
+  String get householdTimezoneHint =>
+      '[!! Ûšē å complete ÎÅÑÅ timezone name such as Asia/Seoul for every shared schedule. !!]';
+
+  @override
+  String get householdTimezoneValidation =>
+      '[!! Ēñţēŕ å valid complete ÎÅÑÅ timezone name. !!]';
+
+  @override
+  String get householdCreateAction =>
+      '[!! Çŕēåţē ţĥîš shared household securely !!]';
+
+  @override
+  String get householdCreatingAction =>
+      '[!! Çŕēåţîñĝ ţĥē shared household securely now !!]';
+
+  @override
+  String get householdInvalidInputError =>
+      '[!! Çĥēçķ every highlighted household detail carefully and then try the secure request again. !!]';
+
+  @override
+  String get householdAlreadyExistsError =>
+      '[!! Ţĥîš adult account already has an active household. Reload the complete household information securely to continue across every adaptive layout. !!]';
+
+  @override
+  String get householdRequestConflictError =>
+      '[!! Ţĥēšē household details changed during a safe retry. Review every detail carefully and submit a fresh request again. !!]';
+
+  @override
+  String get householdCreateError =>
+      '[!! Ŵē çôûłđ ñôţ safely create the shared household right now. Your complete request remains safe to retry without duplication. !!]';
+
+  @override
+  String get todayTitle => '[!! Ţôđåŷ schedule !!]';
+
+  @override
+  String get todayEmptyTitle =>
+      '[!! Ñôţĥîñĝ îš currently scheduled for today in this shared household !!]';
+
+  @override
+  String get todayEmptyBody =>
+      '[!! Ŷôûŕ shared household is completely ready. New chores and family responsibilities will appear safely in this Today view whenever they are added. !!]';
+
+  @override
   String get retryAction => '[!! Ţŕŷ ţĥîš åĝåîñ !!]';
 
   @override
@@ -217,4 +371,8 @@ class AppLocalizationsEnXa extends AppLocalizationsEn {
 
   @override
   String get homeNavigationLabel => '[!! Ĥômē page !!]';
+
+  @override
+  String get todayNavigationLabel =>
+      '[!! Ţôđåŷ household schedule destination !!]';
 }

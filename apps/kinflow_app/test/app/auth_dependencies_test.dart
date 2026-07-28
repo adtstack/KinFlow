@@ -6,6 +6,7 @@ import 'package:kinflow_app/app/app_environment.dart';
 import 'package:kinflow_app/app/providers/auth_dependencies.dart';
 import 'package:kinflow_app/features/auth/application/ports/sensitive_local_state_purger.dart';
 import 'package:kinflow_app/features/auth/data/repositories/provider_auth_session_repository.dart';
+import 'package:kinflow_app/features/household/data/repositories/provider_household_repository.dart';
 import 'package:kinflow_app/infrastructure/secure_storage/secure_string_store.dart';
 import 'package:kinflow_app/infrastructure/supabase/supabase_client_initializer.dart';
 import 'package:kinflow_app/infrastructure/supabase/supabase_secure_auth_storage.dart';
@@ -55,6 +56,10 @@ void main() {
     expect(
       dependencies.sessionRepository,
       isA<ProviderAuthSessionRepository>(),
+    );
+    expect(
+      dependencies.householdRepository,
+      isA<ProviderHouseholdRepository>(),
     );
     expect(dependencies.signInLauncher.isAvailable, isFalse);
     expect(initializer.uri, configuration.supabaseUri);

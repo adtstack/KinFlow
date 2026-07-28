@@ -6,17 +6,16 @@ import 'package:kinflow_app/app/app_environment.dart';
 import 'package:kinflow_app/app/presentation/widgets/responsive_scaffold.dart';
 import 'package:kinflow_app/app/providers/app_providers.dart';
 import 'package:kinflow_app/app/providers/auth_dependencies.dart';
-import 'package:kinflow_app/app/providers/foundation_dependencies.dart';
 import 'package:kinflow_app/app/theme/app_theme.dart';
 import 'package:kinflow_app/features/auth/domain/repositories/auth_session_repository.dart';
 import 'package:kinflow_app/features/auth/presentation/providers/auth_providers.dart';
-import 'package:kinflow_app/features/foundation/domain/failures/foundation_failure.dart';
-import 'package:kinflow_app/features/foundation/domain/repositories/foundation_repository.dart';
-import 'package:kinflow_app/features/foundation/presentation/providers/foundation_providers.dart';
+import 'package:kinflow_app/features/household/domain/failures/household_failure.dart';
+import 'package:kinflow_app/features/household/domain/repositories/household_repository.dart';
+import 'package:kinflow_app/features/household/presentation/providers/household_providers.dart';
 import 'package:kinflow_app/l10n/app_localizations.dart';
 
 import '../support/fakes/fake_auth_dependencies.dart';
-import '../support/fakes/fake_foundation_repository.dart';
+import '../support/fakes/fake_household_dependencies.dart';
 
 void main() {
   const List<({String key, Size size})> layoutScenarios =
@@ -55,25 +54,25 @@ void main() {
       expect(find.semantics.byLabel('Primary navigation'), findsOne);
       expect(
         tester.getSemantics(find.byKey(const Key('layout.pageHeading'))),
-        isSemantics(label: 'KinFlow', isHeader: true),
+        isSemantics(label: 'Today', isHeader: true),
       );
       expect(
-        tester.getSemantics(find.text('KinFlow is ready')),
-        isSemantics(label: 'KinFlow is ready', isHeader: true),
+        tester.getSemantics(find.text('Nothing is scheduled for today')),
+        isSemantics(label: 'Nothing is scheduled for today', isHeader: true),
       );
 
       await _pumpApp(
         tester,
         size: const Size(390, 844),
-        repository: FakeFoundationRepository(
-          results: <LoadFoundationResult>[
-            const FoundationLoadFailed(FoundationUnavailable()),
-          ],
+        householdRepository: FakeHouseholdRepository(
+          defaultLoadResult: const LoadActiveHouseholdFailed(
+            HouseholdFailure(HouseholdFailureKind.temporarilyUnavailable),
+          ),
         ),
       );
 
       expect(
-        tester.getSemantics(find.byKey(const Key('foundation.retry'))),
+        tester.getSemantics(find.byKey(const Key('household.resolutionRetry'))),
         isSemantics(
           label: 'Try again',
           hint: 'Runs this check again',
@@ -118,7 +117,7 @@ void main() {
 
       expect(find.byKey(Key(scenario.layoutKey)), findsOneWidget);
       expect(find.byKey(const Key('layout.scrollableStatus')), findsOneWidget);
-      expect(find.byKey(const Key('foundation.ready')), findsOneWidget);
+      expect(find.byKey(const Key('today.empty')), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   }
@@ -129,19 +128,21 @@ void main() {
     await _pumpApp(
       tester,
       locale: const Locale('ko'),
-      repository: FakeFoundationRepository(
-        results: <LoadFoundationResult>[
-          const FoundationLoadFailed(FoundationUnavailable()),
-        ],
+      householdRepository: FakeHouseholdRepository(
+        defaultLoadResult: const LoadActiveHouseholdFailed(
+          HouseholdFailure(HouseholdFailureKind.temporarilyUnavailable),
+        ),
       ),
       size: const Size(320, 568),
       textScaleFactor: 2,
     );
 
-    await tester.ensureVisible(find.byKey(const Key('foundation.retry')));
+    await tester.ensureVisible(
+      find.byKey(const Key('household.resolutionRetry')),
+    );
     await tester.pump();
     final Size retrySize = tester.getSize(
-      find.byKey(const Key('foundation.retry')),
+      find.byKey(const Key('household.resolutionRetry')),
     );
 
     expect(retrySize.width, greaterThanOrEqualTo(48));
@@ -204,7 +205,10 @@ void main() {
       TextDirection.rtl,
     );
     expect(navigation.left, greaterThan(content.left));
-    expect(find.text('[!! Ĥômē page !!]'), findsOneWidget);
+    expect(
+      find.text('[!! Ţôđåŷ household schedule destination !!]'),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
 }
@@ -214,7 +218,7 @@ Future<ProviderContainer> _pumpApp(
   required Size size,
   bool authenticated = true,
   Locale? locale,
-  FoundationRepository? repository,
+  HouseholdRepository? householdRepository,
   double textScaleFactor = 1,
 }) async {
   _configureView(tester, size: size, textScaleFactor: textScaleFactor);
@@ -233,8 +237,13 @@ Future<ProviderContainer> _pumpApp(
       sensitiveLocalStatePurgerProvider.overrideWithValue(
         createSensitiveLocalStatePurger(),
       ),
-      foundationRepositoryProvider.overrideWithValue(
-        repository ?? createFoundationRepository(),
+      householdRepositoryProvider.overrideWithValue(
+        householdRepository ??
+            FakeHouseholdRepository(
+              defaultLoadResult: ActiveHouseholdLoaded(
+                activeHouseholdFixture(),
+              ),
+            ),
       ),
       if (locale != null) appLocaleProvider.overrideWithValue(locale),
     ],

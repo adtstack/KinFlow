@@ -1,14 +1,30 @@
 import 'package:kinflow_app/features/auth/domain/entities/auth_session.dart';
 import 'package:kinflow_app/features/auth/domain/failures/auth_failure.dart';
+import 'package:kinflow_app/features/household/domain/entities/active_household.dart';
+import 'package:kinflow_app/features/household/domain/failures/household_failure.dart';
 
 sealed class AuthLifecycleState {
   const AuthLifecycleState();
 
   AuthSession? get session => switch (this) {
+    AuthResolvingHousehold(:final session) => session,
+    AuthHouseholdResolutionFailed(:final session) => session,
     AuthAuthenticatedNoHousehold(:final session) => session,
     AuthAuthenticatedActiveHousehold(:final session) => session,
     AuthRefreshing(:final session) => session,
     AuthDeleting(:final session) => session,
+    _ => null,
+  };
+
+  ActiveHousehold? get activeHousehold => switch (this) {
+    AuthAuthenticatedActiveHousehold(:final household) => household,
+    AuthRefreshing(:final activeHousehold) => activeHousehold,
+    _ => null,
+  };
+
+  HouseholdFailure? get householdFailure => switch (this) {
+    AuthHouseholdResolutionFailed(:final householdResolutionFailure) =>
+      householdResolutionFailure,
     _ => null,
   };
 
@@ -40,6 +56,25 @@ final class AuthAuthenticating extends AuthLifecycleState {
   const AuthAuthenticating();
 }
 
+final class AuthResolvingHousehold extends AuthLifecycleState {
+  const AuthResolvingHousehold(this.session);
+
+  @override
+  final AuthSession session;
+}
+
+final class AuthHouseholdResolutionFailed extends AuthLifecycleState {
+  const AuthHouseholdResolutionFailed(
+    this.session,
+    this.householdResolutionFailure,
+  );
+
+  @override
+  final AuthSession session;
+
+  final HouseholdFailure householdResolutionFailure;
+}
+
 final class AuthAuthenticatedNoHousehold extends AuthLifecycleState {
   const AuthAuthenticatedNoHousehold(this.session);
 
@@ -48,17 +83,22 @@ final class AuthAuthenticatedNoHousehold extends AuthLifecycleState {
 }
 
 final class AuthAuthenticatedActiveHousehold extends AuthLifecycleState {
-  const AuthAuthenticatedActiveHousehold(this.session);
+  const AuthAuthenticatedActiveHousehold(this.session, this.household);
 
   @override
   final AuthSession session;
+
+  final ActiveHousehold household;
 }
 
 final class AuthRefreshing extends AuthLifecycleState {
-  const AuthRefreshing(this.session);
+  const AuthRefreshing(this.session, {this.activeHousehold});
 
   @override
   final AuthSession session;
+
+  @override
+  final ActiveHousehold? activeHousehold;
 }
 
 final class AuthLocked extends AuthLifecycleState {

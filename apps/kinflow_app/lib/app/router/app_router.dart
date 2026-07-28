@@ -7,12 +7,15 @@ import 'package:kinflow_app/features/auth/application/auth_lifecycle_state.dart'
 import 'package:kinflow_app/features/auth/presentation/providers/auth_providers.dart';
 import 'package:kinflow_app/features/auth/presentation/screens/auth_loading_screen.dart';
 import 'package:kinflow_app/features/auth/presentation/screens/sign_in_screen.dart';
-import 'package:kinflow_app/features/foundation/presentation/screens/foundation_home_screen.dart';
+import 'package:kinflow_app/features/household/presentation/screens/household_onboarding_screen.dart';
+import 'package:kinflow_app/features/household/presentation/screens/today_empty_screen.dart';
 
 abstract final class AppRoutes {
   static const String home = '/';
   static const String authLoading = '/auth/loading';
+  static const String householdOnboarding = '/onboarding/household';
   static const String signIn = '/sign-in';
+  static const String today = '/today';
 }
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -20,8 +23,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       _AuthRouterRefreshNotifier();
   final AuthRouteGuard authRouteGuard = AuthRouteGuard(
     authLoadingPath: AppRoutes.authLoading,
-    homePath: AppRoutes.home,
+    householdOnboardingPath: AppRoutes.householdOnboarding,
+    rootPath: AppRoutes.home,
     signInPath: AppRoutes.signIn,
+    todayPath: AppRoutes.today,
   );
   ref.listen<AuthLifecycleState>(authLifecycleProvider, (
     AuthLifecycleState? previous,
@@ -43,7 +48,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.home,
         pageBuilder: (BuildContext context, GoRouterState state) {
-          return const NoTransitionPage<void>(child: FoundationHomeScreen());
+          return const NoTransitionPage<void>(child: SizedBox.shrink());
         },
       ),
       GoRoute(
@@ -56,6 +61,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.signIn,
         pageBuilder: (BuildContext context, GoRouterState state) {
           return const NoTransitionPage<void>(child: SignInScreen());
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.householdOnboarding,
+        pageBuilder: (BuildContext context, GoRouterState state) {
+          return const NoTransitionPage<void>(
+            child: HouseholdOnboardingScreen(),
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.today,
+        pageBuilder: (BuildContext context, GoRouterState state) {
+          return const NoTransitionPage<void>(child: TodayEmptyScreen());
         },
       ),
     ],

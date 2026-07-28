@@ -9,20 +9,17 @@ import 'package:kinflow_app/app/app_environment.dart';
 import 'package:kinflow_app/app/observability/app_logger.dart';
 import 'package:kinflow_app/app/providers/app_providers.dart';
 import 'package:kinflow_app/app/providers/auth_dependencies.dart';
-import 'package:kinflow_app/app/providers/foundation_dependencies.dart';
 import 'package:kinflow_app/app/router/app_router.dart';
 import 'package:kinflow_app/features/auth/application/ports/sensitive_local_state_purger.dart';
 import 'package:kinflow_app/features/auth/domain/repositories/auth_session_repository.dart';
 import 'package:kinflow_app/features/auth/domain/services/auth_sign_in_launcher.dart';
 import 'package:kinflow_app/features/auth/presentation/providers/auth_providers.dart';
-import 'package:kinflow_app/features/foundation/domain/entities/foundation_status.dart';
-import 'package:kinflow_app/features/foundation/domain/failures/foundation_failure.dart';
-import 'package:kinflow_app/features/foundation/domain/repositories/foundation_repository.dart';
-import 'package:kinflow_app/features/foundation/domain/value_objects/foundation_sample_id.dart';
-import 'package:kinflow_app/features/foundation/presentation/providers/foundation_providers.dart';
+import 'package:kinflow_app/features/household/domain/failures/household_failure.dart';
+import 'package:kinflow_app/features/household/domain/repositories/household_repository.dart';
+import 'package:kinflow_app/features/household/presentation/providers/household_providers.dart';
 
 import 'support/fakes/fake_auth_dependencies.dart';
-import 'support/fakes/fake_foundation_repository.dart';
+import 'support/fakes/fake_household_dependencies.dart';
 
 void main() {
   testWidgets('shows loading until initialization completes', (
@@ -37,12 +34,12 @@ void main() {
     );
 
     expect(find.byKey(const Key('startup.loading')), findsOneWidget);
-    expect(find.byKey(const Key('foundation.home')), findsNothing);
+    expect(find.byKey(const Key('today.screen')), findsNothing);
 
     initializer.complete();
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('foundation.home')), findsOneWidget);
+    expect(find.byKey(const Key('today.screen')), findsOneWidget);
   });
 
   testWidgets('hides raw startup error and recovers on retry', (
@@ -89,7 +86,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(attempts, 2);
-    expect(find.byKey(const Key('foundation.home')), findsOneWidget);
+    expect(find.byKey(const Key('today.screen')), findsOneWidget);
   });
 
   testWidgets('shows environment banner only in dev', (
@@ -125,21 +122,18 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('KinFlow를 사용할 준비가 되었습니다'), findsOneWidget);
+    expect(find.text('오늘 예정된 일이 없습니다'), findsOneWidget);
   });
 
-  testWidgets('repository override drives failure and retry presentation', (
+  testWidgets('household lookup failure stays closed and recovers on retry', (
     WidgetTester tester,
   ) async {
-    final FakeFoundationRepository repository = FakeFoundationRepository(
-      results: <LoadFoundationResult>[
-        const FoundationLoadFailed(FoundationUnavailable()),
-        FoundationLoaded(
-          FoundationStatus(
-            id: _foundationSampleId(),
-            readiness: FoundationReadiness.ready,
-          ),
+    final FakeHouseholdRepository repository = FakeHouseholdRepository(
+      loadResults: <LoadActiveHouseholdResult>[
+        const LoadActiveHouseholdFailed(
+          HouseholdFailure(HouseholdFailureKind.temporarilyUnavailable),
         ),
+        ActiveHouseholdLoaded(activeHouseholdFixture()),
       ],
     );
 
@@ -147,17 +141,21 @@ void main() {
       tester,
       environment: AppEnvironment.prod,
       initializer: _successfulInitialization,
-      foundationRepository: repository,
+      householdRepository: repository,
     );
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('foundation.failure')), findsOneWidget);
+    expect(
+      find.byKey(const Key('household.resolutionFailure')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('today.screen')), findsNothing);
 
-    await tester.tap(find.byKey(const Key('foundation.retry')));
+    await tester.tap(find.byKey(const Key('household.resolutionRetry')));
     await tester.pumpAndSettle();
 
     expect(repository.loadCount, 2);
-    expect(find.byKey(const Key('foundation.ready')), findsOneWidget);
+    expect(find.byKey(const Key('today.empty')), findsOneWidget);
   });
 
   testWidgets('renders a safe not-found route and returns home', (
@@ -178,7 +176,7 @@ void main() {
     await tester.tap(find.byKey(const Key('route.goHome')));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('foundation.home')), findsOneWidget);
+    expect(find.byKey(const Key('today.screen')), findsOneWidget);
   });
 
   testWidgets('fails closed with only a disabled Google sign-in action', (
@@ -219,7 +217,7 @@ void main() {
     await tester.pump();
 
     expect(find.byKey(const Key('auth.loading')), findsOneWidget);
-    expect(find.byKey(const Key('foundation.home')), findsNothing);
+    expect(find.byKey(const Key('today.screen')), findsNothing);
 
     restore.complete(const AuthSessionAbsent());
     await tester.pumpAndSettle();
@@ -245,7 +243,7 @@ void main() {
 
     expect(purger.purgeCount, 1);
     expect(find.byKey(const Key('auth.signIn')), findsOneWidget);
-    expect(find.byKey(const Key('foundation.home')), findsNothing);
+    expect(find.byKey(const Key('today.screen')), findsNothing);
   });
 
   testWidgets('revoked provider event removes the protected route', (
@@ -270,7 +268,7 @@ void main() {
 
     expect(find.byKey(const Key('auth.signIn')), findsOneWidget);
     expect(find.text('세션이 만료되었거나 회수되었습니다. 다시 로그인해 주세요.'), findsOneWidget);
-    expect(find.byKey(const Key('foundation.home')), findsNothing);
+    expect(find.byKey(const Key('today.screen')), findsNothing);
   });
 }
 
@@ -278,8 +276,8 @@ Future<ProviderContainer> _pumpShell(
   WidgetTester tester, {
   required AppEnvironment environment,
   required AppInitializer initializer,
-  FoundationRepository? foundationRepository,
   FakeAuthSessionRepository? authRepository,
+  HouseholdRepository? householdRepository,
   AuthSignInLauncher? signInLauncher,
   SensitiveLocalStatePurger? localStatePurger,
   Locale? locale,
@@ -302,8 +300,13 @@ Future<ProviderContainer> _pumpShell(
       sensitiveLocalStatePurgerProvider.overrideWithValue(
         localStatePurger ?? createSensitiveLocalStatePurger(),
       ),
-      foundationRepositoryProvider.overrideWithValue(
-        foundationRepository ?? createFoundationRepository(),
+      householdRepositoryProvider.overrideWithValue(
+        householdRepository ??
+            FakeHouseholdRepository(
+              defaultLoadResult: ActiveHouseholdLoaded(
+                activeHouseholdFixture(),
+              ),
+            ),
       ),
       if (locale != null) appLocaleProvider.overrideWithValue(locale),
       if (logger != null) appLoggerProvider.overrideWithValue(logger),
@@ -393,11 +396,3 @@ final class _RecordingAppLogger implements AppLogger {
 }
 
 Future<void> _successfulInitialization() async {}
-
-FoundationSampleId _foundationSampleId() {
-  final FoundationSampleId? id = FoundationSampleId.tryParse('test-foundation');
-  if (id == null) {
-    throw StateError('Static test foundation id must be valid.');
-  }
-  return id;
-}
