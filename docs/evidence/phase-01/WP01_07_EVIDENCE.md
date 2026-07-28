@@ -1,10 +1,10 @@
 # Phase 01 WP01-07 Evidence
 
 - Work Package: WP01-07 CI
-- 기준 commit: base `32de58c`; WP01-07 change
-- 검증일: 2026-07-25
+- 기준 commit: base `32de58c`; implementation `86fa75c`; ShellCheck fix/green run `cdd7a42`
+- 검증일: 2026-07-25 local, 2026-07-28 remote
 - 환경: macOS arm64, Flutter 3.44.7 stable, Dart 3.12.2, Node 24.15.0, Java 21.0.9, Supabase CLI 2.109.1, Docker 28.3.2
-- 결과: **REPOSITORY/LOCAL AUTOMATION PASS / REMOTE GITHUB CI·ANDROID DEVICE PENDING**
+- 결과: **LOCAL/REMOTE AUTOMATION PASS / ANDROID DEVICE·BRANCH ENFORCEMENT PENDING**
 - 범위 제한: production provider, signing/Play upload, branch protection, iOS/Web와 Google 로그인은 포함하지 않음
 
 ## Requirements
@@ -13,7 +13,7 @@
 |---|---|---|
 | WP01-07 quality gate | PASS | format, fatal analyzer, 59 unit/widget/architecture tests, coverage, config/secret/codegen, workflow self-test |
 | D-007 / NFR-017 | PASS | l10n/build_runner 재생성 후 5 generated file byte drift 0 |
-| D-029 / SPEC-010 | REPOSITORY PASS | GitHub Actions 5-job workflow와 동일 repository-local script; remote run은 push 전이라 PENDING |
+| D-029 / SPEC-010 | PASS | GitHub Actions 5-job workflow와 동일 repository-local script; run `30332633213`의 모든 source job과 최종 gate 성공 |
 | D-032 / D-037 | PASS | dev/prod package 분리와 merged APK min/target/compile API 24/36/36 |
 | D-033 / NFR-SEC-02 | PASS | workflow 권한 `contents: read`, secret context 0, public example config만 build, credential persistence off |
 | D-038 / ADR-0002 | PASS | Android-only matrix; deferred iOS/macOS job 0 |
@@ -94,7 +94,7 @@ debug APK는 `.gitignore` 대상이고 repository에 저장하지 않는다. 아
 
 | File | SHA-256 |
 |---|---|
-| `.github/workflows/ci.yml` | `26fbcc20d4289e64d9553d0302338650432621c3d00dd294946dc12c51c77711` |
+| `.github/workflows/ci.yml` | `cd78f67e0fbb498291127b52ba4197a5a1bc61b4f0e7de62563c632c4a58c4a2` |
 | `scripts/ci/flutter-quality.sh` | `fd5ef4f6881625dd794f68ba6de8c6d4de394c8c8002fcce765edca6dcfad091` |
 | `scripts/ci/supabase-backend.sh` | `d503bf5d84cb3e3f4367493013bc7c021feb376875279518bc3fdcfdc66ab26c` |
 | `scripts/ci/android-build.sh` | `34e5d49585ccc7999c147a1d37844ae3604ada261f45f2635a5c8bcdd84cb47d` |
@@ -112,8 +112,10 @@ debug APK는 `.gitignore` 대상이고 repository에 저장하지 않는다. 아
 ## Manual / Remote Validation
 
 - `adb devices -l`: 연결 device/emulator 0대. Android 실제 boot와 dev/prod visual separation은 **NOT RUN**이다.
-- GitHub workflow는 아직 push하지 않아 run URL, GitHub-hosted Ubuntu/Java 21 result와 artifact download는 **NOT RUN**이다.
-- branch protection/ruleset required check 설정은 repository 외부 변경이므로 **NOT CHANGED**다.
+- 최초 GitHub run [30225981503](https://github.com/adtstack/KinFlow/actions/runs/30225981503)은 ShellCheck `SC2129`로 Quality와 최종 gate가 실패했고 나머지 source job은 성공했다. gate summary redirect를 수정한 `cdd7a42`에서 재실행했다.
+- 기준 GitHub run [30332633213](https://github.com/adtstack/KinFlow/actions/runs/30332633213)은 2026-07-28 05:46:07~05:52:14 UTC에 완료됐다. Quality 3m03s, dependency 1m00s, backend 2m50s, Android dev 3m51s, Android prod 5m52s와 최종 gate 2s가 모두 **PASS**다.
+- 원격 artifact는 quality/dependency/backend report, dev/prod Android report와 dev/prod debug APK 총 7개다. 조회 시 모두 unexpired였고 APK 크기는 dev 165,444,685 bytes, prod 165,444,266 bytes였다.
+- branch protection/ruleset required check는 이 작업에서 **NOT CHANGED**다. 현재 PAT로 protection read가 HTTP 403이어서 실제 enforcement 상태는 **UNVERIFIED**다.
 - signed AAB, Play internal/closed upload와 production approval은 **NOT RUN / non-scope**다.
 
 ## Security / Privacy
@@ -125,7 +127,7 @@ debug APK는 `.gitignore` 대상이고 repository에 저장하지 않는다. 아
 
 ## Remaining Risks / OPEN Decisions
 
-- remote GitHub-hosted run과 `CI gate` branch protection 적용 전에는 Phase 01의 “CI green” Exit Gate를 닫지 않는다.
+- GitHub-hosted `CI gate`는 green이지만 required-check branch enforcement는 확인되지 않았다. 개인 운영 workflow를 막을 수 있는 repository ruleset 변경은 별도 승인 후 적용한다.
 - Android device가 없어 실제 shell boot/large text/dark/dev-prod visual smoke는 pending이다.
 - OSV database는 실행 시점 최신 public snapshot이라 checksum을 고정하지 않는다. scanner binary와 actual offline mode는 고정·검증하며 DB freshness는 run artifact 시점에 귀속한다.
 - `sentry_flutter` legacy Kotlin Gradle Plugin warning은 build blocker가 아니지만 Flutter upgrade 전에 plugin migration을 재검토한다.
@@ -139,6 +141,7 @@ debug APK는 `.gitignore` 대상이고 repository에 저장하지 않는다. 아
 
 ## Next Entry
 
-- 이 commit을 push해 GitHub-hosted `CI gate`와 artifact를 확인하고 `CI gate`를 branch protection/ruleset required check로 지정한다.
-- 연결 Android에서 dev/prod shell 수동 smoke를 수행하면 Phase 01 Exit/Handoff를 닫을 수 있다.
-- 그 다음 Phase 02는 Google provider 연결을 당장 미루는 사용자 결정에 따라 provider console 없이 구현 가능한 auth/session/route/RLS 계약부터 시작한다.
+- 연결 Android에서 dev/prod shell, EN/KO/pseudo, dark, large text 수동 smoke를 수행하면 Phase 01의 device Exit 항목을 닫을 수 있다.
+- `CI gate` required-check ruleset은 개인 운영자의 direct-push/복구 경로를 함께 결정한 뒤 적용한다.
+- Phase 01 completion 결과는 **Conditional**이다. Phase 02 전체 Gate 또는 Google 로그인 완료를 주장할 수 없다.
+- 다음 허용 작업은 WP02-01의 provider-independent auth state/session restore/logout/route guard/local purge 계약이다. Google SDK, ID-token 교환, redirect/App Link와 실제 계정 검증은 provider console과 Android device 준비 전까지 fail-closed/pending으로 유지한다.

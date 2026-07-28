@@ -3,7 +3,7 @@
 - 작성일: 2026-07-25
 - 기준 commit: `32de58c`
 - Work Package: WP01-07 CI
-- 상태: COMPLETE (repository/local automation); remote GitHub run·branch protection와 Android device는 PENDING
+- 상태: COMPLETE (repository/local + GitHub-hosted automation); branch protection와 Android device는 PENDING
 
 ## Requirements
 
@@ -63,7 +63,7 @@
 ## Manual / Remote Validation
 
 - repository-local workflow는 로컬에서 같은 script로 검증한다.
-- 실제 GitHub Actions run URL과 branch protection 적용은 commit push 이후에만 가능하므로, push 권한이 명시되기 전에는 `NOT RUN`으로 evidence에 분리한다.
+- 실제 GitHub Actions run URL은 commit push 전에는 확인할 수 없어 최초 계획에서 `NOT RUN`으로 분리했으며, 완료 결과는 아래 Remote Completion Update에 기록한다.
 - Android 실제 기기 shell smoke는 연결 device가 있을 때만 실행하며 device가 없으면 Phase 01 Exit Gate의 pending 항목으로 유지한다.
 
 ## Non-scope
@@ -78,3 +78,11 @@
 
 - workflow, repository-local CI scripts/tests, package scripts, README와 WP01-07 evidence를 함께 되돌리면 `32de58c`의 WP01-06 상태로 복귀한다.
 - DB/API/data/provider 설정 변경이 없어 migration 또는 remote rollback은 없다. GitHub에서 이미 workflow가 실행된 경우 보존 artifact는 retention 만료 또는 별도 승인된 삭제로 처리한다.
+
+## Remote Completion Update
+
+- 최초 push run [30225981503](https://github.com/adtstack/KinFlow/actions/runs/30225981503)은 Ubuntu runner의 ShellCheck `SC2129`가 gate summary의 반복 redirect를 지적해 Quality와 최종 gate만 실패했다. dependency, backend, dev/prod Android job은 통과했다.
+- `cdd7a42`에서 summary 출력을 단일 redirect block으로 묶고 local self-test 9/9, workflow contract와 actionlint를 재검증했다.
+- 재실행 [30332633213](https://github.com/adtstack/KinFlow/actions/runs/30332633213)은 Quality, dependency, backend, dev/prod Android와 최종 `CI gate`가 모두 통과했다. report 5개와 debug APK 2개가 14일 정책으로 생성됐다.
+- `adb devices -l`은 연결 기기 0대를 반환했다. 실제 Android shell과 dev/prod visual smoke는 여전히 pending이다.
+- branch protection 조회는 현재 PAT의 repository administration read 권한이 없어 HTTP 403이었다. 이 작업에서 ruleset을 변경하지 않았으며 required-check enforcement는 별도 확인 대상이다.

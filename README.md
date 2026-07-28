@@ -2,7 +2,7 @@
 
 KinFlow는 성인 2인이 가구를 만들고 집안일을 나누어 완료하는 Android-first 가족 협업 앱이다.
 
-현재 구현 범위는 Phase 01 WP01-07 CI까지의 repository-local foundation이다. G0 연구·법률 Gate 전체 통과, 원격 CI green, branch protection 또는 production provider 연결을 의미하지 않는다.
+현재 구현 범위는 Phase 01 WP01-07까지의 자동화 foundation이며 GitHub-hosted `CI gate`도 통과했다. G0 연구·법률 Gate 전체 통과, Android 실제 기기 검증, branch protection 또는 production provider 연결을 의미하지 않는다.
 
 ## Accepted baseline
 
@@ -107,4 +107,4 @@ scripts/ci/android-build.sh dev
 scripts/ci/android-build.sh prod
 ```
 
-Flutter package cache만 사용하는 검증은 `KINFLOW_PUB_OFFLINE=1`을 추가한다. 실제 GitHub run URL과 branch protection은 commit push 이후 별도 확인한다.
+Flutter package cache만 사용하는 검증은 `KINFLOW_PUB_OFFLINE=1`을 추가한다. 기준 원격 실행은 [CI run 30332633213](https://github.com/adtstack/KinFlow/actions/runs/30332633213)이며 모든 source job과 최종 `CI gate`가 통과했다. branch protection/ruleset 적용은 별도 repository 관리 작업으로 남아 있다.

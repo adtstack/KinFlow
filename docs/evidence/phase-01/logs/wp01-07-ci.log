@@ -84,5 +84,32 @@ post-pass hardening: analyze/test/live adapter gained --no-pub; bash/Node/workfl
 [manual / remote]
 adb devices -l: 0 devices
 Android shell smoke: NOT RUN
-GitHub Actions run URL/artifact: NOT RUN; commit not pushed
-branch protection/ruleset: NOT CHANGED
+branch protection/ruleset: NOT CHANGED; protection read HTTP 403 with current PAT, enforcement UNVERIFIED
+
+[remote GitHub Actions — first run]
+commit: 86fa75ca34c565ef0015a0e3d0199e24df68c5ce
+run: https://github.com/adtstack/KinFlow/actions/runs/30225981503
+result: FAILURE
+quality: FAIL; actionlint delegated shell script to runner ShellCheck, SC2129 at ci.yml gate summary repeated redirects
+dependency: PASS
+backend: PASS
+Android dev/prod: PASS/PASS
+CI gate: FAIL as designed because quality failed
+
+[remote ShellCheck fix]
+commit: cdd7a42656ec1c94e66a4257ad712e69838e3a27
+change: group five GITHUB_STEP_SUMMARY printf commands under one redirect block
+local: ci:test 9/9 PASS; ci:workflow PASS; actionlint PASS; diff check PASS
+
+[remote GitHub Actions — green run]
+run: https://github.com/adtstack/KinFlow/actions/runs/30332633213
+window: 2026-07-28T05:46:07Z..2026-07-28T05:52:14Z
+result: SUCCESS
+quality: PASS 3m03s
+dependency: PASS 1m00s
+backend: PASS 2m50s
+Android dev: PASS 3m51s; verified APK uploaded
+Android prod: PASS 5m52s; verified APK uploaded
+CI gate: PASS 2s
+artifacts: 5 reports + 2 debug APKs; all unexpired at verification
+remote APK bytes: dev 165444685; prod 165444266
