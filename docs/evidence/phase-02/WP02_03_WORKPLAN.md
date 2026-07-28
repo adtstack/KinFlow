@@ -3,7 +3,7 @@
 - 작성일: 2026-07-28
 - 기준 commit: `ddbf16d`
 - Work Package: WP02-03 First household onboarding
-- 상태: IN PROGRESS
+- 상태: COMPLETE
 - 선행 결과: WP02-02 implementation run `30367899904`와 evidence run `30368412746` 모두 final CI gate PASS
 
 ## Requirements

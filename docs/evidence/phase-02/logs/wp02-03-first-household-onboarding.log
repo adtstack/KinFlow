@@ -1,0 +1,70 @@
+WP02-03 first household onboarding validation
+Date: 2026-07-28
+Base: ddbf16d
+Implementation: ce6112f
+
+Toolchain
+- Flutter 3.44.7 / Dart 3.12.2
+- Node v24.15.0 / npm 11.12.1
+- Supabase CLI 2.109.1 / PostgreSQL 17
+- Docker 28.3.2
+
+Database gate
+- clean database reset: PASS
+- forward migration count: 3
+- first household migration SHA-256: d20ed38297847c4822a0230f9b71b5d17562097ea1158c099b378a2491f2a397
+- schema lint: PASS, error 0
+- WP02-03 pgTAP: PASS 37/37
+- foundation pgTAP: PASS 37/37
+- WP02-02 pgTAP: PASS 62/62
+- total database tests: PASS 136/136
+- Edge health contract: PASS
+- Flutter live Supabase adapter: PASS 1/1
+
+Server command and authorization
+- authenticated-only create_first_household execute: PASS
+- caller identity from auth.uid(); no user/role/household/member authority input: PASS
+- invalid key/name/display/locale/timezone and unauthenticated request: DENIED
+- profile + household + Owner + pointer + active selection + request result: ATOMIC PASS
+- same key/same normalized request returns exact first result without row/version churn: PASS
+- same key/changed request, new key after active membership, existing active user: DENIED
+- created Owner same-household read: PASS
+- direct write and outsider read: DENIED
+
+Flutter quality
+- repository CI self-tests: PASS 9/9
+- workflow contract: PASS, 5 jobs / 17 pinned actions / contents:read
+- actionlint: PASS
+- Dart format: PASS, 118 files / drift 0
+- Flutter fatal analyze: PASS, issue 0
+- full Flutter suite: PASS, 127 tests / 1 opt-in connectivity skip
+- coverage: 1629/1958 lines, 83.2%
+- active/no-household/lookup-failure route matrix: PASS
+- normalized idempotent retry and duplicate-submit guard: PASS
+- EN/KO/pseudo localization and 200% text: PASS
+- public config, secret scan, generated drift: PASS
+
+Supply chain and Android
+- dependency licenses: PASS, 143 Pub / 15 npm
+- offline OSV scan: PASS, 163 packages / 0 known vulnerabilities
+- dev APK: PASS, 215907244 bytes, package me.newlines.kinflow.dev
+- prod APK: PASS, 215907141 bytes, package me.newlines.kinflow
+- min/target/compile API: 24/36/36
+- backup disabled and exact permission allowlist: PASS
+
+Remote
+- GitHub Actions run 30372425851: PASS
+- quality: PASS 3m14s
+- dependency audit: PASS 1m26s
+- backend: PASS 2m30s
+- Android dev: PASS 7m47s
+- Android prod: PASS 5m8s
+- final CI gate: PASS
+
+Notes
+- Initial Flutter adapter analysis found nullable PostgREST error codes; mapping now handles null without exposing raw messages.
+- Initial accessibility run found an expanded NavigationRail overflow at 200% pseudo text; the label now has an explicit adaptive width.
+- The first full architecture run found presentation-to-data composition; concrete UUID generation moved to the app composition boundary.
+- No production project, credential, real identity, Google provider, or Android device was used.
+
+Result: LOCAL + REMOTE AUTOMATED WP02-03 PASS; invite and provider/device integration pending.
