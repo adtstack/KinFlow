@@ -132,6 +132,157 @@
   "@householdCreateError": {
     "description": "Generic first household creation failure"
   },
+  "todayInviteAction": "Invite an adult",
+  "@todayInviteAction": {
+    "description": "Opens the adult household invitation screen"
+  },
+  "inviteCreateTitle": "Invite to your household",
+  "@inviteCreateTitle": {
+    "description": "Invitation creation screen title"
+  },
+  "inviteCreateHeading": "Bring another adult into KinFlow",
+  "@inviteCreateHeading": {
+    "description": "Invitation creation heading"
+  },
+  "inviteCreateBody": "Create a single-use link that expires in 7 days. You can optionally restrict it to one email address.",
+  "@inviteCreateBody": {
+    "description": "Explains invite lifetime and optional email restriction"
+  },
+  "inviteEmailLabel": "Recipient email (optional)",
+  "@inviteEmailLabel": {
+    "description": "Optional target email input label"
+  },
+  "inviteEmailHint": "The signed-in account must match this email.",
+  "@inviteEmailHint": {
+    "description": "Explains target-email enforcement"
+  },
+  "inviteCreateAction": "Create invite link",
+  "@inviteCreateAction": {
+    "description": "Creates a household invitation"
+  },
+  "inviteCreatingAction": "Creating invite",
+  "@inviteCreatingAction": {
+    "description": "Status while an invite is created"
+  },
+  "inviteLinkHeading": "Your invite link is ready",
+  "@inviteLinkHeading": {
+    "description": "Heading above the one-time invite link"
+  },
+  "inviteLinkBody": "Share this link only with the intended adult. KinFlow will not show the token again after this screen closes.",
+  "@inviteLinkBody": {
+    "description": "Warns that the invite token is sensitive and shown once"
+  },
+  "inviteCopyAction": "Copy link",
+  "@inviteCopyAction": {
+    "description": "Copies the invite URL"
+  },
+  "inviteCopiedBody": "Invite link copied.",
+  "@inviteCopiedBody": {
+    "description": "Confirmation after copying an invite link"
+  },
+  "inviteTokenUnavailableBody": "This retry is safe, but the one-time link can no longer be shown. Revoke it and create a new invite.",
+  "@inviteTokenUnavailableBody": {
+    "description": "Explains why an idempotent retry may omit a raw token"
+  },
+  "inviteRevokeAction": "Revoke invite",
+  "@inviteRevokeAction": {
+    "description": "Revokes an active invite"
+  },
+  "inviteRevokingAction": "Revoking invite",
+  "@inviteRevokingAction": {
+    "description": "Status while an invite is revoked"
+  },
+  "inviteNewAction": "Create another invite",
+  "@inviteNewAction": {
+    "description": "Starts a fresh invite after revocation"
+  },
+  "inviteOpenTitle": "Household invitation",
+  "@inviteOpenTitle": {
+    "description": "Public invitation preview screen title"
+  },
+  "inviteLoadingLabel": "Checking this invitation",
+  "@inviteLoadingLabel": {
+    "description": "Status while a public invite preview loads"
+  },
+  "inviteMissingTitle": "Invitation unavailable",
+  "@inviteMissingTitle": {
+    "description": "Title when no safe pending invite token exists"
+  },
+  "inviteMissingBody": "Open the original invitation link again or ask the sender for a new one.",
+  "@inviteMissingBody": {
+    "description": "Recovery guidance for a missing invite token"
+  },
+  "invitePreviewSentence": "{inviterName} invited you to join {householdName}.",
+  "@invitePreviewSentence": {
+    "description": "Minimal public invite preview sentence",
+    "placeholders": {
+      "inviterName": {"type": "String", "example": "Alex"},
+      "householdName": {"type": "String", "example": "Our home"}
+    }
+  },
+  "inviteRoleMember": "Household member",
+  "@inviteRoleMember": {
+    "description": "Human-readable invited Member role"
+  },
+  "inviteRoleAdmin": "Household admin",
+  "@inviteRoleAdmin": {
+    "description": "Human-readable invited Admin role"
+  },
+  "inviteExpiryLabel": "Expires {expiresAt}",
+  "@inviteExpiryLabel": {
+    "description": "Invite expiry display",
+    "placeholders": {
+      "expiresAt": {"type": "String", "example": "August 4, 2026, 9:00 AM"}
+    }
+  },
+  "inviteSignInBody": "Sign in with the adult account that should join this household. This invitation will remain in memory during sign-in.",
+  "@inviteSignInBody": {
+    "description": "Explains invite continuation through authentication"
+  },
+  "inviteSignInAction": "Sign in to accept",
+  "@inviteSignInAction": {
+    "description": "Navigates to sign-in while retaining the invite intent"
+  },
+  "inviteSwitchTitle": "Switch active household?",
+  "@inviteSwitchTitle": {
+    "description": "Heading for an existing active-household confirmation"
+  },
+  "inviteSwitchBody": "You already have an active household. Joining will keep both memberships and switch KinFlow to this household.",
+  "@inviteSwitchBody": {
+    "description": "Explains explicit active-household switching"
+  },
+  "inviteSwitchConfirmation": "I want to join and switch to this household.",
+  "@inviteSwitchConfirmation": {
+    "description": "Required confirmation before switching active household"
+  },
+  "inviteAcceptAction": "Accept invitation",
+  "@inviteAcceptAction": {
+    "description": "Accepts the household invitation"
+  },
+  "inviteAcceptingAction": "Joining household",
+  "@inviteAcceptingAction": {
+    "description": "Status while an invitation is accepted"
+  },
+  "inviteAcceptedBody": "You joined the household. Opening Today…",
+  "@inviteAcceptedBody": {
+    "description": "Success message after invitation acceptance"
+  },
+  "inviteInvalidError": "This invitation link is invalid.",
+  "@inviteInvalidError": {"description": "Invalid invitation error"},
+  "inviteExpiredError": "This invitation has expired. Ask the sender for a new one.",
+  "@inviteExpiredError": {"description": "Expired invitation error"},
+  "inviteRevokedError": "This invitation was revoked. Ask the sender for a new one.",
+  "@inviteRevokedError": {"description": "Revoked invitation error"},
+  "inviteAlreadyUsedError": "This single-use invitation has already been accepted.",
+  "@inviteAlreadyUsedError": {"description": "Used invitation error"},
+  "inviteEmailMismatchError": "Sign in with the email address this invitation was created for.",
+  "@inviteEmailMismatchError": {"description": "Target email mismatch error"},
+  "inviteRateLimitedError": "Too many invitation attempts. Wait a few minutes and try again.",
+  "@inviteRateLimitedError": {"description": "Invite rate-limit error"},
+  "invitePermissionError": "Only the household Owner or an Admin can manage invitations.",
+  "@invitePermissionError": {"description": "Invite permission error"},
+  "inviteGenericError": "We couldn't complete the invitation request. It is safe to try again.",
+  "@inviteGenericError": {"description": "Generic safe invitation error"},
   "todayTitle": "Today",
   "@todayTitle": {
     "description": "Title for the Today destination"

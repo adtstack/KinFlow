@@ -8,15 +8,23 @@ import 'package:kinflow_app/features/auth/data/services/unavailable_auth_sign_in
 import 'package:kinflow_app/features/auth/domain/repositories/auth_session_repository.dart';
 import 'package:kinflow_app/features/auth/domain/services/auth_sign_in_launcher.dart';
 import 'package:kinflow_app/features/household/data/repositories/provider_household_repository.dart';
+import 'package:kinflow_app/features/household/data/repositories/provider_invite_repository.dart';
+import 'package:kinflow_app/features/household/data/repositories/unavailable_invite_repository.dart';
 import 'package:kinflow_app/features/household/data/repositories/unavailable_household_repository.dart';
+import 'package:kinflow_app/features/household/data/services/ephemeral_pending_invite_store.dart';
 import 'package:kinflow_app/features/household/data/services/secure_household_creation_id_generator.dart';
+import 'package:kinflow_app/features/household/data/services/secure_invite_command_id_generator.dart';
+import 'package:kinflow_app/features/household/application/ports/pending_invite_store.dart';
+import 'package:kinflow_app/features/household/domain/repositories/invite_repository.dart';
 import 'package:kinflow_app/features/household/domain/repositories/household_repository.dart';
 import 'package:kinflow_app/features/household/domain/services/household_creation_id_generator.dart';
+import 'package:kinflow_app/features/household/domain/services/invite_command_id_generator.dart';
 import 'package:kinflow_app/infrastructure/secure_storage/flutter_secure_string_store.dart';
 import 'package:kinflow_app/infrastructure/secure_storage/secure_string_store.dart';
 import 'package:kinflow_app/infrastructure/supabase/supabase_auth_session_data_source.dart';
 import 'package:kinflow_app/infrastructure/supabase/supabase_client_initializer.dart';
 import 'package:kinflow_app/infrastructure/supabase/supabase_household_data_source.dart';
+import 'package:kinflow_app/infrastructure/supabase/supabase_invite_data_source.dart';
 import 'package:kinflow_app/infrastructure/supabase/supabase_secure_auth_storage.dart';
 
 typedef AuthDependenciesFactory =
@@ -29,6 +37,9 @@ final class AuthDependencies {
     required this.localStatePurger,
     required this.householdRepository,
     required this.householdCreationIdGenerator,
+    required this.inviteRepository,
+    required this.inviteCommandIdGenerator,
+    required this.pendingInviteStore,
   });
 
   final AuthSessionRepository sessionRepository;
@@ -36,6 +47,9 @@ final class AuthDependencies {
   final SensitiveLocalStatePurger localStatePurger;
   final HouseholdRepository householdRepository;
   final HouseholdCreationIdGenerator householdCreationIdGenerator;
+  final InviteRepository inviteRepository;
+  final InviteCommandIdGenerator inviteCommandIdGenerator;
+  final PendingInviteStore pendingInviteStore;
 }
 
 Future<AuthDependencies> createAuthDependencies(
@@ -56,6 +70,8 @@ Future<AuthDependencies> createAuthDependencies(
     localStorage: authStorage,
     pkceStorage: authStorage,
   );
+  final EphemeralPendingInviteStore pendingInviteStore =
+      EphemeralPendingInviteStore();
 
   return AuthDependencies(
     sessionRepository: ProviderAuthSessionRepository(
@@ -65,22 +81,35 @@ Future<AuthDependencies> createAuthDependencies(
     localStatePurger: CompositeSensitiveLocalStatePurger(
       <SensitiveLocalStatePurgeParticipant>[
         SecureAuthStoragePurgeParticipant(authStorage),
+        pendingInviteStore,
       ],
     ),
     householdRepository: ProviderHouseholdRepository(
       SupabaseHouseholdDataSource(client),
     ),
     householdCreationIdGenerator: SecureHouseholdCreationIdGenerator(),
+    inviteRepository: ProviderInviteRepository(
+      SupabaseInviteDataSource(client),
+    ),
+    inviteCommandIdGenerator: SecureInviteCommandIdGenerator(),
+    pendingInviteStore: pendingInviteStore,
   );
 }
 
 AuthDependencies createUnavailableAuthDependencies() {
+  final EphemeralPendingInviteStore pendingInviteStore =
+      EphemeralPendingInviteStore();
   return AuthDependencies(
     sessionRepository: createAuthSessionRepository(),
     signInLauncher: createAuthSignInLauncher(),
-    localStatePurger: createSensitiveLocalStatePurger(),
+    localStatePurger: CompositeSensitiveLocalStatePurger(
+      <SensitiveLocalStatePurgeParticipant>[pendingInviteStore],
+    ),
     householdRepository: const UnavailableHouseholdRepository(),
     householdCreationIdGenerator: SecureHouseholdCreationIdGenerator(),
+    inviteRepository: const UnavailableInviteRepository(),
+    inviteCommandIdGenerator: SecureInviteCommandIdGenerator(),
+    pendingInviteStore: pendingInviteStore,
   );
 }
 

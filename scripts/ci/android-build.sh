@@ -126,6 +126,25 @@ if ! printf '%s\n' "$kinflow_manifest" \
   printf '%s\n' 'APK backup contract changed: android:allowBackup must be false.' >&2
   exit 1
 fi
+if ! printf '%s\n' "$kinflow_manifest" \
+  | grep -E 'A: android:autoVerify\([^)]*\)=\(type 0x12\)0xffffffff' \
+    >/dev/null; then
+  printf '%s\n' 'APK App Link contract changed: autoVerify must be true.' >&2
+  exit 1
+fi
+for kinflow_app_link_value in \
+  'android.intent.action.VIEW' \
+  'android.intent.category.BROWSABLE' \
+  'https' \
+  'auth.example.invalid' \
+  '/invite/'; do
+  if ! printf '%s\n' "$kinflow_manifest" \
+    | grep -F "$kinflow_app_link_value" >/dev/null; then
+    printf 'APK App Link contract is missing: %s\n' \
+      "$kinflow_app_link_value" >&2
+    exit 1
+  fi
+done
 
 kinflow_permissions="$($kinflow_aapt_bin dump permissions "$kinflow_apk")"
 kinflow_expected_permissions="$(printf '%s\n' \
@@ -149,6 +168,7 @@ kinflow_bytes="$(wc -c <"$kinflow_apk" | tr -d ' ')"
   printf 'target_api=36\n'
   printf 'compile_api=36\n'
   printf 'android_backup=disabled\n'
+  printf 'app_link=https://auth.example.invalid/invite/*;auto_verify=true\n'
   printf 'permissions=INTERNET,package-scoped-dynamic-receiver\n'
   printf 'bytes=%s\n' "$kinflow_bytes"
   printf 'sha256=%s\n' "$kinflow_sha256"

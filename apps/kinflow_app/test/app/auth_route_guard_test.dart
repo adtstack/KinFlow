@@ -13,6 +13,7 @@ void main() {
     guard = AuthRouteGuard(
       authLoadingPath: '/auth/loading',
       householdOnboardingPath: '/onboarding/household',
+      invitePath: '/invite',
       rootPath: '/',
       signInPath: '/sign-in',
       todayPath: '/today',
@@ -90,10 +91,10 @@ void main() {
     );
   });
 
-  test('restores only the path and drops sensitive query or fragment data', () {
+  test('restores only a protected path and drops query or fragment data', () {
     guard.redirect(
       const AuthUnauthenticated(),
-      Uri.parse('/invite/continue?sensitive=discarded#callback'),
+      Uri.parse('/household/settings?sensitive=discarded#callback'),
     );
 
     expect(
@@ -104,7 +105,56 @@ void main() {
         ),
         Uri.parse('/sign-in'),
       ),
-      '/invite/continue',
+      '/household/settings',
+    );
+  });
+
+  test(
+    'invitation routes stay public and raw token paths are never retained',
+    () {
+      const String rawToken = 'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG';
+
+      expect(
+        guard.redirect(
+          const AuthBootstrapping(),
+          Uri.parse('/invite/$rawToken'),
+        ),
+        isNull,
+      );
+      expect(
+        guard.redirect(
+          const AuthUnauthenticated(),
+          Uri.parse('/invite/$rawToken'),
+        ),
+        isNull,
+      );
+      expect(
+        guard.redirect(
+          AuthAuthenticatedActiveHousehold(
+            authSessionFixture(),
+            activeHouseholdFixture(),
+          ),
+          Uri.parse('/sign-in'),
+        ),
+        '/today',
+      );
+    },
+  );
+
+  test('safe invitation continuation marker survives authentication', () {
+    expect(
+      guard.redirect(
+        const AuthUnauthenticated(),
+        Uri.parse('/sign-in?continue=invite&token=discarded'),
+      ),
+      isNull,
+    );
+    expect(
+      guard.redirect(
+        AuthAuthenticatedNoHousehold(authSessionFixture()),
+        Uri.parse('/sign-in?continue=invite'),
+      ),
+      '/invite',
     );
   });
 

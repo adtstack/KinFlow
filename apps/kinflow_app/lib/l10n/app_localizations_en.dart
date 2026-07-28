@@ -120,6 +120,144 @@ class AppLocalizationsEn extends AppLocalizations {
       'We couldn\'t create the household. Your request is safe to retry.';
 
   @override
+  String get todayInviteAction => 'Invite an adult';
+
+  @override
+  String get inviteCreateTitle => 'Invite to your household';
+
+  @override
+  String get inviteCreateHeading => 'Bring another adult into KinFlow';
+
+  @override
+  String get inviteCreateBody =>
+      'Create a single-use link that expires in 7 days. You can optionally restrict it to one email address.';
+
+  @override
+  String get inviteEmailLabel => 'Recipient email (optional)';
+
+  @override
+  String get inviteEmailHint => 'The signed-in account must match this email.';
+
+  @override
+  String get inviteCreateAction => 'Create invite link';
+
+  @override
+  String get inviteCreatingAction => 'Creating invite';
+
+  @override
+  String get inviteLinkHeading => 'Your invite link is ready';
+
+  @override
+  String get inviteLinkBody =>
+      'Share this link only with the intended adult. KinFlow will not show the token again after this screen closes.';
+
+  @override
+  String get inviteCopyAction => 'Copy link';
+
+  @override
+  String get inviteCopiedBody => 'Invite link copied.';
+
+  @override
+  String get inviteTokenUnavailableBody =>
+      'This retry is safe, but the one-time link can no longer be shown. Revoke it and create a new invite.';
+
+  @override
+  String get inviteRevokeAction => 'Revoke invite';
+
+  @override
+  String get inviteRevokingAction => 'Revoking invite';
+
+  @override
+  String get inviteNewAction => 'Create another invite';
+
+  @override
+  String get inviteOpenTitle => 'Household invitation';
+
+  @override
+  String get inviteLoadingLabel => 'Checking this invitation';
+
+  @override
+  String get inviteMissingTitle => 'Invitation unavailable';
+
+  @override
+  String get inviteMissingBody =>
+      'Open the original invitation link again or ask the sender for a new one.';
+
+  @override
+  String invitePreviewSentence(String inviterName, String householdName) {
+    return '$inviterName invited you to join $householdName.';
+  }
+
+  @override
+  String get inviteRoleMember => 'Household member';
+
+  @override
+  String get inviteRoleAdmin => 'Household admin';
+
+  @override
+  String inviteExpiryLabel(String expiresAt) {
+    return 'Expires $expiresAt';
+  }
+
+  @override
+  String get inviteSignInBody =>
+      'Sign in with the adult account that should join this household. This invitation will remain in memory during sign-in.';
+
+  @override
+  String get inviteSignInAction => 'Sign in to accept';
+
+  @override
+  String get inviteSwitchTitle => 'Switch active household?';
+
+  @override
+  String get inviteSwitchBody =>
+      'You already have an active household. Joining will keep both memberships and switch KinFlow to this household.';
+
+  @override
+  String get inviteSwitchConfirmation =>
+      'I want to join and switch to this household.';
+
+  @override
+  String get inviteAcceptAction => 'Accept invitation';
+
+  @override
+  String get inviteAcceptingAction => 'Joining household';
+
+  @override
+  String get inviteAcceptedBody => 'You joined the household. Opening Today…';
+
+  @override
+  String get inviteInvalidError => 'This invitation link is invalid.';
+
+  @override
+  String get inviteExpiredError =>
+      'This invitation has expired. Ask the sender for a new one.';
+
+  @override
+  String get inviteRevokedError =>
+      'This invitation was revoked. Ask the sender for a new one.';
+
+  @override
+  String get inviteAlreadyUsedError =>
+      'This single-use invitation has already been accepted.';
+
+  @override
+  String get inviteEmailMismatchError =>
+      'Sign in with the email address this invitation was created for.';
+
+  @override
+  String get inviteRateLimitedError =>
+      'Too many invitation attempts. Wait a few minutes and try again.';
+
+  @override
+  String get invitePermissionError =>
+      'Only the household Owner or an Admin can manage invitations.';
+
+  @override
+  String get inviteGenericError =>
+      'We couldn\'t complete the invitation request. It is safe to try again.';
+
+  @override
   String get todayTitle => 'Today';
 
   @override
@@ -306,6 +444,163 @@ class AppLocalizationsEnXa extends AppLocalizationsEn {
   @override
   String get householdCreateError =>
       '[!! Ŵē çôûłđ ñôţ safely create the shared household right now. Your complete request remains safe to retry without duplication. !!]';
+
+  @override
+  String get todayInviteAction =>
+      '[!! Îñvîţē åñôţĥēŕ åđûłţ ţô ţĥîš šĥåŕēđ ĥôûšēĥôłđ !!]';
+
+  @override
+  String get inviteCreateTitle =>
+      '[!! Îñvîţē šômēôñē ţô ŷôûŕ complete shared household securely !!]';
+
+  @override
+  String get inviteCreateHeading =>
+      '[!! Bŕîñĝ åñôţĥēŕ åđûłţ îñţô ĶîñFłôŵ together !!]';
+
+  @override
+  String get inviteCreateBody =>
+      '[!! Çŕēåţē å šîñĝłē-ûšē secure invitation link that expires in seven full days. You may optionally restrict it to exactly one adult email address. !!]';
+
+  @override
+  String get inviteEmailLabel =>
+      '[!! Ŕēçîpîēñţ åđûłţ ēmåîł address — optional !!]';
+
+  @override
+  String get inviteEmailHint =>
+      '[!! Ţĥē signed-in adult account must exactly match this protected email address before joining. !!]';
+
+  @override
+  String get inviteCreateAction => '[!! Çŕēåţē ţĥē secure îñvîţē łîñķ !!]';
+
+  @override
+  String get inviteCreatingAction =>
+      '[!! Çŕēåţîñĝ ţĥē secure household invitation now !!]';
+
+  @override
+  String get inviteLinkHeading =>
+      '[!! Ŷôûŕ šēçûŕē one-time invitation link îš ready !!]';
+
+  @override
+  String get inviteLinkBody =>
+      '[!! Šĥåŕē ţĥîš sensitive link only with the intended adult. ĶîñFłôŵ will never show the raw token again after this complete screen closes. !!]';
+
+  @override
+  String get inviteCopyAction => '[!! Çôpŷ ţĥē complete invitation link !!]';
+
+  @override
+  String get inviteCopiedBody =>
+      '[!! Secure invitation link copied successfully. !!]';
+
+  @override
+  String get inviteTokenUnavailableBody =>
+      '[!! Ţĥîš retry remains safe, but the one-time link can no longer be shown. Revoke this invitation and create a fresh secure link. !!]';
+
+  @override
+  String get inviteRevokeAction => '[!! Ŕēvôķē ţĥîš invitation securely !!]';
+
+  @override
+  String get inviteRevokingAction =>
+      '[!! Ŕēvôķîñĝ ţĥē invitation securely now !!]';
+
+  @override
+  String get inviteNewAction =>
+      '[!! Çŕēåţē åñôţĥēŕ fresh secure invitation !!]';
+
+  @override
+  String get inviteOpenTitle => '[!! Šēçûŕē shared household invitation !!]';
+
+  @override
+  String get inviteLoadingLabel =>
+      '[!! Çĥēçķîñĝ ţĥîš complete household invitation securely !!]';
+
+  @override
+  String get inviteMissingTitle =>
+      '[!! Ţĥîš household invitation îš unavailable !!]';
+
+  @override
+  String get inviteMissingBody =>
+      '[!! Ôpēñ ţĥē original secure invitation link again or ask the sender for a completely new one. !!]';
+
+  @override
+  String invitePreviewSentence(String inviterName, String householdName) {
+    return '[!! $inviterName invited you to join the complete shared household named $householdName. !!]';
+  }
+
+  @override
+  String get inviteRoleMember => '[!! Šĥåŕēđ household adult member role !!]';
+
+  @override
+  String get inviteRoleAdmin =>
+      '[!! Šĥåŕēđ household adult administrator role !!]';
+
+  @override
+  String inviteExpiryLabel(String expiresAt) {
+    return '[!! Ţĥîš secure invitation expires at $expiresAt !!]';
+  }
+
+  @override
+  String get inviteSignInBody =>
+      '[!! Šîĝñ îñ with the adult account that should join this household. This sensitive invitation remains only in protected ephemeral memory throughout sign-in. !!]';
+
+  @override
+  String get inviteSignInAction =>
+      '[!! Šîĝñ îñ securely ţô accept this invitation !!]';
+
+  @override
+  String get inviteSwitchTitle =>
+      '[!! Šŵîţçĥ ţĥē currently active household now? !!]';
+
+  @override
+  String get inviteSwitchBody =>
+      '[!! Ŷôû already have an active household. Joining keeps both memberships and explicitly switches ĶîñFłôŵ to this newly accepted household across every adaptive layout. !!]';
+
+  @override
+  String get inviteSwitchConfirmation =>
+      '[!! Î explicitly want to join and switch to this complete shared household now. !!]';
+
+  @override
+  String get inviteAcceptAction =>
+      '[!! Åççēpţ ţĥîš secure household invitation !!]';
+
+  @override
+  String get inviteAcceptingAction =>
+      '[!! Ĵôîñîñĝ ţĥē shared household securely now !!]';
+
+  @override
+  String get inviteAcceptedBody =>
+      '[!! Ŷôû joined the shared household successfully. Opening the complete Today view now… !!]';
+
+  @override
+  String get inviteInvalidError =>
+      '[!! Ţĥîš secure invitation link is invalid and cannot be used. !!]';
+
+  @override
+  String get inviteExpiredError =>
+      '[!! Ţĥîš invitation expired. Ask the sender for a completely new secure link. !!]';
+
+  @override
+  String get inviteRevokedError =>
+      '[!! Ţĥîš invitation was revoked. Ask the sender for a completely new secure link. !!]';
+
+  @override
+  String get inviteAlreadyUsedError =>
+      '[!! Ţĥîš single-use invitation has already been accepted by an adult. !!]';
+
+  @override
+  String get inviteEmailMismatchError =>
+      '[!! Šîĝñ îñ with the exact adult email address this protected invitation was created for. !!]';
+
+  @override
+  String get inviteRateLimitedError =>
+      '[!! Ţôô many invitation attempts occurred. Wait several minutes and safely try again. !!]';
+
+  @override
+  String get invitePermissionError =>
+      '[!! Ôñłŷ ţĥē household Owner or an adult Admin can securely manage invitations. !!]';
+
+  @override
+  String get inviteGenericError =>
+      '[!! Ŵē çôûłđ ñôţ complete the secure invitation request. The same request remains safe to try again. !!]';
 
   @override
   String get todayTitle => '[!! Ţôđåŷ schedule !!]';

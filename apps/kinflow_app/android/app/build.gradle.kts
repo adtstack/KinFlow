@@ -32,10 +32,12 @@ android {
             dimension = "environment"
             applicationIdSuffix = ".dev"
             versionNameSuffix = "-dev"
+            manifestPlaceholders["kinflowAuthRedirectHost"] = "auth.example.invalid"
             resValue("string", "app_name", "KinFlow Dev")
         }
         create("prod") {
             dimension = "environment"
+            manifestPlaceholders["kinflowAuthRedirectHost"] = "auth.example.invalid"
             resValue("string", "app_name", "KinFlow")
         }
     }

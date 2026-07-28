@@ -297,6 +297,246 @@ abstract class AppLocalizations {
   /// **'We couldn\'t create the household. Your request is safe to retry.'**
   String get householdCreateError;
 
+  /// Opens the adult household invitation screen
+  ///
+  /// In en, this message translates to:
+  /// **'Invite an adult'**
+  String get todayInviteAction;
+
+  /// Invitation creation screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Invite to your household'**
+  String get inviteCreateTitle;
+
+  /// Invitation creation heading
+  ///
+  /// In en, this message translates to:
+  /// **'Bring another adult into KinFlow'**
+  String get inviteCreateHeading;
+
+  /// Explains invite lifetime and optional email restriction
+  ///
+  /// In en, this message translates to:
+  /// **'Create a single-use link that expires in 7 days. You can optionally restrict it to one email address.'**
+  String get inviteCreateBody;
+
+  /// Optional target email input label
+  ///
+  /// In en, this message translates to:
+  /// **'Recipient email (optional)'**
+  String get inviteEmailLabel;
+
+  /// Explains target-email enforcement
+  ///
+  /// In en, this message translates to:
+  /// **'The signed-in account must match this email.'**
+  String get inviteEmailHint;
+
+  /// Creates a household invitation
+  ///
+  /// In en, this message translates to:
+  /// **'Create invite link'**
+  String get inviteCreateAction;
+
+  /// Status while an invite is created
+  ///
+  /// In en, this message translates to:
+  /// **'Creating invite'**
+  String get inviteCreatingAction;
+
+  /// Heading above the one-time invite link
+  ///
+  /// In en, this message translates to:
+  /// **'Your invite link is ready'**
+  String get inviteLinkHeading;
+
+  /// Warns that the invite token is sensitive and shown once
+  ///
+  /// In en, this message translates to:
+  /// **'Share this link only with the intended adult. KinFlow will not show the token again after this screen closes.'**
+  String get inviteLinkBody;
+
+  /// Copies the invite URL
+  ///
+  /// In en, this message translates to:
+  /// **'Copy link'**
+  String get inviteCopyAction;
+
+  /// Confirmation after copying an invite link
+  ///
+  /// In en, this message translates to:
+  /// **'Invite link copied.'**
+  String get inviteCopiedBody;
+
+  /// Explains why an idempotent retry may omit a raw token
+  ///
+  /// In en, this message translates to:
+  /// **'This retry is safe, but the one-time link can no longer be shown. Revoke it and create a new invite.'**
+  String get inviteTokenUnavailableBody;
+
+  /// Revokes an active invite
+  ///
+  /// In en, this message translates to:
+  /// **'Revoke invite'**
+  String get inviteRevokeAction;
+
+  /// Status while an invite is revoked
+  ///
+  /// In en, this message translates to:
+  /// **'Revoking invite'**
+  String get inviteRevokingAction;
+
+  /// Starts a fresh invite after revocation
+  ///
+  /// In en, this message translates to:
+  /// **'Create another invite'**
+  String get inviteNewAction;
+
+  /// Public invitation preview screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Household invitation'**
+  String get inviteOpenTitle;
+
+  /// Status while a public invite preview loads
+  ///
+  /// In en, this message translates to:
+  /// **'Checking this invitation'**
+  String get inviteLoadingLabel;
+
+  /// Title when no safe pending invite token exists
+  ///
+  /// In en, this message translates to:
+  /// **'Invitation unavailable'**
+  String get inviteMissingTitle;
+
+  /// Recovery guidance for a missing invite token
+  ///
+  /// In en, this message translates to:
+  /// **'Open the original invitation link again or ask the sender for a new one.'**
+  String get inviteMissingBody;
+
+  /// Minimal public invite preview sentence
+  ///
+  /// In en, this message translates to:
+  /// **'{inviterName} invited you to join {householdName}.'**
+  String invitePreviewSentence(String inviterName, String householdName);
+
+  /// Human-readable invited Member role
+  ///
+  /// In en, this message translates to:
+  /// **'Household member'**
+  String get inviteRoleMember;
+
+  /// Human-readable invited Admin role
+  ///
+  /// In en, this message translates to:
+  /// **'Household admin'**
+  String get inviteRoleAdmin;
+
+  /// Invite expiry display
+  ///
+  /// In en, this message translates to:
+  /// **'Expires {expiresAt}'**
+  String inviteExpiryLabel(String expiresAt);
+
+  /// Explains invite continuation through authentication
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with the adult account that should join this household. This invitation will remain in memory during sign-in.'**
+  String get inviteSignInBody;
+
+  /// Navigates to sign-in while retaining the invite intent
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to accept'**
+  String get inviteSignInAction;
+
+  /// Heading for an existing active-household confirmation
+  ///
+  /// In en, this message translates to:
+  /// **'Switch active household?'**
+  String get inviteSwitchTitle;
+
+  /// Explains explicit active-household switching
+  ///
+  /// In en, this message translates to:
+  /// **'You already have an active household. Joining will keep both memberships and switch KinFlow to this household.'**
+  String get inviteSwitchBody;
+
+  /// Required confirmation before switching active household
+  ///
+  /// In en, this message translates to:
+  /// **'I want to join and switch to this household.'**
+  String get inviteSwitchConfirmation;
+
+  /// Accepts the household invitation
+  ///
+  /// In en, this message translates to:
+  /// **'Accept invitation'**
+  String get inviteAcceptAction;
+
+  /// Status while an invitation is accepted
+  ///
+  /// In en, this message translates to:
+  /// **'Joining household'**
+  String get inviteAcceptingAction;
+
+  /// Success message after invitation acceptance
+  ///
+  /// In en, this message translates to:
+  /// **'You joined the household. Opening Today…'**
+  String get inviteAcceptedBody;
+
+  /// Invalid invitation error
+  ///
+  /// In en, this message translates to:
+  /// **'This invitation link is invalid.'**
+  String get inviteInvalidError;
+
+  /// Expired invitation error
+  ///
+  /// In en, this message translates to:
+  /// **'This invitation has expired. Ask the sender for a new one.'**
+  String get inviteExpiredError;
+
+  /// Revoked invitation error
+  ///
+  /// In en, this message translates to:
+  /// **'This invitation was revoked. Ask the sender for a new one.'**
+  String get inviteRevokedError;
+
+  /// Used invitation error
+  ///
+  /// In en, this message translates to:
+  /// **'This single-use invitation has already been accepted.'**
+  String get inviteAlreadyUsedError;
+
+  /// Target email mismatch error
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with the email address this invitation was created for.'**
+  String get inviteEmailMismatchError;
+
+  /// Invite rate-limit error
+  ///
+  /// In en, this message translates to:
+  /// **'Too many invitation attempts. Wait a few minutes and try again.'**
+  String get inviteRateLimitedError;
+
+  /// Invite permission error
+  ///
+  /// In en, this message translates to:
+  /// **'Only the household Owner or an Admin can manage invitations.'**
+  String get invitePermissionError;
+
+  /// Generic safe invitation error
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t complete the invitation request. It is safe to try again.'**
+  String get inviteGenericError;
+
   /// Title for the Today destination
   ///
   /// In en, this message translates to:

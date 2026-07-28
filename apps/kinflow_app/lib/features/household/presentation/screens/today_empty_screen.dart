@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kinflow_app/app/presentation/widgets/responsive_scaffold.dart';
 import 'package:kinflow_app/app/presentation/widgets/scrollable_status_layout.dart';
+import 'package:kinflow_app/app/router/app_router.dart';
 import 'package:kinflow_app/app/theme/app_tokens.dart';
 import 'package:kinflow_app/features/auth/presentation/providers/auth_providers.dart';
 import 'package:kinflow_app/l10n/app_localizations.dart';
@@ -50,6 +52,13 @@ class TodayEmptyScreen extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(localizations.todayEmptyBody, textAlign: TextAlign.center),
+            const SizedBox(height: AppSpacing.lg),
+            FilledButton.icon(
+              key: const Key('today.invite'),
+              onPressed: () => context.go(AppRoutes.inviteCreate),
+              icon: const Icon(Icons.person_add_alt_1),
+              label: Text(localizations.todayInviteAction),
+            ),
           ],
         ),
       ),

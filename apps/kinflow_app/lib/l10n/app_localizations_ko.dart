@@ -115,6 +115,135 @@ class AppLocalizationsKo extends AppLocalizations {
       '가구를 만들지 못했습니다. 같은 요청을 안전하게 다시 시도할 수 있습니다.';
 
   @override
+  String get todayInviteAction => '성인 초대';
+
+  @override
+  String get inviteCreateTitle => '가구에 초대하기';
+
+  @override
+  String get inviteCreateHeading => '다른 성인과 KinFlow 함께 쓰기';
+
+  @override
+  String get inviteCreateBody =>
+      '7일 뒤 만료되는 일회용 링크를 만듭니다. 필요하면 특정 이메일 계정만 수락하도록 제한할 수 있습니다.';
+
+  @override
+  String get inviteEmailLabel => '받는 사람 이메일(선택)';
+
+  @override
+  String get inviteEmailHint => '로그인한 계정의 이메일이 이 주소와 일치해야 합니다.';
+
+  @override
+  String get inviteCreateAction => '초대 링크 만들기';
+
+  @override
+  String get inviteCreatingAction => '초대 링크를 만드는 중';
+
+  @override
+  String get inviteLinkHeading => '초대 링크가 준비되었습니다';
+
+  @override
+  String get inviteLinkBody =>
+      '초대할 성인에게만 공유하세요. 이 화면을 닫으면 KinFlow에서 토큰을 다시 표시하지 않습니다.';
+
+  @override
+  String get inviteCopyAction => '링크 복사';
+
+  @override
+  String get inviteCopiedBody => '초대 링크를 복사했습니다.';
+
+  @override
+  String get inviteTokenUnavailableBody =>
+      '재시도는 안전하게 처리됐지만 일회용 링크를 다시 표시할 수 없습니다. 이 초대를 회수하고 새로 만들어 주세요.';
+
+  @override
+  String get inviteRevokeAction => '초대 회수';
+
+  @override
+  String get inviteRevokingAction => '초대를 회수하는 중';
+
+  @override
+  String get inviteNewAction => '새 초대 만들기';
+
+  @override
+  String get inviteOpenTitle => '가구 초대';
+
+  @override
+  String get inviteLoadingLabel => '초대를 확인하는 중입니다';
+
+  @override
+  String get inviteMissingTitle => '초대를 사용할 수 없습니다';
+
+  @override
+  String get inviteMissingBody => '원래 초대 링크를 다시 열거나 보낸 사람에게 새 링크를 요청해 주세요.';
+
+  @override
+  String invitePreviewSentence(String inviterName, String householdName) {
+    return '$inviterName님이 $householdName 가구에 초대했습니다.';
+  }
+
+  @override
+  String get inviteRoleMember => '가구 구성원';
+
+  @override
+  String get inviteRoleAdmin => '가구 관리자';
+
+  @override
+  String inviteExpiryLabel(String expiresAt) {
+    return '$expiresAt 만료';
+  }
+
+  @override
+  String get inviteSignInBody =>
+      '이 가구에 참여할 성인 계정으로 로그인하세요. 로그인하는 동안 초대는 메모리에만 보관됩니다.';
+
+  @override
+  String get inviteSignInAction => '로그인하고 수락';
+
+  @override
+  String get inviteSwitchTitle => '활성 가구를 전환할까요?';
+
+  @override
+  String get inviteSwitchBody =>
+      '이미 활성 가구가 있습니다. 참여하면 두 가구의 구성원 자격은 유지되고 KinFlow의 활성 가구가 이 가구로 바뀝니다.';
+
+  @override
+  String get inviteSwitchConfirmation => '이 가구에 참여하고 활성 가구를 전환하겠습니다.';
+
+  @override
+  String get inviteAcceptAction => '초대 수락';
+
+  @override
+  String get inviteAcceptingAction => '가구에 참여하는 중';
+
+  @override
+  String get inviteAcceptedBody => '가구에 참여했습니다. 오늘 화면을 여는 중입니다…';
+
+  @override
+  String get inviteInvalidError => '올바르지 않은 초대 링크입니다.';
+
+  @override
+  String get inviteExpiredError => '만료된 초대입니다. 보낸 사람에게 새 링크를 요청해 주세요.';
+
+  @override
+  String get inviteRevokedError => '회수된 초대입니다. 보낸 사람에게 새 링크를 요청해 주세요.';
+
+  @override
+  String get inviteAlreadyUsedError => '이미 수락된 일회용 초대입니다.';
+
+  @override
+  String get inviteEmailMismatchError => '이 초대가 지정한 이메일 계정으로 로그인해 주세요.';
+
+  @override
+  String get inviteRateLimitedError => '초대 요청이 너무 많습니다. 몇 분 뒤 다시 시도해 주세요.';
+
+  @override
+  String get invitePermissionError => '가구 Owner 또는 Admin만 초대를 관리할 수 있습니다.';
+
+  @override
+  String get inviteGenericError => '초대 요청을 완료하지 못했습니다. 안전하게 다시 시도할 수 있습니다.';
+
+  @override
   String get todayTitle => '오늘';
 
   @override

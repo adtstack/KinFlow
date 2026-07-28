@@ -86,8 +86,24 @@ npx supabase db lint --local --level warning --fail-on error
 printf '%s\n' 'db_lint=PASS' >>"$kinflow_report_dir/backend-summary.txt"
 npm run supabase:test
 printf '%s\n' 'pgtap_rls=PASS' >>"$kinflow_report_dir/backend-summary.txt"
+node --test supabase/tests/invite-edge-contract.test.mjs
+printf '%s\n' 'invite_edge_unit_contract=PASS' >>"$kinflow_report_dir/backend-summary.txt"
 npm run supabase:health
 printf '%s\n' 'edge_contract=PASS' >>"$kinflow_report_dir/backend-summary.txt"
+kinflow_status="$(npx supabase status -o env 2>/dev/null)"
+read_status_value() {
+  local key="$1"
+  local value
+  value="$(printf '%s\n' "$kinflow_status" | awk -F= -v key="$key" '$1 == key { sub(/^[^=]*=/, ""); print; exit }')"
+  value="${value#\"}"
+  value="${value%\"}"
+  printf '%s' "$value"
+}
+KINFLOW_LOCAL_SUPABASE_API_URL="$(read_status_value API_URL)" \
+KINFLOW_LOCAL_SUPABASE_FUNCTIONS_URL="$(read_status_value FUNCTIONS_URL)" \
+KINFLOW_LOCAL_SUPABASE_SERVICE_ROLE_KEY="$(read_status_value SERVICE_ROLE_KEY)" \
+  node supabase/tests/invite-live-contract.mjs
+printf '%s\n' 'invite_edge_live_contract=PASS' >>"$kinflow_report_dir/backend-summary.txt"
 KINFLOW_FLUTTER_BIN="$kinflow_flutter_bin" npm run supabase:flutter-health
 printf '%s\n' 'flutter_live_adapter=PASS' >>"$kinflow_report_dir/backend-summary.txt"
 printf '%s\n' 'Supabase backend gate passed.'

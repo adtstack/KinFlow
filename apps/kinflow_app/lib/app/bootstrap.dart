@@ -107,6 +107,15 @@ void _runKinFlowApp({
             householdCreationIdGeneratorProvider.overrideWithValue(
               dependencies.householdCreationIdGenerator,
             ),
+            inviteRepositoryProvider.overrideWithValue(
+              dependencies.inviteRepository,
+            ),
+            inviteCommandIdGeneratorProvider.overrideWithValue(
+              dependencies.inviteCommandIdGenerator,
+            ),
+            pendingInviteStoreProvider.overrideWithValue(
+              dependencies.pendingInviteStore,
+            ),
             foundationRepositoryProvider.overrideWithValue(
               createFoundationRepository(),
             ),

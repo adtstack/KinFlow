@@ -7,6 +7,7 @@ import 'package:kinflow_app/app/providers/auth_dependencies.dart';
 import 'package:kinflow_app/features/auth/application/ports/sensitive_local_state_purger.dart';
 import 'package:kinflow_app/features/auth/data/repositories/provider_auth_session_repository.dart';
 import 'package:kinflow_app/features/household/data/repositories/provider_household_repository.dart';
+import 'package:kinflow_app/features/household/data/repositories/provider_invite_repository.dart';
 import 'package:kinflow_app/infrastructure/secure_storage/secure_string_store.dart';
 import 'package:kinflow_app/infrastructure/supabase/supabase_client_initializer.dart';
 import 'package:kinflow_app/infrastructure/supabase/supabase_secure_auth_storage.dart';
@@ -61,6 +62,14 @@ void main() {
       dependencies.householdRepository,
       isA<ProviderHouseholdRepository>(),
     );
+    expect(dependencies.inviteRepository, isA<ProviderInviteRepository>());
+    expect(
+      dependencies.pendingInviteStore.capture(
+        'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG',
+      ),
+      isTrue,
+    );
+    expect(dependencies.pendingInviteStore.read(), isNotNull);
     expect(dependencies.signInLauncher.isAvailable, isFalse);
     expect(initializer.uri, configuration.supabaseUri);
     expect(initializer.publishableKey, configuration.supabasePublishableKey);
@@ -71,6 +80,7 @@ void main() {
         .purge();
     expect(result, isA<SensitiveLocalStatePurged>());
     expect(store.deleteAllCount, 1);
+    expect(dependencies.pendingInviteStore.read(), isNull);
   });
 
   test(
@@ -100,6 +110,12 @@ void main() {
     ).readAsString();
 
     expect(manifest, contains('android:allowBackup="false"'));
+    expect(manifest, contains('<intent-filter android:autoVerify="true">'));
+    expect(manifest, contains('android.intent.action.VIEW'));
+    expect(manifest, contains('android.intent.category.BROWSABLE'));
+    expect(manifest, contains('android:scheme="https"'));
+    expect(manifest, contains('android:host="\${kinflowAuthRedirectHost}"'));
+    expect(manifest, contains('android:pathPrefix="/invite/"'));
   });
 }
 
