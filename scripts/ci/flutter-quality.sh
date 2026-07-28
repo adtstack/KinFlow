@@ -75,6 +75,7 @@ flutter_pub_get
   --no-pub \
   --coverage \
   --coverage-path "$kinflow_report_dir/lcov.info" \
+  --reporter failures-only \
   --file-reporter "expanded:$kinflow_report_dir/flutter-test.txt"
 "$kinflow_dart_bin" run tool/validate_public_config.dart
 "$kinflow_dart_bin" run tool/scan_secrets.dart

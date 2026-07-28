@@ -2,13 +2,13 @@ version: 1
 layers:
   presentation:
     may_import: [application, domain, design_system]
-    forbidden_direct_imports: [supabase_flutter, purchases_flutter, firebase_messaging]
+    forbidden_direct_imports: [google_sign_in, supabase_flutter, purchases_flutter, firebase_messaging]
   application:
     may_import: [domain]
-    forbidden_imports: [flutter, flutter_riverpod, riverpod, supabase_flutter, purchases_flutter, firebase_messaging]
+    forbidden_imports: [flutter, flutter_riverpod, riverpod, google_sign_in, supabase_flutter, purchases_flutter, firebase_messaging]
   domain:
     may_import: [dart_core]
-    forbidden_imports: [flutter, flutter_riverpod, riverpod, supabase_flutter, purchases_flutter, firebase_core, firebase_messaging, dart_html]
+    forbidden_imports: [flutter, flutter_riverpod, riverpod, google_sign_in, supabase_flutter, purchases_flutter, firebase_core, firebase_messaging, dart_html]
   data:
     may_import: [application, domain, approved_sdk_adapters]
 policies:

@@ -201,6 +201,35 @@ void main() {
     expect(button.onPressed, isNull);
   });
 
+  testWidgets('configured Google action is enabled and cancellation is safe', (
+    WidgetTester tester,
+  ) async {
+    final FakeAuthSignInLauncher launcher = FakeAuthSignInLauncher(
+      results: const <AuthSignInRequestResult>[AuthSignInRequestCancelled()],
+    );
+    await _pumpShell(
+      tester,
+      environment: AppEnvironment.prod,
+      initializer: _successfulInitialization,
+      authRepository: FakeAuthSessionRepository(),
+      signInLauncher: launcher,
+    );
+    await tester.pumpAndSettle();
+
+    final Finder buttonFinder = find.widgetWithText(
+      FilledButton,
+      'Continue with Google',
+    );
+    expect(tester.widget<FilledButton>(buttonFinder).onPressed, isNotNull);
+
+    await tester.tap(buttonFinder);
+    await tester.pumpAndSettle();
+
+    expect(launcher.requestCount, 1);
+    expect(find.byKey(const Key('auth.signIn')), findsOneWidget);
+    expect(find.byKey(const Key('today.screen')), findsNothing);
+  });
+
   testWidgets('shows auth loading until session restore completes', (
     WidgetTester tester,
   ) async {

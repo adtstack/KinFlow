@@ -4,6 +4,7 @@ import 'package:kinflow_app/app/config/app_public_configuration.dart';
 import 'package:kinflow_app/features/auth/application/ports/sensitive_local_state_purger.dart';
 import 'package:kinflow_app/features/auth/data/repositories/provider_auth_session_repository.dart';
 import 'package:kinflow_app/features/auth/data/repositories/unavailable_auth_session_repository.dart';
+import 'package:kinflow_app/features/auth/data/services/provider_auth_sign_in_launcher.dart';
 import 'package:kinflow_app/features/auth/data/services/unavailable_auth_sign_in_launcher.dart';
 import 'package:kinflow_app/features/auth/domain/repositories/auth_session_repository.dart';
 import 'package:kinflow_app/features/auth/domain/services/auth_sign_in_launcher.dart';
@@ -21,8 +22,12 @@ import 'package:kinflow_app/features/household/domain/services/household_creatio
 import 'package:kinflow_app/features/household/domain/services/invite_command_id_generator.dart';
 import 'package:kinflow_app/infrastructure/secure_storage/flutter_secure_string_store.dart';
 import 'package:kinflow_app/infrastructure/secure_storage/secure_string_store.dart';
+import 'package:kinflow_app/infrastructure/google/google_identity_gateway.dart';
+import 'package:kinflow_app/infrastructure/google/google_identity_state_purge_participant.dart';
+import 'package:kinflow_app/infrastructure/google/google_supabase_auth_sign_in_data_source.dart';
 import 'package:kinflow_app/infrastructure/supabase/supabase_auth_session_data_source.dart';
 import 'package:kinflow_app/infrastructure/supabase/supabase_client_initializer.dart';
+import 'package:kinflow_app/infrastructure/supabase/supabase_google_token_exchange.dart';
 import 'package:kinflow_app/infrastructure/supabase/supabase_household_data_source.dart';
 import 'package:kinflow_app/infrastructure/supabase/supabase_invite_data_source.dart';
 import 'package:kinflow_app/infrastructure/supabase/supabase_secure_auth_storage.dart';
@@ -55,6 +60,8 @@ final class AuthDependencies {
 Future<AuthDependencies> createAuthDependencies(
   AppPublicConfiguration configuration, {
   SecureStringStore? secureStringStore,
+  GoogleIdentityGateway? googleIdentityGateway,
+  GoogleTokenExchange? googleTokenExchange,
   SupabaseClientInitializer supabaseInitializer =
       const SupabaseFlutterClientInitializer(),
 }) async {
@@ -72,18 +79,38 @@ Future<AuthDependencies> createAuthDependencies(
   );
   final EphemeralPendingInviteStore pendingInviteStore =
       EphemeralPendingInviteStore();
+  final List<SensitiveLocalStatePurgeParticipant> purgeParticipants =
+      <SensitiveLocalStatePurgeParticipant>[
+        SecureAuthStoragePurgeParticipant(authStorage),
+        pendingInviteStore,
+      ];
+  AuthSignInLauncher signInLauncher = createAuthSignInLauncher();
+  final String? googleWebClientId = configuration.googleWebClientId;
+  if (googleWebClientId != null) {
+    final GoogleIdentityGateway identityGateway =
+        googleIdentityGateway ?? GoogleSignInIdentityGateway.instance;
+    signInLauncher = ProviderAuthSignInLauncher(
+      GoogleSupabaseAuthSignInDataSource(
+        serverClientId: googleWebClientId,
+        identityGateway: identityGateway,
+        tokenExchange:
+            googleTokenExchange ?? SupabaseGoogleTokenExchange(client),
+      ),
+    );
+    purgeParticipants.add(
+      GoogleIdentityStatePurgeParticipant(
+        serverClientId: googleWebClientId,
+        identityGateway: identityGateway,
+      ),
+    );
+  }
 
   return AuthDependencies(
     sessionRepository: ProviderAuthSessionRepository(
       SupabaseAuthSessionDataSource(client),
     ),
-    signInLauncher: createAuthSignInLauncher(),
-    localStatePurger: CompositeSensitiveLocalStatePurger(
-      <SensitiveLocalStatePurgeParticipant>[
-        SecureAuthStoragePurgeParticipant(authStorage),
-        pendingInviteStore,
-      ],
-    ),
+    signInLauncher: signInLauncher,
+    localStatePurger: CompositeSensitiveLocalStatePurger(purgeParticipants),
     householdRepository: ProviderHouseholdRepository(
       SupabaseHouseholdDataSource(client),
     ),

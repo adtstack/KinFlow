@@ -49,6 +49,15 @@ void main() {
 
     expect(violations, isNotEmpty);
   });
+
+  test('boundary detector keeps Google SDK imports in infrastructure', () {
+    final List<String> violations = _violationsFor(
+      path: 'lib/features/auth/data/services/google_auth.dart',
+      source: "import 'package:google_sign_in/google_sign_in.dart';",
+    );
+
+    expect(violations, isNotEmpty);
+  });
 }
 
 enum _Layer { domain, application, data, presentation }
@@ -116,6 +125,7 @@ _Layer? _layerForPackageUri(String uri) {
 
 bool _isForbiddenExternalImport(_Layer layer, String uri) {
   const List<String> providerSdkPrefixes = <String>[
+    'package:google_sign_in/',
     'package:supabase_flutter/',
     'package:purchases_flutter/',
     'package:firebase_core/',

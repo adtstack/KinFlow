@@ -3,6 +3,7 @@ import 'package:kinflow_app/app/config/app_public_configuration.dart';
 
 Map<String, String> publicConfigurationValues({
   AppEnvironment environment = AppEnvironment.dev,
+  String googleWebClientId = '',
   String sentryDsn = '',
 }) {
   return <String, String>{
@@ -14,7 +15,7 @@ Map<String, String> publicConfigurationValues({
     AppPublicConfigurationKeys.authRedirectHost: 'auth.example.invalid',
     AppPublicConfigurationKeys.contractVersion: '2026-07-25',
     AppPublicConfigurationKeys.featureConfigUrl: '',
-    AppPublicConfigurationKeys.googleWebClientId: '',
+    AppPublicConfigurationKeys.googleWebClientId: googleWebClientId,
     AppPublicConfigurationKeys.privacyRequestUrl:
         'https://example.invalid/privacy-request',
     AppPublicConfigurationKeys.publicSiteUrl: 'https://example.invalid',
@@ -31,11 +32,13 @@ Map<String, String> publicConfigurationValues({
 
 AppPublicConfiguration publicConfigurationFixture({
   AppEnvironment environment = AppEnvironment.dev,
+  String googleWebClientId = '',
   bool sentryEnabled = false,
 }) {
   return AppPublicConfigurationLoader(expectedEnvironment: environment).load(
     publicConfigurationValues(
       environment: environment,
+      googleWebClientId: googleWebClientId,
       sentryDsn: sentryEnabled ? 'https://publickey@o0.ingest.sentry.io/1' : '',
     ),
   );

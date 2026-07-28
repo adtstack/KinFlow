@@ -26,6 +26,31 @@ void main() {
     expect(configuration.isSentryEnabled, isTrue);
   });
 
+  test('accepts only the public Google Web client ID shape', () {
+    const String clientId = '1234567890-kinflowdev.apps.googleusercontent.com';
+    final AppPublicConfiguration configuration = publicConfigurationFixture(
+      googleWebClientId: clientId,
+    );
+
+    expect(configuration.googleWebClientId, clientId);
+
+    final Map<String, String> invalid = publicConfigurationValues(
+      googleWebClientId: 'not-a-google-client-id',
+    );
+    expect(
+      () => const AppPublicConfigurationLoader(
+        expectedEnvironment: AppEnvironment.dev,
+      ).load(invalid),
+      throwsA(
+        isA<AppConfigurationException>().having(
+          (AppConfigurationException error) => error.issues.single.stableCode,
+          'stable issue',
+          'invalidFormat:GOOGLE_WEB_CLIENT_ID',
+        ),
+      ),
+    );
+  });
+
   test('rejects environment identity mismatch without exposing values', () {
     final Map<String, String> values = publicConfigurationValues()
       ..[AppPublicConfigurationKeys.appEnvironment] = 'prod'

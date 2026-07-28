@@ -150,6 +150,8 @@ kinflow_permissions="$($kinflow_aapt_bin dump permissions "$kinflow_apk")"
 kinflow_expected_permissions="$(printf '%s\n' \
   "package: $kinflow_package" \
   "uses-permission: name='android.permission.INTERNET'" \
+  "uses-permission: name='android.permission.USE_BIOMETRIC'" \
+  "uses-permission: name='android.permission.USE_FINGERPRINT'" \
   "permission: $kinflow_package.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" \
   "uses-permission: name='$kinflow_package.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'")"
 if [[ "$kinflow_permissions" != "$kinflow_expected_permissions" ]]; then
@@ -169,7 +171,7 @@ kinflow_bytes="$(wc -c <"$kinflow_apk" | tr -d ' ')"
   printf 'compile_api=36\n'
   printf 'android_backup=disabled\n'
   printf 'app_link=https://auth.example.invalid/invite/*;auto_verify=true\n'
-  printf 'permissions=INTERNET,package-scoped-dynamic-receiver\n'
+  printf 'permissions=INTERNET,USE_BIOMETRIC,USE_FINGERPRINT,package-scoped-dynamic-receiver\n'
   printf 'bytes=%s\n' "$kinflow_bytes"
   printf 'sha256=%s\n' "$kinflow_sha256"
   printf 'result=PASS\n'

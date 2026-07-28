@@ -2,7 +2,7 @@
 
 KinFlow는 성인 2인이 가구를 만들고 집안일을 나누어 완료하는 Android-first 가족 협업 앱이다.
 
-현재 구현 범위는 Phase 01 WP01-07까지의 자동화 foundation이며 GitHub-hosted `CI gate`도 통과했다. G0 연구·법률 Gate 전체 통과, Android 실제 기기 검증, branch protection 또는 production provider 연결을 의미하지 않는다.
+현재 구현 범위는 Phase 02 WP02-04의 household/invite 자동화와 Google Android credential-independent integration이다. GitHub-hosted `CI gate`가 검증하는 범위와 실제 Google/Supabase provider, owned App Link domain, 성인 2계정·2기기 검증은 구분한다.
 
 ## Accepted baseline
 
@@ -27,7 +27,7 @@ KinFlow는 성인 2인이 가구를 만들고 집안일을 나누어 완료하�
 - project-scoped Supabase CLI와 local PostgreSQL/RLS/Edge Function baseline
 - 성인 2인 seed와 별도 household를 이용한 cross-household 격리 검증
 - Flutter Supabase infrastructure adapter와 local health connectivity test
-- Google 로그인은 후속 Work Package로 연기
+- Google native sign-in → Supabase Auth token exchange adapter와 secure logout purge; 공개 Web client ID가 없으면 fail-closed
 
 자세한 변경 근거는 `docs/adr/ADR-0002-android-first-release.md`를 따른다.
 
@@ -82,7 +82,7 @@ fvm flutter build apk --debug --flavor prod --target lib/main_prod.dart --dart-d
 
 예제 config는 공개 client 값만 정의한다. placeholder Supabase publishable key는 정적 예제 검증에는 허용되지만 runtime에서는 fail-closed 한다. `SENTRY_DSN`이 비어 있으면 Sentry SDK와 네트워크 전송은 시작하지 않는다.
 
-실제 환경 파일, OAuth client secret, Supabase service role key, Sentry auth token, signing key는 커밋하지 않는다.
+실제 환경 파일, OAuth client secret, Supabase service role key, Sentry auth token, signing key는 커밋하지 않는다. 실제 provider와 성인 2인 기기 연결은 `docs/evidence/phase-02/GOOGLE_ANDROID_TWO_ADULT_RUNBOOK.md`를 따른다.
 
 ## CI
 
@@ -90,7 +90,7 @@ GitHub Actions는 PR, `main` push와 수동 실행에서 다음 job을 병렬 �
 
 - format/analyzer/unit·widget·architecture/codegen/config/secret와 coverage report
 - Pub/npm license allowlist와 OSV offline vulnerability scan
-- Supabase reset/lint, 37개 pgTAP RLS, Edge health와 Flutter live adapter contract
+- Supabase reset/lint, 전체 pgTAP RLS/contract, Edge health와 Flutter live adapter contract
 - Android dev/prod debug APK build와 package/API/permission/checksum audit
 
 PR workflow 권한은 `contents: read`뿐이며 production secret을 참조하지 않는다. action과 다운로드 도구는 release commit 또는 checksum으로 고정한다. OSV database는 공개 fixture로 받은 뒤 실제 lockfile scan을 network-disabled mode에서 실행한다. 실패한 Android build의 APK는 업로드하지 않는다.
