@@ -94,6 +94,17 @@ KINFLOW_PUBLIC_CONFIG=config/dev.local.json \
 
 owned HTTPS host에 `/.well-known/assetlinks.json`을 배포한다. dev/prod를 같은 host에서 허용한다면 두 package와 각각의 실제 signing SHA-256을 별도 statement로 둔다.
 
+현재 dev 설치물과 일치하는 dev-only 정적 source는 `apps/public_site/public/.well-known/assetlinks.json`이다. 배포 직전에 APK package와 signer를 source에 다시 대조한다.
+
+```bash
+scripts/verify-android-app-links.sh \
+  dev \
+  apps/kinflow_app/build/app/outputs/flutter-apk/app-dev-debug.apk \
+  apps/public_site/public/.well-known/assetlinks.json
+```
+
+이 dev source를 prod host에 배포하지 않는다. prod는 Play App Signing으로 실제 사용자에게 전달되는 인증서가 확정된 뒤 non-debuggable delivered APK와 별도 statement를 검증한다.
+
 필수 관계는 `delegate_permission/common.handle_all_urls`이고 대상 namespace는 `android_app`이다. Content-Type은 JSON이며 redirect 없이 HTTPS 200으로 응답해야 한다.
 
 기기에서 확인한다.
@@ -145,6 +156,8 @@ prod는 package만 `me.newlines.kinflow`로 바꾼다. `auth.example.invalid`은
 
 ## Official References
 
+- [Android App Links website association](https://developer.android.com/training/app-links/configure-assetlinks)
+- [Android App Links verification](https://developer.android.com/training/app-links/verify-applinks)
 - [Flutter `google_sign_in` 7.x](https://pub.dev/packages/google_sign_in)
 - [Flutter Android integration and troubleshooting](https://pub.dev/packages/google_sign_in_android)
 - [Supabase Google provider setup](https://supabase.com/docs/guides/auth/social-login/auth-google)

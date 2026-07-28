@@ -148,6 +148,7 @@ if ! printf '%s\n' "$kinflow_manifest" \
 fi
 for kinflow_app_link_value in \
   'android.intent.action.VIEW' \
+  'android.intent.category.DEFAULT' \
   'android.intent.category.BROWSABLE' \
   'https' \
   "$kinflow_auth_redirect_host" \
