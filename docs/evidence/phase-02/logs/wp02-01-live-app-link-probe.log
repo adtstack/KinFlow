@@ -1,0 +1,72 @@
+WP02-01 live Android App Link probe validation
+Date: 2026-07-29
+Base: 3082c04f3be57f9ae5938d2ef88066de59209aa1
+Implementation: 76013e5a94055e5c4d2e2737a904ade59510bcd5
+
+Probe contract
+- exact URL: https://<validated-host>/.well-known/assetlinks.json
+- method: GET
+- redirect mode: manual
+- request credential/cookie header: NONE
+- timeout: 10000 ms
+- maximum response: 65536 bytes, enforced while streaming
+- required status: 200
+- required content type: application/json, parameters allowed
+- required body: valid UTF-8 JSON
+- required statement: exact relation, android_app namespace, package and APK signer SHA-256
+- response body logging: NO
+
+Negative cases
+- scheme/port/path/wildcard/IP/localhost/whitespace host: REJECTED
+- request/network failure: REJECTED
+- non-200 or redirect: REJECTED
+- missing/wrong content type: REJECTED
+- invalid Content-Length: REJECTED
+- declared or streamed body above 64 KiB: REJECTED
+- malformed UTF-8/JSON: REJECTED
+- package/fingerprint/statement drift: REJECTED
+
+Local validation
+- npm run ci:test: PASS 22/22
+- live probe test groups: PASS 4/4
+- bash syntax: PASS
+- unsafe-host CLI smoke: EXPECTED FAIL before network request
+- dev APK package and signer versus checked-in statement: PASS
+- prod debug APK as production association input: EXPECTED FAIL
+- Dart format: PASS, 158 files / 0 changed
+- Flutter fatal analyze: PASS, issue 0
+- full Flutter suite: PASS, 176 tests / 1 opt-in local connectivity skip
+- coverage: 2393/3091 lines, 77.42%
+- public config examples: PASS
+- high-confidence secret findings: 0
+- generated code drift: 0
+
+Android artifacts
+- dev APK bytes: 216120695
+- dev APK SHA-256: 50348407a63b1c535f350ccec4082919b6a3788ecb8a3024d75d98f1e0cfcc4d
+- prod debug APK bytes: 216120615
+- prod debug APK SHA-256: 6a54dbd776e2906a6efe99f0fdc2f197b0ef08ca44c894556fd35ecfb6be55b0
+- min/target/compile API: 24/36/36
+- result: PASS
+
+Remote
+- GitHub Actions run: 30387565194
+- implementation commit: 76013e5a94055e5c4d2e2737a904ade59510bcd5
+- dependency audit: PASS 56s
+- quality: PASS 3m39s
+- backend: PASS 2m42s
+- Android dev: PASS 4m40s
+- Android prod: PASS 4m50s
+- final CI gate: PASS 3s
+- URL: https://github.com/adtstack/KinFlow/actions/runs/30387565194
+
+External state not exercised
+- owned HTTPS host/DNS/hosting: NOT CONFIGURED
+- live public endpoint probe: NOT RUN
+- Google Digital Asset Links API: NOT RUN
+- Android OS verified state: NOT RUN
+- Google Cloud/Supabase provider: NOT CONFIGURED; dashboards remain signed out
+- two adult accounts/two Android devices: NOT RUN
+- production deploy/customer data: NOT USED
+
+Result: LOCAL + REMOTE LIVE-PROBE SLICE PASS; owned host execution, OS verified link, provider and two-adult completion pending.
