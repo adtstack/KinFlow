@@ -10,13 +10,13 @@ kinflow_flavor="${1:-}"
 case "$kinflow_flavor" in
   dev)
     kinflow_target='lib/main_dev.dart'
-    kinflow_config='config/dev.example.json'
+    kinflow_default_config='config/dev.example.json'
     kinflow_package='me.newlines.kinflow.dev'
     kinflow_label='KinFlow Dev'
     ;;
   prod)
     kinflow_target='lib/main_prod.dart'
-    kinflow_config='config/prod.example.json'
+    kinflow_default_config='config/prod.example.json'
     kinflow_package='me.newlines.kinflow'
     kinflow_label='KinFlow'
     ;;
@@ -30,7 +30,20 @@ kinflow_repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 kinflow_app_root="$kinflow_repo_root/apps/kinflow_app"
 kinflow_report_dir="${KINFLOW_CI_REPORT_DIR:-$kinflow_repo_root/ci-reports/android/$kinflow_flavor}"
 kinflow_flutter_bin="${KINFLOW_FLUTTER_BIN:-flutter}"
+kinflow_node_bin="${KINFLOW_NODE_BIN:-node}"
 kinflow_apk="$kinflow_app_root/build/app/outputs/flutter-apk/app-$kinflow_flavor-debug.apk"
+kinflow_config="${KINFLOW_PUBLIC_CONFIG:-$kinflow_default_config}"
+if [[ "$kinflow_config" != /* ]]; then
+  kinflow_config="$kinflow_app_root/$kinflow_config"
+fi
+if [[ ! -f "$kinflow_config" ]]; then
+  printf '%s\n' 'Android public config file does not exist.' >&2
+  exit 66
+fi
+kinflow_auth_redirect_host="$(
+  "$kinflow_node_bin" "$kinflow_repo_root/scripts/ci/android-public-config.mjs" \
+    "$kinflow_config" "$kinflow_flavor" "$kinflow_package"
+)"
 
 write_failure_report() {
   local command_status="$?"
@@ -105,7 +118,8 @@ flutter_pub_get
   --no-pub \
   --flavor "$kinflow_flavor" \
   --target "$kinflow_target" \
-  --dart-define-from-file "$kinflow_config"
+  --dart-define-from-file "$kinflow_config" \
+  --android-project-arg "kinflowAuthRedirectHost=$kinflow_auth_redirect_host"
 
 if [[ ! -f "$kinflow_apk" ]]; then
   printf 'Expected APK is missing: %s\n' "$kinflow_apk" >&2
@@ -136,7 +150,7 @@ for kinflow_app_link_value in \
   'android.intent.action.VIEW' \
   'android.intent.category.BROWSABLE' \
   'https' \
-  'auth.example.invalid' \
+  "$kinflow_auth_redirect_host" \
   '/invite/'; do
   if ! printf '%s\n' "$kinflow_manifest" \
     | grep -F "$kinflow_app_link_value" >/dev/null; then
@@ -170,7 +184,7 @@ kinflow_bytes="$(wc -c <"$kinflow_apk" | tr -d ' ')"
   printf 'target_api=36\n'
   printf 'compile_api=36\n'
   printf 'android_backup=disabled\n'
-  printf 'app_link=https://auth.example.invalid/invite/*;auto_verify=true\n'
+  printf 'app_link=https://%s/invite/*;auto_verify=true\n' "$kinflow_auth_redirect_host"
   printf 'permissions=INTERNET,USE_BIOMETRIC,USE_FINGERPRINT,package-scoped-dynamic-receiver\n'
   printf 'bytes=%s\n' "$kinflow_bytes"
   printf 'sha256=%s\n' "$kinflow_sha256"

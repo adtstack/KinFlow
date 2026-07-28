@@ -73,14 +73,22 @@ KinFlow는 `google-services.json` 없이 `serverClientId`를 runtime에 전달�
 - `SUPPORT_URL`
 - `PRIVACY_REQUEST_URL`
 
-실행 전 config validator를 통과시킨다.
+실행 전 config validator를 통과시킨다. `AUTH_REDIRECT_HOST`는 DNS host만 넣고 scheme, port와 path는 넣지 않는다. 아래 wrapper는 같은 JSON에서 host를 읽어 Dart runtime과 Android merged manifest에 동시에 주입하므로 두 값이 어긋나지 않는다.
 
 ```bash
-cd apps/kinflow_app
-/private/tmp/kinflow-flutter-src-3.44.7/bin/flutter run --flavor dev --target lib/main_dev.dart --dart-define-from-file=config/dev.local.json
+KINFLOW_FLUTTER_BIN=/private/tmp/kinflow-flutter-src-3.44.7/bin/flutter \
+  scripts/run-android.sh dev config/dev.local.json --device-id <android-device-id>
 ```
 
-실제 실행 명령은 Flutter version과 현재 app bootstrap의 define 계약에 맞춰 pinned toolchain을 사용한다. 명령 출력과 screenshot에 publishable key 이외의 credential 또는 Google token이 없는지 확인한다.
+`config/dev.local.json`은 app root 기준 경로다. build artifact만 필요하면 같은 config를 사용해 아래 gate를 실행한다.
+
+```bash
+KINFLOW_FLUTTER_BIN=/private/tmp/kinflow-flutter-src-3.44.7/bin/flutter \
+KINFLOW_PUBLIC_CONFIG=config/dev.local.json \
+  scripts/ci/android-build.sh dev
+```
+
+실제 실행 명령은 Flutter version과 현재 app bootstrap의 define 계약에 맞춰 pinned toolchain을 사용한다. 명령 출력과 screenshot에 publishable key 이외의 credential 또는 Google token이 없는지 확인한다. wrapper와 build gate는 exact public key allowlist만 허용하므로 client secret 또는 service-role key가 local JSON에 들어가면 실행 전에 실패한다.
 
 ## 6. Publish And Verify Invite App Link
 

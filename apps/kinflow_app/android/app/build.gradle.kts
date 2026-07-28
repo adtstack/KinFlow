@@ -4,6 +4,17 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+val kinflowDefaultAuthRedirectHost = "auth.example.invalid"
+val kinflowAuthRedirectHostPattern = Regex(
+    "^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\.)+[A-Za-z]{2,63}$",
+)
+val kinflowAuthRedirectHost = providers
+    .gradleProperty("kinflowAuthRedirectHost")
+    .getOrElse(kinflowDefaultAuthRedirectHost)
+require(kinflowAuthRedirectHostPattern.matches(kinflowAuthRedirectHost)) {
+    "kinflowAuthRedirectHost must be a DNS host without scheme, port, path, wildcard, or whitespace."
+}
+
 android {
     namespace = "me.newlines.kinflow"
     compileSdk = 36
@@ -32,12 +43,12 @@ android {
             dimension = "environment"
             applicationIdSuffix = ".dev"
             versionNameSuffix = "-dev"
-            manifestPlaceholders["kinflowAuthRedirectHost"] = "auth.example.invalid"
+            manifestPlaceholders["kinflowAuthRedirectHost"] = kinflowAuthRedirectHost
             resValue("string", "app_name", "KinFlow Dev")
         }
         create("prod") {
             dimension = "environment"
-            manifestPlaceholders["kinflowAuthRedirectHost"] = "auth.example.invalid"
+            manifestPlaceholders["kinflowAuthRedirectHost"] = kinflowAuthRedirectHost
             resValue("string", "app_name", "KinFlow")
         }
     }
