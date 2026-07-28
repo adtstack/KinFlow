@@ -6,7 +6,9 @@ import 'package:kinflow_app/app/config/app_public_configuration.dart';
 import 'package:kinflow_app/app/config/dart_define_public_configuration.dart';
 import 'package:kinflow_app/app/observability/app_logger.dart';
 import 'package:kinflow_app/app/providers/app_providers.dart';
+import 'package:kinflow_app/app/providers/auth_dependencies.dart';
 import 'package:kinflow_app/app/providers/foundation_dependencies.dart';
+import 'package:kinflow_app/features/auth/presentation/providers/auth_providers.dart';
 import 'package:kinflow_app/features/foundation/presentation/providers/foundation_providers.dart';
 import 'package:kinflow_app/infrastructure/observability/app_logging_composition.dart';
 import 'package:kinflow_app/infrastructure/observability/sentry_observability.dart';
@@ -76,6 +78,15 @@ void _runKinFlowApp({
         if (configuration != null)
           appPublicConfigurationProvider.overrideWithValue(configuration),
         appLoggerProvider.overrideWithValue(logger),
+        authSessionRepositoryProvider.overrideWithValue(
+          createAuthSessionRepository(),
+        ),
+        authSignInLauncherProvider.overrideWithValue(
+          createAuthSignInLauncher(),
+        ),
+        sensitiveLocalStatePurgerProvider.overrideWithValue(
+          createSensitiveLocalStatePurger(),
+        ),
         foundationRepositoryProvider.overrideWithValue(
           createFoundationRepository(),
         ),

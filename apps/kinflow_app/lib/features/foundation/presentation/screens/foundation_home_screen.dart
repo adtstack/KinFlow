@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kinflow_app/app/presentation/widgets/responsive_scaffold.dart';
 import 'package:kinflow_app/app/presentation/widgets/scrollable_status_layout.dart';
 import 'package:kinflow_app/app/theme/app_tokens.dart';
+import 'package:kinflow_app/features/auth/presentation/providers/auth_providers.dart';
 import 'package:kinflow_app/features/foundation/domain/repositories/foundation_repository.dart';
 import 'package:kinflow_app/features/foundation/presentation/providers/foundation_providers.dart';
 import 'package:kinflow_app/l10n/app_localizations.dart';
@@ -20,6 +23,15 @@ class FoundationHomeScreen extends ConsumerWidget {
     return AppResponsiveScaffold(
       key: const Key('foundation.home'),
       title: localizations.appTitle,
+      actions: <Widget>[
+        IconButton(
+          key: const Key('auth.logout'),
+          onPressed: () =>
+              unawaited(ref.read(authLifecycleProvider.notifier).logout()),
+          tooltip: localizations.authLogoutAction,
+          icon: const Icon(Icons.logout),
+        ),
+      ],
       body: ScrollableStatusLayout(
         child: status.when(
           data: (LoadFoundationResult result) {

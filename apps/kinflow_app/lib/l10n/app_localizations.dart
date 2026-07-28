@@ -129,6 +129,66 @@ abstract class AppLocalizations {
   /// **'Please try again. If the problem continues, restart the app.'**
   String get startupErrorBody;
 
+  /// Accessible message while the authentication session is restored
+  ///
+  /// In en, this message translates to:
+  /// **'Checking your session'**
+  String get authLoadingLabel;
+
+  /// Adult account sign-in screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to KinFlow'**
+  String get authSignInTitle;
+
+  /// Explains the single adult sign-in provider
+  ///
+  /// In en, this message translates to:
+  /// **'KinFlow currently supports adult accounts with Google sign-in.'**
+  String get authSignInBody;
+
+  /// Starts the Google sign-in request
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Google'**
+  String get authGoogleSignInAction;
+
+  /// Accessible hint for the Google sign-in action
+  ///
+  /// In en, this message translates to:
+  /// **'Signs in with an adult Google account'**
+  String get authGoogleSignInHint;
+
+  /// Status while a Google sign-in request is in progress
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting to Google'**
+  String get authSigningInLabel;
+
+  /// Safe provider-unavailable message without upstream details
+  ///
+  /// In en, this message translates to:
+  /// **'Google sign-in is temporarily unavailable. Please try again later.'**
+  String get authProviderUnavailableBody;
+
+  /// Safe message after an expired or revoked session
+  ///
+  /// In en, this message translates to:
+  /// **'Your session expired or was revoked. Sign in again.'**
+  String get authSessionExpiredBody;
+
+  /// Fail-closed message after local sensitive state purge fails
+  ///
+  /// In en, this message translates to:
+  /// **'KinFlow locked access because local data could not be cleared safely. Restart the app before trying again.'**
+  String get authLocalStateLockedBody;
+
+  /// Signs out and clears local account-scoped state
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get authLogoutAction;
+
   /// Retries app dependency initialization
   ///
   /// In en, this message translates to:

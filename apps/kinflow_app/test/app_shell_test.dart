@@ -8,14 +8,20 @@ import 'package:kinflow_app/app/app.dart';
 import 'package:kinflow_app/app/app_environment.dart';
 import 'package:kinflow_app/app/observability/app_logger.dart';
 import 'package:kinflow_app/app/providers/app_providers.dart';
+import 'package:kinflow_app/app/providers/auth_dependencies.dart';
 import 'package:kinflow_app/app/providers/foundation_dependencies.dart';
 import 'package:kinflow_app/app/router/app_router.dart';
+import 'package:kinflow_app/features/auth/application/ports/sensitive_local_state_purger.dart';
+import 'package:kinflow_app/features/auth/domain/repositories/auth_session_repository.dart';
+import 'package:kinflow_app/features/auth/domain/services/auth_sign_in_launcher.dart';
+import 'package:kinflow_app/features/auth/presentation/providers/auth_providers.dart';
 import 'package:kinflow_app/features/foundation/domain/entities/foundation_status.dart';
 import 'package:kinflow_app/features/foundation/domain/failures/foundation_failure.dart';
 import 'package:kinflow_app/features/foundation/domain/repositories/foundation_repository.dart';
 import 'package:kinflow_app/features/foundation/domain/value_objects/foundation_sample_id.dart';
 import 'package:kinflow_app/features/foundation/presentation/providers/foundation_providers.dart';
 
+import 'support/fakes/fake_auth_dependencies.dart';
 import 'support/fakes/fake_foundation_repository.dart';
 
 void main() {
@@ -174,6 +180,98 @@ void main() {
 
     expect(find.byKey(const Key('foundation.home')), findsOneWidget);
   });
+
+  testWidgets('fails closed with only a disabled Google sign-in action', (
+    WidgetTester tester,
+  ) async {
+    await _pumpShell(
+      tester,
+      environment: AppEnvironment.prod,
+      initializer: _successfulInitialization,
+      authRepository: FakeAuthSessionRepository(),
+      signInLauncher: FakeAuthSignInLauncher(isAvailable: false),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('auth.signIn')), findsOneWidget);
+    expect(find.text('Continue with Google'), findsOneWidget);
+    expect(find.textContaining('OTP'), findsNothing);
+    expect(find.textContaining('email'), findsNothing);
+    final FilledButton button = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, 'Continue with Google'),
+    );
+    expect(button.onPressed, isNull);
+  });
+
+  testWidgets('shows auth loading until session restore completes', (
+    WidgetTester tester,
+  ) async {
+    final Completer<AuthSessionResult> restore = Completer<AuthSessionResult>();
+    await _pumpShell(
+      tester,
+      environment: AppEnvironment.prod,
+      initializer: _successfulInitialization,
+      authRepository: FakeAuthSessionRepository(
+        restoreCallback: () => restore.future,
+      ),
+      signInLauncher: FakeAuthSignInLauncher(isAvailable: false),
+    );
+    await tester.pump();
+
+    expect(find.byKey(const Key('auth.loading')), findsOneWidget);
+    expect(find.byKey(const Key('foundation.home')), findsNothing);
+
+    restore.complete(const AuthSessionAbsent());
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('auth.signIn')), findsOneWidget);
+  });
+
+  testWidgets('logout purges local state before returning to sign-in', (
+    WidgetTester tester,
+  ) async {
+    final RecordingSensitiveLocalStatePurger purger =
+        RecordingSensitiveLocalStatePurger();
+    await _pumpShell(
+      tester,
+      environment: AppEnvironment.prod,
+      initializer: _successfulInitialization,
+      localStatePurger: purger,
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('auth.logout')));
+    await tester.pumpAndSettle();
+
+    expect(purger.purgeCount, 1);
+    expect(find.byKey(const Key('auth.signIn')), findsOneWidget);
+    expect(find.byKey(const Key('foundation.home')), findsNothing);
+  });
+
+  testWidgets('revoked provider event removes the protected route', (
+    WidgetTester tester,
+  ) async {
+    final FakeAuthSessionRepository repository = FakeAuthSessionRepository(
+      restoreResult: AuthSessionAvailable(authSessionFixture()),
+    );
+    await _pumpShell(
+      tester,
+      environment: AppEnvironment.prod,
+      initializer: _successfulInitialization,
+      authRepository: repository,
+      locale: const Locale('ko'),
+    );
+    await tester.pumpAndSettle();
+
+    repository.emit(
+      const AuthSessionTerminated(AuthSessionTerminationReason.revoked),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('auth.signIn')), findsOneWidget);
+    expect(find.text('세션이 만료되었거나 회수되었습니다. 다시 로그인해 주세요.'), findsOneWidget);
+    expect(find.byKey(const Key('foundation.home')), findsNothing);
+  });
 }
 
 Future<ProviderContainer> _pumpShell(
@@ -181,13 +279,29 @@ Future<ProviderContainer> _pumpShell(
   required AppEnvironment environment,
   required AppInitializer initializer,
   FoundationRepository? foundationRepository,
+  FakeAuthSessionRepository? authRepository,
+  AuthSignInLauncher? signInLauncher,
+  SensitiveLocalStatePurger? localStatePurger,
   Locale? locale,
   AppLogger? logger,
 }) async {
+  final FakeAuthSessionRepository resolvedAuthRepository =
+      authRepository ??
+      FakeAuthSessionRepository(
+        restoreResult: AuthSessionAvailable(authSessionFixture()),
+      );
+  addTearDown(resolvedAuthRepository.close);
   final ProviderContainer container = ProviderContainer(
     overrides: [
       appEnvironmentProvider.overrideWithValue(environment),
       appInitializerProvider.overrideWithValue(initializer),
+      authSessionRepositoryProvider.overrideWithValue(resolvedAuthRepository),
+      authSignInLauncherProvider.overrideWithValue(
+        signInLauncher ?? createAuthSignInLauncher(),
+      ),
+      sensitiveLocalStatePurgerProvider.overrideWithValue(
+        localStatePurger ?? createSensitiveLocalStatePurger(),
+      ),
       foundationRepositoryProvider.overrideWithValue(
         foundationRepository ?? createFoundationRepository(),
       ),

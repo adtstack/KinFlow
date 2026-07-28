@@ -25,7 +25,8 @@ void main() {
     expect(observability.runCount, 1);
     expect(observability.configuration?.environment, AppEnvironment.dev);
     expect(observability.logger, isA<StructuredAppLogger>());
-    expect(find.byKey(const Key('foundation.home')), findsOneWidget);
+    expect(find.byKey(const Key('auth.signIn')), findsOneWidget);
+    expect(find.byKey(const Key('foundation.home')), findsNothing);
 
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();

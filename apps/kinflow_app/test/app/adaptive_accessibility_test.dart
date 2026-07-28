@@ -5,13 +5,17 @@ import 'package:kinflow_app/app/app.dart';
 import 'package:kinflow_app/app/app_environment.dart';
 import 'package:kinflow_app/app/presentation/widgets/responsive_scaffold.dart';
 import 'package:kinflow_app/app/providers/app_providers.dart';
+import 'package:kinflow_app/app/providers/auth_dependencies.dart';
 import 'package:kinflow_app/app/providers/foundation_dependencies.dart';
 import 'package:kinflow_app/app/theme/app_theme.dart';
+import 'package:kinflow_app/features/auth/domain/repositories/auth_session_repository.dart';
+import 'package:kinflow_app/features/auth/presentation/providers/auth_providers.dart';
 import 'package:kinflow_app/features/foundation/domain/failures/foundation_failure.dart';
 import 'package:kinflow_app/features/foundation/domain/repositories/foundation_repository.dart';
 import 'package:kinflow_app/features/foundation/presentation/providers/foundation_providers.dart';
 import 'package:kinflow_app/l10n/app_localizations.dart';
 
+import '../support/fakes/fake_auth_dependencies.dart';
 import '../support/fakes/fake_foundation_repository.dart';
 
 void main() {
@@ -145,6 +149,27 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('sign-in remains scrollable at 200% text', (
+    WidgetTester tester,
+  ) async {
+    await _pumpApp(
+      tester,
+      authenticated: false,
+      locale: const Locale('en', 'XA'),
+      size: const Size(320, 568),
+      textScaleFactor: 2,
+    );
+
+    expect(find.byKey(const Key('auth.signIn')), findsOneWidget);
+    expect(find.byKey(const Key('auth.signIn.google')), findsOneWidget);
+    await tester.ensureVisible(find.byKey(const Key('auth.signIn.google')));
+    expect(
+      tester.getSize(find.byKey(const Key('auth.signIn.google'))).height,
+      greaterThanOrEqualTo(48),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('forced RTL mirrors the expanded rail without declaring Arabic', (
     WidgetTester tester,
   ) async {
@@ -187,15 +212,27 @@ void main() {
 Future<ProviderContainer> _pumpApp(
   WidgetTester tester, {
   required Size size,
+  bool authenticated = true,
   Locale? locale,
   FoundationRepository? repository,
   double textScaleFactor = 1,
 }) async {
   _configureView(tester, size: size, textScaleFactor: textScaleFactor);
+  final FakeAuthSessionRepository authRepository = FakeAuthSessionRepository(
+    restoreResult: authenticated
+        ? AuthSessionAvailable(authSessionFixture())
+        : const AuthSessionAbsent(),
+  );
+  addTearDown(authRepository.close);
   final ProviderContainer container = ProviderContainer(
     overrides: [
       appEnvironmentProvider.overrideWithValue(AppEnvironment.prod),
       appInitializerProvider.overrideWithValue(_successfulInitialization),
+      authSessionRepositoryProvider.overrideWithValue(authRepository),
+      authSignInLauncherProvider.overrideWithValue(createAuthSignInLauncher()),
+      sensitiveLocalStatePurgerProvider.overrideWithValue(
+        createSensitiveLocalStatePurger(),
+      ),
       foundationRepositoryProvider.overrideWithValue(
         repository ?? createFoundationRepository(),
       ),

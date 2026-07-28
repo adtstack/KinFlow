@@ -4,11 +4,13 @@ import 'package:kinflow_app/l10n/app_localizations.dart';
 
 class AppResponsiveScaffold extends StatelessWidget {
   const AppResponsiveScaffold({
+    this.actions = const <Widget>[],
     required this.body,
     required this.title,
     super.key,
   });
 
+  final List<Widget> actions;
   final Widget body;
   final String title;
 
@@ -21,16 +23,19 @@ class AppResponsiveScaffold extends StatelessWidget {
         );
         return switch (sizeClass) {
           AppWindowSizeClass.compact => _CompactScaffold(
+            actions: actions,
             body: body,
             title: title,
           ),
           AppWindowSizeClass.medium => _RailScaffold(
+            actions: actions,
             body: body,
             extended: false,
             sizeClass: sizeClass,
             title: title,
           ),
           AppWindowSizeClass.expanded => _RailScaffold(
+            actions: actions,
             body: body,
             extended: true,
             sizeClass: sizeClass,
@@ -43,8 +48,13 @@ class AppResponsiveScaffold extends StatelessWidget {
 }
 
 class _CompactScaffold extends StatelessWidget {
-  const _CompactScaffold({required this.body, required this.title});
+  const _CompactScaffold({
+    required this.actions,
+    required this.body,
+    required this.title,
+  });
 
+  final List<Widget> actions;
   final Widget body;
   final String title;
 
@@ -53,6 +63,7 @@ class _CompactScaffold extends StatelessWidget {
     return Scaffold(
       key: const Key('layout.compact'),
       appBar: AppBar(
+        actions: actions,
         title: Semantics(
           header: true,
           child: Text(title, key: const Key('layout.pageHeading')),
@@ -65,12 +76,14 @@ class _CompactScaffold extends StatelessWidget {
 
 class _RailScaffold extends StatelessWidget {
   const _RailScaffold({
+    required this.actions,
     required this.body,
     required this.extended,
     required this.sizeClass,
     required this.title,
   });
 
+  final List<Widget> actions;
   final Widget body;
   final bool extended;
   final AppWindowSizeClass sizeClass;
@@ -129,13 +142,22 @@ class _RailScaffold extends StatelessWidget {
                             AppSpacing.lg,
                             AppSpacing.md,
                           ),
-                          child: Semantics(
-                            header: true,
-                            child: Text(
-                              title,
-                              key: const Key('layout.pageHeading'),
-                              style: Theme.of(context).textTheme.headlineSmall,
-                            ),
+                          child: Row(
+                            children: <Widget>[
+                              Expanded(
+                                child: Semantics(
+                                  header: true,
+                                  child: Text(
+                                    title,
+                                    key: const Key('layout.pageHeading'),
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.headlineSmall,
+                                  ),
+                                ),
+                              ),
+                              ...actions,
+                            ],
                           ),
                         ),
                       ),

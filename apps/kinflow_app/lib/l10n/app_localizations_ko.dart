@@ -24,6 +24,38 @@ class AppLocalizationsKo extends AppLocalizations {
   String get startupErrorBody => '다시 시도해 주세요. 문제가 계속되면 앱을 다시 실행해 주세요.';
 
   @override
+  String get authLoadingLabel => '로그인 상태를 확인하는 중입니다';
+
+  @override
+  String get authSignInTitle => 'KinFlow에 로그인';
+
+  @override
+  String get authSignInBody => '현재 KinFlow는 성인 계정의 Google 로그인만 지원합니다.';
+
+  @override
+  String get authGoogleSignInAction => 'Google로 계속';
+
+  @override
+  String get authGoogleSignInHint => '성인 Google 계정으로 로그인합니다';
+
+  @override
+  String get authSigningInLabel => 'Google에 연결하는 중입니다';
+
+  @override
+  String get authProviderUnavailableBody =>
+      '현재 Google 로그인을 사용할 수 없습니다. 나중에 다시 시도해 주세요.';
+
+  @override
+  String get authSessionExpiredBody => '세션이 만료되었거나 회수되었습니다. 다시 로그인해 주세요.';
+
+  @override
+  String get authLocalStateLockedBody =>
+      '로컬 데이터를 안전하게 지우지 못해 접근을 잠갔습니다. 앱을 다시 실행한 뒤 시도해 주세요.';
+
+  @override
+  String get authLogoutAction => '로그아웃';
+
+  @override
   String get retryAction => '다시 시도';
 
   @override

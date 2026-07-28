@@ -1,0 +1,47 @@
+WP02-01 provider-independent auth foundation validation
+Date: 2026-07-28
+Base: 7493c32
+
+Toolchain
+- Flutter 3.44.7 / Dart 3.12.2
+- Node v24.15.0 / npm 11.12.1
+
+Repository CI contract
+- npm run ci:test: PASS 9/9
+- npm run ci:workflow: PASS (5 jobs, 17 pinned action uses, contents:read)
+- actionlint: PASS
+
+Flutter quality
+- exact pub lock restore: PASS
+- dart format 89 files: changed 0
+- fatal analyze: issue 0
+- full Flutter suite with coverage: 90 PASS, 1 opt-in local connectivity SKIP
+- coverage: 1170/1382 lines (84.66%)
+- public configuration examples: PASS
+- high-confidence secret scan: finding 0
+- generated code drift: PASS (5 generated files)
+
+Auth-specific validation
+- no-session cold restore purges local state and becomes unauthenticated
+- valid restore and same-user refresh expose a token-free domain session
+- offline/unknown restore stays locked and blocks protected routes
+- expired/revoked refresh or provider event purges and returns to sign-in
+- logout purges after provider failure and remains idempotent
+- A-to-B account switch stays locked during purge; failure never exposes B
+- same-user event does not purge
+- composite purge attempts all participants
+- intended route query and fragment are discarded
+- unavailable runtime exposes only a disabled Google action
+- Supabase boundary maps absent/missing-refresh/signed-out SDK states
+- EN/KO/pseudo localization coverage and 200% text layout: PASS
+
+Data/API/dependency
+- migration/RLS/RPC/Edge change: none
+- runtime dependency/lockfile change: none
+- remote provider/credential/configuration change: none
+
+Manual
+- adb devices -l: 0 devices
+- Google provider, secure storage, real account, redirect/App Link: NOT RUN / PENDING
+
+Result: LOCAL FOUNDATION PASS; WP02-01 provider/device completion remains pending.

@@ -25,6 +25,40 @@ class AppLocalizationsEn extends AppLocalizations {
       'Please try again. If the problem continues, restart the app.';
 
   @override
+  String get authLoadingLabel => 'Checking your session';
+
+  @override
+  String get authSignInTitle => 'Sign in to KinFlow';
+
+  @override
+  String get authSignInBody =>
+      'KinFlow currently supports adult accounts with Google sign-in.';
+
+  @override
+  String get authGoogleSignInAction => 'Continue with Google';
+
+  @override
+  String get authGoogleSignInHint => 'Signs in with an adult Google account';
+
+  @override
+  String get authSigningInLabel => 'Connecting to Google';
+
+  @override
+  String get authProviderUnavailableBody =>
+      'Google sign-in is temporarily unavailable. Please try again later.';
+
+  @override
+  String get authSessionExpiredBody =>
+      'Your session expired or was revoked. Sign in again.';
+
+  @override
+  String get authLocalStateLockedBody =>
+      'KinFlow locked access because local data could not be cleared safely. Restart the app before trying again.';
+
+  @override
+  String get authLogoutAction => 'Sign out';
+
+  @override
   String get retryAction => 'Try again';
 
   @override
@@ -92,6 +126,43 @@ class AppLocalizationsEnXa extends AppLocalizationsEn {
   @override
   String get startupErrorBody =>
       '[!! Płēåšē ţŕŷ åĝåîñ. Îƒ ţĥē pŕôɓłēm çôñţîñûēš, fully restart the application. !!]';
+
+  @override
+  String get authLoadingLabel =>
+      '[!! Çĥēçķîñĝ ŷôûŕ secure authentication session !!]';
+
+  @override
+  String get authSignInTitle =>
+      '[!! Šîĝñ îñ ţô ĶîñFłôŵ with your adult account !!]';
+
+  @override
+  String get authSignInBody =>
+      '[!! ĶîñFłôŵ currently supports adult accounts with Ĝôôĝłē sign-in only across every supported family flow and adaptive layout. !!]';
+
+  @override
+  String get authGoogleSignInAction => '[!! Çôñţîñûē ŵîţĥ Ĝôôĝłē account !!]';
+
+  @override
+  String get authGoogleSignInHint =>
+      '[!! Šîĝñš îñ ŵîţĥ åñ åđûłţ Ĝôôĝłē account from every supported adaptive layout !!]';
+
+  @override
+  String get authSigningInLabel => '[!! Çôññēçţîñĝ securely ţô Ĝôôĝłē !!]';
+
+  @override
+  String get authProviderUnavailableBody =>
+      '[!! Ĝôôĝłē sign-in is temporarily unavailable across every supported adaptive layout. Please try again after some time. !!]';
+
+  @override
+  String get authSessionExpiredBody =>
+      '[!! Your secure session expired or was revoked. Please sign in again. !!]';
+
+  @override
+  String get authLocalStateLockedBody =>
+      '[!! ĶîñFłôŵ locked access because local data could not be cleared safely. Fully restart the app and complete the secure recovery flow before trying again across every adaptive layout. !!]';
+
+  @override
+  String get authLogoutAction => '[!! Šîĝñ ôûţ securely !!]';
 
   @override
   String get retryAction => '[!! Ţŕŷ ţĥîš åĝåîñ !!]';

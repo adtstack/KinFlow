@@ -20,6 +20,46 @@
   "@startupErrorBody": {
     "description": "Generic startup failure body without raw exception details"
   },
+  "authLoadingLabel": "Checking your session",
+  "@authLoadingLabel": {
+    "description": "Accessible message while the authentication session is restored"
+  },
+  "authSignInTitle": "Sign in to KinFlow",
+  "@authSignInTitle": {
+    "description": "Adult account sign-in screen title"
+  },
+  "authSignInBody": "KinFlow currently supports adult accounts with Google sign-in.",
+  "@authSignInBody": {
+    "description": "Explains the single adult sign-in provider"
+  },
+  "authGoogleSignInAction": "Continue with Google",
+  "@authGoogleSignInAction": {
+    "description": "Starts the Google sign-in request"
+  },
+  "authGoogleSignInHint": "Signs in with an adult Google account",
+  "@authGoogleSignInHint": {
+    "description": "Accessible hint for the Google sign-in action"
+  },
+  "authSigningInLabel": "Connecting to Google",
+  "@authSigningInLabel": {
+    "description": "Status while a Google sign-in request is in progress"
+  },
+  "authProviderUnavailableBody": "Google sign-in is temporarily unavailable. Please try again later.",
+  "@authProviderUnavailableBody": {
+    "description": "Safe provider-unavailable message without upstream details"
+  },
+  "authSessionExpiredBody": "Your session expired or was revoked. Sign in again.",
+  "@authSessionExpiredBody": {
+    "description": "Safe message after an expired or revoked session"
+  },
+  "authLocalStateLockedBody": "KinFlow locked access because local data could not be cleared safely. Restart the app before trying again.",
+  "@authLocalStateLockedBody": {
+    "description": "Fail-closed message after local sensitive state purge fails"
+  },
+  "authLogoutAction": "Sign out",
+  "@authLogoutAction": {
+    "description": "Signs out and clears local account-scoped state"
+  },
   "retryAction": "Try again",
   "@retryAction": {
     "description": "Retries app dependency initialization"
