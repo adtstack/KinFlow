@@ -5,6 +5,11 @@ set -euo pipefail
 kinflow_flavor="${1:-}"
 kinflow_apk="${2:-}"
 kinflow_asset_links="${3:-}"
+kinflow_live_host="${4:-}"
+if [[ "$#" -gt 4 ]]; then
+  printf '%s\n' 'Usage: scripts/verify-android-app-links.sh <dev|prod> <apk> <assetlinks.json> [live-host]' >&2
+  exit 64
+fi
 case "$kinflow_flavor" in
   dev)
     kinflow_expected_package='me.newlines.kinflow.dev'
@@ -13,7 +18,7 @@ case "$kinflow_flavor" in
     kinflow_expected_package='me.newlines.kinflow'
     ;;
   *)
-    printf '%s\n' 'Usage: scripts/verify-android-app-links.sh <dev|prod> <apk> <assetlinks.json>' >&2
+    printf '%s\n' 'Usage: scripts/verify-android-app-links.sh <dev|prod> <apk> <assetlinks.json> [live-host]' >&2
     exit 64
     ;;
 esac
@@ -109,3 +114,10 @@ kinflow_sha256_fingerprint="$(
   "$kinflow_expected_package" \
   "$kinflow_sha256_fingerprint"
 printf 'Android %s APK-to-asset-links verification passed.\n' "$kinflow_flavor"
+
+if [[ -n "$kinflow_live_host" ]]; then
+  "$kinflow_node_bin" "$kinflow_repo_root/scripts/ci/android-live-asset-links.mjs" \
+    "$kinflow_live_host" \
+    "$kinflow_expected_package" \
+    "$kinflow_sha256_fingerprint"
+fi

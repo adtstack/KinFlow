@@ -21,6 +21,18 @@ export const androidPublicConfigurationKeys = Object.freeze([
 const appLinkHostPattern =
   /^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$/u;
 
+export function validateAndroidAppLinkHost(
+  value,
+  fieldName = 'Android App Link host',
+) {
+  if (typeof value !== 'string' || !appLinkHostPattern.test(value)) {
+    throw new Error(
+      `${fieldName} must be a DNS host without scheme, port, path, wildcard, or whitespace.`,
+    );
+  }
+  return value;
+}
+
 export function validateAndroidPublicConfiguration(
   decoded,
   { expectedApplicationId, expectedEnvironment },
@@ -50,12 +62,10 @@ export function validateAndroidPublicConfiguration(
     throw new Error('Android public config APP_ID does not match the package.');
   }
 
-  const authRedirectHost = decoded.AUTH_REDIRECT_HOST;
-  if (!appLinkHostPattern.test(authRedirectHost)) {
-    throw new Error(
-      'Android public config AUTH_REDIRECT_HOST must be a DNS host without scheme, port, path, wildcard, or whitespace.',
-    );
-  }
+  const authRedirectHost = validateAndroidAppLinkHost(
+    decoded.AUTH_REDIRECT_HOST,
+    'Android public config AUTH_REDIRECT_HOST',
+  );
 
   return Object.freeze({ authRedirectHost });
 }

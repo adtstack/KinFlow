@@ -107,6 +107,16 @@ scripts/verify-android-app-links.sh \
 
 필수 관계는 `delegate_permission/common.handle_all_urls`이고 대상 namespace는 `android_app`이다. Content-Type은 JSON이며 redirect 없이 HTTPS 200으로 응답해야 한다.
 
+배포 후 같은 wrapper에 DNS host만 추가하면 local APK signer 확인 뒤 exact HTTPS well-known URL, status, redirect, content type, body size와 remote statement를 연속 검사한다.
+
+```bash
+scripts/verify-android-app-links.sh \
+  dev \
+  apps/kinflow_app/build/app/outputs/flutter-apk/app-dev-debug.apk \
+  apps/public_site/public/.well-known/assetlinks.json \
+  <owned-dev-host>
+```
+
 기기에서 확인한다.
 
 ```bash

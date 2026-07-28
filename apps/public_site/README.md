@@ -22,4 +22,14 @@ scripts/verify-android-app-links.sh \
   apps/public_site/public/.well-known/assetlinks.json
 ```
 
+배포 후에는 마지막 argument로 DNS host만 전달해 local signer 비교와 live HTTPS 계약을 연속 검증한다.
+
+```bash
+scripts/verify-android-app-links.sh \
+  dev \
+  apps/kinflow_app/build/app/outputs/flutter-apk/app-dev-debug.apk \
+  apps/public_site/public/.well-known/assetlinks.json \
+  <owned-dev-host>
+```
+
 다른 운영자 keystore나 signing key로 APK를 만들면 검증은 실패한다. 새 APK의 인증된 SHA-256으로 파일을 명시적으로 갱신하고 다시 검증한다. production association은 Play App Signing으로 사용자에게 전달되는 인증서가 확정되기 전에는 만들지 않는다.
