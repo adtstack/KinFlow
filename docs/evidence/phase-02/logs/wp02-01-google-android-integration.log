@@ -1,0 +1,89 @@
+WP02-01 Google Android integration foundation validation
+Date: 2026-07-28
+Base: a94ae55
+Implementation: a9de8a8
+
+Toolchain
+- Flutter 3.44.7 / Dart 3.12.2
+- Node v24.15.0 / npm 11.12.1
+- Supabase CLI 2.109.1 / PostgreSQL 17
+- Docker 28.3.2
+
+Implementation contract
+- google_sign_in: 7.2.0
+- google_sign_in_android: 7.2.15
+- process-wide SDK initialization exactly once: PASS
+- Google ID and access token both required before exchange: PASS
+- token container string output: REDACTED
+- raw provider exception/account data crossing stable boundary: DENIED
+- Supabase signInWithIdToken receives Google provider and both tokens: PASS
+- Supabase session and user both required: PASS
+- missing/placeholder GOOGLE_WEB_CLIENT_ID: FAIL-CLOSED
+- configured launcher and Google local-state purge runtime composition: PASS
+- feature-layer google_sign_in import: DENIED BY ARCHITECTURE CONTRACT
+
+Flutter quality
+- npm run ci:test: PASS 9/9
+- workflow/actionlint contract: PASS
+- Dart format: PASS
+- Flutter fatal analyze: PASS, issue 0
+- full Flutter suite: PASS, 176 tests / 1 opt-in connectivity skip
+- coverage: 2393/3091 lines, 77.42%
+- Google gateway/data source/Supabase exchange/launcher/composition/purge/UI cancellation: PASS
+- public config, secret scan, generated drift, architecture: PASS
+
+Supply chain
+- Pub licenses: PASS 149
+- npm licenses: PASS 15
+- Google identity/sign-in packages: BSD-3-Clause
+- OSV scanner: 2.3.8, checksum verified
+- OSV database files: 2
+- actual scan network: disabled
+- known vulnerabilities: 0
+
+Backend regression
+- clean database reset: PASS
+- forward migration count: 4
+- schema lint: PASS, issue 0
+- pgTAP/RLS: PASS 207/207
+- invite Edge unit contract: PASS 22/22
+- Edge health/live preview/concurrency/idempotency: PASS
+- Flutter live Supabase adapter: PASS
+
+Android artifacts
+- dev APK: PASS, 216120695 bytes, package me.newlines.kinflow.dev
+- dev APK SHA-256: b7bd0486687fc2aaf23578db18b7b31aaf7494ea0ae0dbdd5168d3d1ca7d5e31
+- prod APK: PASS, 216121216 bytes, package me.newlines.kinflow
+- prod APK SHA-256: a08696ca620086ff157ba0e50f48abd3749f54a8114ab74d6471a2710ea91542
+- min/target/compile API: 24/36/36
+- backup disabled: PASS
+- exact permissions: INTERNET, USE_BIOMETRIC, USE_FINGERPRINT, package-scoped dynamic receiver
+- dangerous/runtime permission added: NO
+- placeholder HTTPS /invite/* App Link manifest contract: PASS
+
+Remote
+- GitHub Actions run 30380934560: PASS
+- implementation commit: a9de8a8597fc6c630fc3b097a733d26474679a23
+- backend: PASS 2m45s
+- dependency audit: PASS 1m16s
+- quality: PASS 3m59s
+- Android prod: PASS 4m59s
+- Android dev: PASS 5m10s
+- final CI gate: PASS 2s
+- URL: https://github.com/adtstack/KinFlow/actions/runs/30380934560
+
+Manual / external state
+- adb devices -l: no attached devices
+- real Google/Supabase provider configuration: NOT RUN
+- real Web/Android OAuth clients and package/SHA registration: NOT RUN
+- owned HTTPS domain and verified assetlinks.json: NOT RUN
+- two adult Google accounts on two Android devices: NOT RUN
+- production deploy or customer data: NOT USED
+
+Notes
+- Credential Manager may classify some client/package/SHA configuration errors as cancellation; real-device runbook includes this check.
+- USE_BIOMETRIC and deprecated USE_FINGERPRINT are normal permissions introduced by the Credential Manager/biometric dependency graph; exact APK allowlist is pinned.
+- sentry_flutter emits the existing legacy Kotlin Gradle Plugin warning; dev/prod builds still pass.
+- No credential, provider token, email, invite token, signing material, production project or real identity was recorded.
+
+Result: LOCAL + REMOTE AUTOMATED INTEGRATION READY; provider/domain/device/two-adult completion pending.

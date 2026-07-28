@@ -3,7 +3,7 @@
 - 작성일: 2026-07-28
 - 기준 commit: `a94ae55`
 - Work Package: WP02-01 Auth lifecycle — Google native sign-in and Android two-adult integration
-- 상태: IMPLEMENTED — LOCAL AUTOMATED PASS / REMOTE CI·PROVIDER·DEVICE PENDING
+- 상태: IMPLEMENTED — LOCAL + REMOTE AUTOMATED PASS / PROVIDER·DEVICE PENDING
 - 선행 결과: WP02-02~04 local/remote automated gate PASS, secure auth storage runtime composition PASS
 
 ## Requirements
@@ -78,6 +78,8 @@
 - Google/Supabase SDK import가 infrastructure 밖에 없는 architecture scan
 - format, fatal analyze, full Flutter suite/coverage, secret/config/codegen, dependency/license/offline vulnerability gate
 - Android dev/prod debug APK build, package/manifest/permission/App Link audit
+
+GitHub Actions run [`30380934560`](https://github.com/adtstack/KinFlow/actions/runs/30380934560)에서 quality, dependency, backend, dev/prod Android와 final gate가 모두 통과했다.
 
 ## Data / API Impact
 
