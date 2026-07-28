@@ -1,0 +1,97 @@
+WP02-01 Android external readiness validation
+Date: 2026-07-29
+Base: 8882cd0
+Implementation: b4ac48b7f26251aae1ca30b086f3297673e593ce
+
+Toolchain
+- Flutter 3.44.7 / Dart 3.12.2
+- Node v24.15.0
+- Android SDK API 36 / build-tools 36.0.0
+
+Public config and manifest contract
+- exact public key allowlist: 14 keys
+- example dev/prod APP_ENV and APP_ID binding: PASS
+- string-only values: PASS
+- DNS-only AUTH_REDIRECT_HOST: PASS
+- scheme/path/port/wildcard/whitespace/localhost/IP rejection: PASS
+- unknown, missing and server-only key rejection: PASS
+- Dart runtime and Android manifest derive from one config in wrapper/build gate: PASS
+- Gradle property validation: PASS
+- invalid property https://bad.example.com: EXPECTED FAIL DURING CONFIGURATION
+
+Synthetic host build
+- config source: temporary ignored copy of dev.example.json
+- host: auth.dev.kinflow.example (reserved synthetic domain, not owned or verified)
+- merged APK manifest host: auth.dev.kinflow.example
+- path prefix: /invite/
+- autoVerify: true
+- bytes: 216121894
+- SHA-256: 78de094d48938e420fea3baf3617474f273e29787b891e0b10d96d4c748d234e
+- result: PASS
+
+Final default Android artifacts
+- dev package: me.newlines.kinflow.dev
+- dev bytes: 216120695
+- dev SHA-256: 50348407a63b1c535f350ccec4082919b6a3788ecb8a3024d75d98f1e0cfcc4d
+- prod package: me.newlines.kinflow
+- prod bytes: 216120615
+- prod SHA-256: 6a54dbd776e2906a6efe99f0fdc2f197b0ef08ca44c894556fd35ecfb6be55b0
+- min/target/compile API: 24/36/36
+- backup disabled: PASS
+- exact permissions: INTERNET, USE_BIOMETRIC, USE_FINGERPRINT, package-scoped dynamic receiver
+- default App Link: https://auth.example.invalid/invite/*; autoVerify=true
+- result: PASS
+
+Flutter quality
+- npm run ci:test: PASS 13/13
+- workflow/actionlint contract: PASS
+- Dart format: PASS, 158 files / 0 changed
+- Flutter fatal analyze: PASS, issue 0
+- full Flutter suite: PASS, 176 tests / 1 opt-in local connectivity skip
+- coverage: 2393/3091 lines, 77.42%
+- public config examples: PASS
+- high-confidence secret findings: 0
+- generated code drift: 0
+
+Android 16 Google Play AVD
+- AVD: kinflow_api36_play
+- release/API: Android 16 / 36
+- model/device: sdk_gphone64_arm64 / emu64a
+- final dev APK install -r: PASS
+- launcher: me.newlines.kinflow.dev/me.newlines.kinflow.MainActivity
+- am start -W: Status timeout after approximately 12.4s
+- process after timeout: ALIVE
+- top-resumed visible activity after timeout: MainActivity
+- visible UI: stable KinFlow couldn't start retry screen
+- protected route or false login success: NOT OBSERVED
+- debug SHA-1: A2:12:1B:14:AA:68:34:21:B5:C5:81:B7:61:F1:B1:3C:AF:DC:24:8D
+- debug SHA-256: 6A:C5:22:6C:F7:1B:20:1C:99:49:E8:1F:75:14:49:AD:94:53:64:A9:46:5C:ED:0C:69:19:00:51:C5:6E:C7:D5
+- APK signer fingerprint matches debug keystore: PASS
+- pm get-app-links package signature matches: PASS
+- auth.example.invalid state: 1024 / legacy_failure (EXPECTED PLACEHOLDER FAILURE)
+
+Remote
+- GitHub Actions run 30383852574: PASS
+- implementation commit: b4ac48b7f26251aae1ca30b086f3297673e593ce
+- dependency audit: PASS 58s
+- backend: PASS 3m01s
+- quality: PASS 3m54s
+- Android prod: PASS 8m55s
+- Android dev: PASS 11m43s
+- final CI gate: PASS 4s
+- URL: https://github.com/adtstack/KinFlow/actions/runs/30383852574
+
+External state not exercised
+- real Google/Supabase provider and OAuth clients: NOT CONFIGURED
+- owned HTTPS host and assetlinks.json: NOT CONFIGURED
+- OS verified App Link: NOT RUN
+- two adult accounts and two Android devices: NOT RUN
+- production deploy/customer data: NOT USED
+
+Security
+- client secret/service-role key/token/email/invite token in config, output or evidence: NONE
+- signing private material committed: NO
+- DB/RLS/RPC/Edge/API change: NONE
+- remote provider/DNS/Play Console mutation: NONE
+
+Result: LOCAL + REMOTE ANDROID EXTERNAL-READINESS SLICE PASS; real provider, owned verified domain and two-adult/two-device completion pending.

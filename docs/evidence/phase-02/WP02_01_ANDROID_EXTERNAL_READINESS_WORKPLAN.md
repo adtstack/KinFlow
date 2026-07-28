@@ -3,7 +3,7 @@
 - 작성일: 2026-07-29
 - 기준 commit: `8882cd0`
 - Work Package: WP02-01 Auth lifecycle — owned App Link build input and Android integration readiness
-- 상태: LOCAL PASS / REMOTE CI PENDING
+- 상태: SLICE COMPLETE (LOCAL + REMOTE PASS) / PROVIDER·OWNED DOMAIN·TWO-ADULT PENDING
 
 ## Requirements
 
