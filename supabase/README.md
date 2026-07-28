@@ -1,6 +1,6 @@
-# Supabase Local Foundation
+# Supabase Local Backend
 
-WP01-04의 local-only Supabase baseline이다. production project와 연결하거나 실제 사용자 데이터를 사용하지 않는다.
+WP01-04의 local-only Supabase baseline을 WP02-02 household authorization boundary까지 확장한 개발 환경이다. production project와 연결하거나 실제 사용자 데이터를 사용하지 않는다.
 
 ## Scope
 
@@ -8,7 +8,10 @@ WP01-04의 local-only Supabase baseline이다. production project와 연결하�
 - `profiles`, `households`, `household_members`, `user_active_households`
 - 활성 성인 역할 `owner`, `admin`, `member`
 - primary household 성인 2인과 cross-household isolation용 synthetic fixture
-- default-deny RLS와 직접 household/member mutation 차단
+- default-deny RLS, 직접 household/member mutation 차단, removed member의 stale active-selection 차단
+- PostgreSQL timezone catalog 기반 IANA timezone 검증
+- household당 정확히 한 active Owner와 `owner_member_id` 일치를 보장하는 deferred constraint trigger
+- Owner/Admin/Member/removed/other-household actor용 authorization helper와 pgTAP 공격 회귀 테스트
 - 인증·DB·개인정보에 의존하지 않는 `health` Edge Function
 
 ## Run and verify

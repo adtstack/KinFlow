@@ -58,3 +58,5 @@
 | D-052 | ACCEPTED | Android application ID는 prod `me.newlines.kinflow`, dev `me.newlines.kinflow.dev`다. | Play 등록과 환경 격리의 변경 비용이 큰 식별자를 명시한다. | package migration 필요 시 |
 | D-053 | ACCEPTED | 초기 법적·기술 운영 주체와 Google Play/provider account의 accountable owner는 개인 운영자다. 2단계 인증과 복구 증거를 출시 Gate로 둔다. | 현재 실제 운영 형태를 반영하고 단일 계정 복구 위험을 통제한다. | 사업체 전환/계정 이전 |
 | D-054 | ACCEPTED | 초기 성인 계정 로그인 UI는 Google만 제공하며 Supabase Auth가 session authority다. | Android 단일 출시에서 가입 마찰과 provider surface를 줄인다. | 로그인 실패율/지원 수요 review |
+| D-055 | ACCEPTED | WP02-02~04 local/backend 구현은 synthetic auth fixture로 진행하고 Google provider·Android 실기기 검증은 Phase 02 마지막 통합 단계로 연기한다. | provider 준비를 기다리는 동안 schema/RLS/transaction 보안 경계를 검증하되 WP02-01 또는 Phase 02 완료로 오인하지 않는다. | WP02-04 완료 / Phase 02 Exit Gate |
+| D-056 | ACCEPTED | Store MVP physical DB 명칭은 `public.household_members`와 `households.owner_member_id`를 사용하고 membership은 도메인 개념명으로 유지한다. | 상위 SQL 계약과 이미 적용된 forward migration을 정렬하고 의미 없는 파괴적 rename을 피한다. | breaking schema revision |

@@ -18,8 +18,8 @@
 | 영역 | 테이블 | 핵심 컬럼 |
 |---|---|---|
 | Identity | `profiles` | user_id, locale, timezone, deletion_state |
-| Household | `households` | id, name, timezone, owner_membership_id, plan_state |
-| Membership | `household_memberships` | household_id, user_id/profile_id, role, status |
+| Household | `households` | id, name, timezone, owner_member_id, deleted_at |
+| Membership | `household_members` | household_id, auth_user_id, role, removed_at |
 | Child | `managed_members` | household_id, display_name, guardian_membership_id, status |
 | Invite | `household_invites` | token_hash, short_code_hash, expires_at, max_uses, revoked_at |
 | Chores | `chore_series`, `chore_revisions`, `chore_occurrences` | schedule, assignee, state, due_at |
@@ -36,7 +36,7 @@
 ```sql
 UNIQUE (household_id, id)
 FOREIGN KEY (household_id, assignee_member_id)
-  REFERENCES household_memberships (household_id, id)
+  REFERENCES household_members (household_id, id)
 ```
 
 Managed member, event participant, chore assignee, notification recipient가 모두 같은 household인지 DB가 검증해야 한다. PostgreSQL 제약만으로 표현하기 어려운 경우 최소 범위의 trigger를 사용하고 pgTAP으로 검증한다.

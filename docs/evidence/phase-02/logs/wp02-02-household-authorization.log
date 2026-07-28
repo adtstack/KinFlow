@@ -1,0 +1,56 @@
+WP02-02 household schema and authorization boundary validation
+Date: 2026-07-28
+Base: e27b4a8
+
+Toolchain
+- Flutter 3.44.7 / Dart 3.12.2
+- Node v24.15.0 / npm 11.12.1
+- Supabase CLI 2.109.1 / PostgreSQL 17
+- Docker 28.3.2
+
+Database gate
+- clean database reset: PASS
+- forward migration count: 2
+- household authorization migration SHA-256: c4a1d390765629ff43f8b97a6f09519e6ad34330276ce4b34d922fed94fbc65d
+- schema lint: PASS, error 0
+- foundation pgTAP: PASS 37/37
+- WP02-02 pgTAP: PASS 62/62
+- total database tests: PASS 99/99
+- Edge health contract: PASS
+- Flutter live Supabase adapter: PASS 1/1
+
+Authorization matrix
+- Owner/Admin/Member same-household read: PASS
+- other-household and anonymous read deny: PASS
+- removed member household/member/stale active-selection deny: PASS
+- authenticated direct household/member insert/update/delete deny: PASS
+- exact auth user/household/member active-selection binding: PASS
+- only Owner demotion/removal and second Owner attacks: DENIED
+- same/cross-household invalid Owner pointer attacks: DENIED
+- deferred atomic Owner transfer and restore: PASS
+- Managed Child table absence and adult role enum exactness: PASS
+
+Timezone matrix
+- UTC, Asia/Seoul, America/New_York: PASS
+- unknown, posix/*, right/*: DENIED
+- profile and household constraints validated: PASS
+
+Repository quality
+- npm CI self-tests: PASS 9/9
+- workflow contract: PASS, 5 jobs / 17 pinned actions / contents:read
+- actionlint: PASS
+- Dart format: PASS, 97 files / drift 0
+- Flutter fatal analyze: PASS, issue 0
+- full Flutter suite: PASS, 101 tests / 1 opt-in connectivity skip
+- coverage: 1271/1499 lines, 84.79%
+- public config, secret scan, generated drift: PASS
+- dependency licenses: PASS, 143 Pub / 15 npm
+- offline OSV scan: PASS
+
+Notes
+- First backend run exposed an invalid nested data-modifying CTE in the new test; the test was corrected to a top-level results query and the full clean gate passed.
+- A partial local Supabase stack left Edge Runtime stopped after failed-run cleanup; a scoped stop/start restored the test stack and the final clean gate passed.
+- No production project, credential, real identity, Google provider, or Android device was used.
+- GitHub Actions implementation run: PENDING.
+
+Result: LOCAL AUTOMATED WP02-02 PASS; remote CI and Phase 02 provider/device integration pending.

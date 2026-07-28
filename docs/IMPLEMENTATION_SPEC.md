@@ -12,7 +12,7 @@
 - 사용법: 한 파일만 제공 가능한 코딩 에이전트용
 - 최근 제품 범위 결정: 2026-07-23 — 대한민국 단일 시장·Seoul 리전, Android 단일 출시, dev/prod, 개인 운영, Google 로그인, 성인 2인 Activation 우선, Managed Child P1
 
-> ADR-0002와 `DECISIONS.md`의 D-002/D-032/D-052~D-054가 이 합본 안의 이전 iOS 동시 출시·staging·인증 provider 예시보다 우선한다.
+> ADR-0002와 `DECISIONS.md`의 D-002/D-032/D-052~D-056이 이 합본 안의 이전 iOS 동시 출시·staging·인증 provider·Phase 02 sequencing·DB naming 예시보다 우선한다.
 
 
 ---
@@ -77,6 +77,8 @@
 | D-052 | ACCEPTED | Android application ID는 prod `me.newlines.kinflow`, dev `me.newlines.kinflow.dev`다. | Play 등록과 환경 격리의 변경 비용이 큰 식별자를 명시한다. | package migration 필요 시 |
 | D-053 | ACCEPTED | 초기 법적·기술 운영 주체와 Google Play/provider account의 accountable owner는 개인 운영자다. 2단계 인증과 복구 증거를 출시 Gate로 둔다. | 현재 실제 운영 형태를 반영하고 단일 계정 복구 위험을 통제한다. | 사업체 전환/계정 이전 |
 | D-054 | ACCEPTED | 초기 성인 계정 로그인 UI는 Google만 제공하며 Supabase Auth가 session authority다. | Android 단일 출시에서 가입 마찰과 provider surface를 줄인다. | 로그인 실패율/지원 수요 review |
+| D-055 | ACCEPTED | WP02-02~04 local/backend 구현은 synthetic auth fixture로 진행하고 Google provider·Android 실기기 검증은 Phase 02 마지막 통합 단계로 연기한다. | provider 준비를 기다리는 동안 schema/RLS/transaction 보안 경계를 검증하되 WP02-01 또는 Phase 02 완료로 오인하지 않는다. | WP02-04 완료 / Phase 02 Exit Gate |
+| D-056 | ACCEPTED | Store MVP physical DB 명칭은 `public.household_members`와 `households.owner_member_id`를 사용하고 membership은 도메인 개념명으로 유지한다. | 상위 SQL 계약과 이미 적용된 forward migration을 정렬하고 의미 없는 파괴적 rename을 피한다. | breaking schema revision |
 
 
 ---
@@ -451,8 +453,8 @@ Phase 01 종료 전 다음 증거가 필요하다.
 | 영역 | 테이블 | 핵심 컬럼 |
 |---|---|---|
 | Identity | `profiles` | user_id, locale, timezone, deletion_state |
-| Household | `households` | id, name, timezone, owner_membership_id, plan_state |
-| Membership | `household_memberships` | household_id, user_id/profile_id, role, status |
+| Household | `households` | id, name, timezone, owner_member_id, deleted_at |
+| Membership | `household_members` | household_id, auth_user_id, role, removed_at |
 | Child | `managed_members` | household_id, display_name, guardian_membership_id, status |
 | Invite | `household_invites` | token_hash, short_code_hash, expires_at, max_uses, revoked_at |
 | Chores | `chore_series`, `chore_revisions`, `chore_occurrences` | schedule, assignee, state, due_at |
@@ -469,7 +471,7 @@ Phase 01 종료 전 다음 증거가 필요하다.
 ```sql
 UNIQUE (household_id, id)
 FOREIGN KEY (household_id, assignee_member_id)
-  REFERENCES household_memberships (household_id, id)
+  REFERENCES household_members (household_id, id)
 ```
 
 Managed member, event participant, chore assignee, notification recipient가 모두 같은 household인지 DB가 검증해야 한다. PostgreSQL 제약만으로 표현하기 어려운 경우 최소 범위의 trigger를 사용하고 pgTAP으로 검증한다.
