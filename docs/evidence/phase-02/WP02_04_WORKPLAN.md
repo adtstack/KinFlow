@@ -3,7 +3,7 @@
 - 작성일: 2026-07-28
 - 기준 commit: `0efd97a`
 - Work Package: WP02-04 Invite
-- 상태: IN_PROGRESS
+- 상태: COMPLETE
 - 선행 결과: WP02-03 implementation run `30372425851`와 evidence run `30373219128` 모두 final CI gate PASS
 
 ## Requirements

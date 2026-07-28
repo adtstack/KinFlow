@@ -1,0 +1,77 @@
+WP02-04 secure household invitations validation
+Date: 2026-07-28
+Base: 0efd97a
+Implementation: 1ad1a9c
+
+Toolchain
+- Flutter 3.44.7 / Dart 3.12.2
+- Node v24.15.0 / npm 11.12.1
+- Supabase CLI 2.109.1 / PostgreSQL 17
+- Docker 28.3.2
+
+Database and Edge gate
+- clean database reset: PASS
+- forward migration count: 4
+- invite migration SHA-256: 35d6f9388cfece44626537e5f47d45ccb97503ce463fc3d912c3edb96661e504
+- schema lint: PASS, issue 0
+- WP02-04 pgTAP: PASS 71/71
+- predecessor pgTAP: PASS 136/136
+- total database tests: PASS 207/207
+- invite Edge unit contract: PASS 22/22
+- Edge health contract: PASS
+- invite Edge live preview/concurrency/idempotency: PASS
+- Flutter live Supabase adapter: PASS 1/1
+
+Security and transaction contract
+- Web Crypto 256-bit raw token returned once; DB/RPC stores SHA-256 only: PASS
+- raw email/IP absent; deterministic email and rate identifiers stored as digests: PASS
+- anon/authenticated direct command and mutation bypass: DENIED
+- Owner/Admin create and revoke; ordinary member/outsider injection: DENIED
+- public preview minimal fields and fixed-window rate limit: PASS
+- expiry/revoke/used/target-email/profile stable failures: PASS
+- accept membership + use status + active selection transaction: ATOMIC PASS
+- two-user concurrent accept: exactly one winner
+- same user/key concurrent retry: same membership result
+
+Flutter quality
+- repository CI self-tests: PASS 9/9
+- workflow contract: PASS, 5 jobs / 17 pinned actions / contents:read
+- actionlint: PASS
+- Dart format: PASS, 148 files / drift 0
+- Flutter fatal analyze: PASS, issue 0
+- full Flutter suite: PASS, 155 tests / 1 opt-in connectivity skip
+- coverage: 2283/2966 lines, 76.97%
+- token capture and immediate route scrub: PASS
+- safe sign-in continuation without raw token: PASS
+- explicit existing-household switch confirmation: PASS
+- create/one-time link/revoke and idempotent retry: PASS
+- EN/KO/pseudo localization and 200% text: PASS
+- public config, secret scan, generated drift: PASS
+
+Supply chain and Android
+- dependency licenses: PASS, 143 Pub / 15 npm
+- offline OSV scan: PASS, known vulnerabilities 0
+- dev APK: PASS, 216012053 bytes, package me.newlines.kinflow.dev
+- dev APK SHA-256: 7f6653770ae84f5ce3dbe88aa8438d03057a2cf18b3948a702b74dfc7522901e
+- prod APK: PASS, 216011972 bytes, package me.newlines.kinflow
+- prod APK SHA-256: e7051372cb33ec0083befed2181bf952514d6ed26eb268d79b620dfe1f2b8e43
+- min/target/compile API: 24/36/36
+- backup disabled and exact permission allowlist: PASS
+- HTTPS placeholder App Link /invite/* with autoVerify: PASS
+
+Remote
+- GitHub Actions run 30377570031: PASS
+- quality: PASS 3m29s
+- dependency audit: PASS 1m9s
+- backend: PASS 3m6s
+- Android dev: PASS 9m11s
+- Android prod: PASS 9m22s
+- final CI gate: PASS 2s
+
+Notes
+- Initial full Flutter regression identified one stale intended-route expectation and one pseudo-copy expansion shortfall; both contracts were corrected.
+- Initial backend attempt used the ambient Flutter path and stopped before DB work; the pinned Flutter 3.44.7 rerun passed.
+- Preview SQL no longer takes an unnecessary row lock and final schema lint is warning-free.
+- No production project, credential, real identity, owned domain, Google provider, or Android device was used.
+
+Result: LOCAL + REMOTE AUTOMATED WP02-04 PASS; Google/domain/device integration pending.
