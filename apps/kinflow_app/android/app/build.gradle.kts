@@ -14,6 +14,19 @@ val kinflowAuthRedirectHost = providers
 require(kinflowAuthRedirectHostPattern.matches(kinflowAuthRedirectHost)) {
     "kinflowAuthRedirectHost must be a DNS host without scheme, port, path, wildcard, or whitespace."
 }
+val kinflowDefaultSourceCommit = "0".repeat(40)
+val kinflowSourceCommit = providers
+    .gradleProperty("kinflowSourceCommit")
+    .getOrElse(kinflowDefaultSourceCommit)
+require(Regex("^[0-9a-f]{40}$").matches(kinflowSourceCommit)) {
+    "kinflowSourceCommit must be an exact lowercase 40-hex Git commit."
+}
+val kinflowSourceState = providers
+    .gradleProperty("kinflowSourceState")
+    .getOrElse("dirty")
+require(kinflowSourceState == "clean" || kinflowSourceState == "dirty") {
+    "kinflowSourceState must be clean or dirty."
+}
 
 android {
     namespace = "me.newlines.kinflow"
@@ -35,6 +48,8 @@ android {
         targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["kinflowSourceCommit"] = kinflowSourceCommit
+        manifestPlaceholders["kinflowSourceState"] = kinflowSourceState
     }
 
     flavorDimensions += "environment"

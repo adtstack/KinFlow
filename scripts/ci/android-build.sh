@@ -31,6 +31,15 @@ kinflow_app_root="$kinflow_repo_root/apps/kinflow_app"
 kinflow_report_dir="${KINFLOW_CI_REPORT_DIR:-$kinflow_repo_root/ci-reports/android/$kinflow_flavor}"
 kinflow_flutter_bin="${KINFLOW_FLUTTER_BIN:-flutter}"
 kinflow_node_bin="${KINFLOW_NODE_BIN:-node}"
+kinflow_source_commit="$(git -C "$kinflow_repo_root" rev-parse --verify HEAD)"
+if [[ ! "$kinflow_source_commit" =~ ^[0-9a-f]{40}$ ]]; then
+  printf '%s\n' 'Android source commit is invalid.' >&2
+  exit 1
+fi
+kinflow_source_state='clean'
+if [[ -n "$(git -C "$kinflow_repo_root" status --porcelain --untracked-files=normal)" ]]; then
+  kinflow_source_state='dirty'
+fi
 kinflow_apk="$kinflow_app_root/build/app/outputs/flutter-apk/app-$kinflow_flavor-debug.apk"
 kinflow_config="${KINFLOW_PUBLIC_CONFIG:-$kinflow_default_config}"
 if [[ "$kinflow_config" != /* ]]; then
@@ -119,7 +128,9 @@ flutter_pub_get
   --flavor "$kinflow_flavor" \
   --target "$kinflow_target" \
   --dart-define-from-file "$kinflow_config" \
-  --android-project-arg "kinflowAuthRedirectHost=$kinflow_auth_redirect_host"
+  --android-project-arg "kinflowAuthRedirectHost=$kinflow_auth_redirect_host" \
+  --android-project-arg "kinflowSourceCommit=$kinflow_source_commit" \
+  --android-project-arg "kinflowSourceState=$kinflow_source_state"
 
 if [[ ! -f "$kinflow_apk" ]]; then
   printf 'Expected APK is missing: %s\n' "$kinflow_apk" >&2
@@ -160,6 +171,17 @@ for kinflow_app_link_value in \
     exit 1
   fi
 done
+for kinflow_provenance_value in \
+  'me.newlines.kinflow.SOURCE_COMMIT' \
+  "$kinflow_source_commit" \
+  'me.newlines.kinflow.SOURCE_STATE' \
+  "$kinflow_source_state"; do
+  if ! printf '%s\n' "$kinflow_manifest" \
+    | grep -F "$kinflow_provenance_value" >/dev/null; then
+    printf '%s\n' 'APK source provenance contract changed.' >&2
+    exit 1
+  fi
+done
 
 kinflow_permissions="$($kinflow_aapt_bin dump permissions "$kinflow_apk")"
 kinflow_expected_permissions="$(printf '%s\n' \
@@ -184,6 +206,8 @@ kinflow_bytes="$(wc -c <"$kinflow_apk" | tr -d ' ')"
   printf 'min_api=24\n'
   printf 'target_api=36\n'
   printf 'compile_api=36\n'
+  printf 'source_commit=%s\n' "$kinflow_source_commit"
+  printf 'source_state=%s\n' "$kinflow_source_state"
   printf 'android_backup=disabled\n'
   printf 'app_link=https://%s/invite/*;auto_verify=true\n' "$kinflow_auth_redirect_host"
   printf 'permissions=INTERNET,USE_BIOMETRIC,USE_FINGERPRINT,package-scoped-dynamic-receiver\n'

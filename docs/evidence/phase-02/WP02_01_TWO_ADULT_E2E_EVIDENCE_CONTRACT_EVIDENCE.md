@@ -2,7 +2,7 @@
 
 - 검증일: 2026-07-29
 - implementation commit: `4792dfdaed1f4212fe5285e006795a07cc582299`
-- 상태: **AUTOMATED EVIDENCE CONTRACT PASS / LIVE TWO-ADULT E2E NOT RUN**
+- 상태: **AUTOMATED EVIDENCE CONTRACT PASS / BUILD PROVENANCE SUPERSEDED / LIVE TWO-ADULT E2E NOT RUN**
 - 범위: 실제 dev Google Android 성인 2인 완료 결과의 completeness, build binding과 privacy shape
 
 ## Requirement Trace
@@ -13,7 +13,7 @@
 | FR-AUTH-003 / FR-AUTH-004 | PASS — A/B Google login, Supabase session, pre-session protected route 차단과 cold-start invite continuation을 개별 필수 check로 고정했다. |
 | FR-AUTH-005 / D-049 | PASS — logout purge, account chooser 재진입과 account-switch household isolation을 필수 check로 고정했다. |
 | WP02-04 / D-055 | PASS — one-time invite, preview/accept, replay와 concurrent accept idempotency를 필수 check로 고정했다. |
-| Build identity | PASS — 40-hex commit의 repository 존재 여부와 제공된 APK의 실제 SHA-256을 completion JSON과 대조한다. |
+| Build identity | HISTORICAL PARTIAL — `4792dfd`에서는 40-hex commit 존재와 APK SHA-256을 각각 확인했지만 APK 내부 source commit은 확인하지 않았다. 후속 `WP02_01_LIVE_EVIDENCE_PROVENANCE_WORKPLAN.md`가 이 간극을 fail-closed로 보강한다. |
 | Security / Privacy | PASS — exact schema에는 이메일, token, invite URL/token, UUID, ADB serial과 free-form note를 저장할 위치가 없다. |
 
 ## Implemented Artifacts
@@ -21,7 +21,7 @@
 - `scripts/ci/android-two-adult-e2e-evidence.mjs`
   - 32 KiB evidence upper bound와 fatal UTF-8/JSON parsing
   - environment/package, commit, APK digest, UTC timestamp와 device A/B/API/preflight exact validation
-  - repository commit object verification과 최대 1 GiB APK streaming SHA-256 binding
+  - repository commit object verification과 최대 1 GiB APK streaming SHA-256 검사; 이 구현 시점에는 두 값의 APK 내부 provenance 대조가 없었음
   - exact 27-check allowlist와 all-pass completion gate
   - input path/hash/time과 subprocess failure 원문을 재출력하지 않는 redacted summary/error
 - `scripts/ci/android-two-adult-e2e-evidence.test.mjs`
@@ -77,7 +77,7 @@ GitHub Actions [run `30415718065`](https://github.com/adtstack/KinFlow/actions/r
 ## Remaining Risks / Completion Boundary
 
 1. exact schema는 manual 입력의 completeness와 privacy만 보장하며 운영자가 실제 화면을 관찰했는지는 자동 증명하지 못한다.
-2. APK digest binding은 전달한 APK를 증명하지만 두 기기에 정확히 같은 bytes가 설치됐는지는 Android package state만으로 직접 증명하지 않는다.
+2. 이 구현 시점의 commit 존재 검사와 APK digest 검사는 서로 독립적이었다. 후속 provenance slice가 APK manifest의 source commit/clean state를 대조하지만, 두 기기에 정확히 같은 bytes가 설치됐는지는 Android package state만으로 직접 증명하지 않는다.
 3. OEM/Android version별 Google Credential Manager와 `pm get-app-links` 실제 동작은 live 두 기기에서 남아 있다.
 4. WP02-01과 Phase 02 Exit Gate는 실제 completion JSON과 manual observation evidence 전까지 미완료다.
 

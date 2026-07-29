@@ -27,6 +27,15 @@ kinflow_repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 kinflow_app_root="$kinflow_repo_root/apps/kinflow_app"
 kinflow_node_bin="${KINFLOW_NODE_BIN:-node}"
 kinflow_flutter_bin="${KINFLOW_FLUTTER_BIN:-flutter}"
+kinflow_source_commit="$(git -C "$kinflow_repo_root" rev-parse --verify HEAD)"
+if [[ ! "$kinflow_source_commit" =~ ^[0-9a-f]{40}$ ]]; then
+  printf '%s\n' 'Android source commit is invalid.' >&2
+  exit 1
+fi
+kinflow_source_state='clean'
+if [[ -n "$(git -C "$kinflow_repo_root" status --porcelain --untracked-files=normal)" ]]; then
+  kinflow_source_state='dirty'
+fi
 
 if [[ "$kinflow_config_input" = /* ]]; then
   kinflow_config="$kinflow_config_input"
@@ -51,4 +60,6 @@ exec "$kinflow_flutter_bin" run \
   --target "$kinflow_target" \
   --dart-define-from-file "$kinflow_config" \
   --android-project-arg "kinflowAuthRedirectHost=$kinflow_auth_redirect_host" \
+  --android-project-arg "kinflowSourceCommit=$kinflow_source_commit" \
+  --android-project-arg "kinflowSourceState=$kinflow_source_state" \
   "${@:3}"

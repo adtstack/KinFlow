@@ -8,6 +8,9 @@ import test from 'node:test';
 import {
   loadTwoAdultE2EEvidence,
   maximumTwoAdultEvidenceBytes,
+  parseAndroidManifestProvenance,
+  sourceCommitMetadataName,
+  sourceStateMetadataName,
   twoAdultE2ECheckKeys,
   validateTwoAdultE2EEvidence,
   verifyTwoAdultE2ECompletion,
@@ -39,6 +42,10 @@ function completeEvidence(template) {
     decoded.checks[key] = 'pass';
   }
   return decoded;
+}
+
+function cleanProvenance(commit) {
+  return { commit, sourceState: 'clean' };
 }
 
 test('tracked template is structurally valid but cannot prove completion', async () => {
@@ -96,6 +103,7 @@ test('binds complete evidence to an existing commit and exact APK digest', async
   let verifiedCommit;
   const result = await verifyTwoAdultE2ECompletion({
     apkPath,
+    apkProvenanceReader: async () => cleanProvenance(complete.commit),
     commitVerifier: async (commit) => {
       verifiedCommit = commit;
       return true;
@@ -110,10 +118,99 @@ test('binds complete evidence to an existing commit and exact APK digest', async
   await assert.rejects(
     verifyTwoAdultE2ECompletion({
       apkPath,
+      apkProvenanceReader: async () => cleanProvenance(complete.commit),
       commitVerifier: async () => true,
       evidencePath,
     }),
     /APK SHA-256 does not match/u,
+  );
+});
+
+test('parses exact source provenance from Android manifest metadata', () => {
+  const commit = 'd'.repeat(40);
+  const manifest = `E: manifest
+  E: application
+    E: meta-data
+      A: android:name(0x01010003)="${sourceCommitMetadataName}" (Raw: "${sourceCommitMetadataName}")
+      A: android:value(0x01010024)="${commit}" (Raw: "${commit}")
+    E: meta-data
+      A: android:name(0x01010003)="${sourceStateMetadataName}" (Raw: "${sourceStateMetadataName}")
+      A: android:value(0x01010024)="clean" (Raw: "clean")`;
+
+  assert.deepEqual(parseAndroidManifestProvenance(manifest), {
+    commit,
+    sourceState: 'clean',
+  });
+  assert.throws(
+    () => parseAndroidManifestProvenance(`${manifest}\n${manifest}`),
+    /source provenance is invalid/u,
+  );
+  assert.throws(
+    () =>
+      parseAndroidManifestProvenance(
+        manifest.replace(`"${commit}"`, '"not-a-commit"'),
+      ),
+    /source provenance is invalid/u,
+  );
+  assert.throws(
+    () =>
+      parseAndroidManifestProvenance(
+        manifest.replace('E: application', 'E: activity'),
+      ),
+    /source provenance is invalid/u,
+  );
+});
+
+test('rejects mismatched, dirty, and unreadable APK source provenance', async (context) => {
+  const directory = await mkdtemp(join(tmpdir(), 'kinflow-e2e-provenance-'));
+  context.after(async () => {
+    await rm(directory, { recursive: true });
+  });
+  const { decoded } = await loadTemplate();
+  const complete = completeEvidence(decoded);
+  const evidencePath = join(directory, 'complete.json');
+  await writeFile(evidencePath, JSON.stringify(complete), 'utf8');
+  const base = {
+    apkPath: join(directory, 'synthetic.apk'),
+    commitVerifier: async () => true,
+    evidencePath,
+    fileHasher: async () => complete.artifactSha256,
+  };
+
+  await assert.rejects(
+    verifyTwoAdultE2ECompletion({
+      ...base,
+      apkProvenanceReader: async () => cleanProvenance('c'.repeat(40)),
+    }),
+    /source commit does not match/u,
+  );
+  await assert.rejects(
+    verifyTwoAdultE2ECompletion({
+      ...base,
+      apkProvenanceReader: async () => ({
+        commit: complete.commit,
+        sourceState: 'dirty',
+      }),
+    }),
+    /source state is not clean/u,
+  );
+
+  const sensitiveCanary = 'SENSITIVE_AAPT_OUTPUT_DO_NOT_EMIT';
+  await assert.rejects(
+    verifyTwoAdultE2ECompletion({
+      ...base,
+      apkProvenanceReader: async () => {
+        throw new Error(sensitiveCanary);
+      },
+    }),
+    (error) => {
+      assert.equal(
+        error.message,
+        'Two-adult E2E APK source provenance could not be verified.',
+      );
+      assert.equal(error.message.includes(sensitiveCanary), false);
+      return true;
+    },
   );
 });
 

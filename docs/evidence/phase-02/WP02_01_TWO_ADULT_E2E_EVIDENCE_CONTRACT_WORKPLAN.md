@@ -20,7 +20,7 @@
 
 1. exact-key JSON 계약과 tracked `not_run` template를 추가한다.
 2. 환경/package, 40-hex commit, 64-hex APK digest, UTC timestamp와 두 device alias/API/preflight 결과를 검증한다.
-3. completion CLI는 commit이 현재 repository에 존재하는지 확인하고 전달받은 APK를 직접 SHA-256 hashing해 evidence digest와 대조한다.
+3. completion CLI는 commit이 현재 repository에 존재하는지 확인하고 전달받은 APK를 직접 SHA-256 hashing해 evidence digest와 대조한다. 이 최초 slice에서는 commit과 APK source의 직접 provenance 대조가 없으며 후속 provenance work plan에서 보강한다.
 4. login/session/household/invite/cold-start/logout/account-switch/negative-path의 exact check set을 고정한다.
 5. CLI completion gate는 모든 check와 두 device preflight가 `pass`인 경우에만 성공한다.
 6. 결과 출력은 check 수와 환경/package만 포함하고 입력 경로, hash 또는 임의 문자열을 재출력하지 않는다.
@@ -64,7 +64,7 @@
 
 ## Current Result
 
-- exact JSON template, completion validator, repository commit existence와 APK SHA-256 binding을 구현했다.
+- exact JSON template, completion validator, repository commit existence와 APK SHA-256 검사를 구현했다. 2026-07-29 감사에서 두 검사가 APK source provenance를 직접 연결하지 않는 간극을 확인해 `WP02_01_LIVE_EVIDENCE_PROVENANCE_WORKPLAN.md`로 후속 보강 중이다.
 - focused contract test 8개와 repository self-test 39개, workflow contract와 secret scan이 통과했다.
 - implementation commit `4792dfd`의 GitHub Actions run `30415718065`에서 모든 job과 final gate가 통과했다.
 - tracked template는 구조 검증만 통과하고 completion mode에서는 의도대로 실패한다.

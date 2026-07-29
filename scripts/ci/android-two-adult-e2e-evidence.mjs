@@ -1,12 +1,16 @@
 import { execFile as execFileCallback } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { createReadStream } from 'node:fs';
-import { readFile, stat } from 'node:fs/promises';
+import { constants as fsConstants, createReadStream } from 'node:fs';
+import { access, readFile, readdir, stat } from 'node:fs/promises';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { promisify } from 'node:util';
 
 export const maximumTwoAdultEvidenceBytes = 32 * 1024;
 export const maximumTwoAdultApkBytes = 1024 * 1024 * 1024;
+export const sourceCommitMetadataName = 'me.newlines.kinflow.SOURCE_COMMIT';
+export const sourceStateMetadataName = 'me.newlines.kinflow.SOURCE_STATE';
 
 export const twoAdultE2ECheckKeys = Object.freeze([
   'device_a_google_login',
@@ -61,6 +65,7 @@ const commitPattern = /^[0-9a-f]{40}$/u;
 const artifactSha256Pattern = /^[0-9a-f]{64}$/u;
 const utcTimestampPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/u;
 const execFile = promisify(execFileCallback);
+const maximumManifestDumpBytes = 4 * 1024 * 1024;
 
 function isPlainObject(value) {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) {
@@ -77,6 +82,147 @@ function hasExactKeys(value, expectedKeys) {
     actualKeys.length === sortedExpectedKeys.length &&
     actualKeys.every((key, index) => key === sortedExpectedKeys[index])
   );
+}
+
+function parseStringManifestAttribute(line, attribute) {
+  const match = line.match(
+    new RegExp(
+      `A: android:${attribute}(?:\\([^)]*\\))?="([^"]*)"`,
+      'u',
+    ),
+  );
+  return match?.[1];
+}
+
+export function parseAndroidManifestProvenance(manifestDump) {
+  if (
+    typeof manifestDump !== 'string' ||
+    Buffer.byteLength(manifestDump, 'utf8') > maximumManifestDumpBytes
+  ) {
+    throw new Error('Two-adult E2E APK source provenance is invalid.');
+  }
+
+  const metadata = new Map();
+  const lines = manifestDump.split(/\r?\n/u);
+  const elementStack = [];
+  for (let index = 0; index < lines.length; index += 1) {
+    const element = lines[index].match(/^(\s*)E: ([^\s(]+)/u);
+    if (!element) {
+      continue;
+    }
+
+    const elementIndent = element[1].length;
+    while (
+      elementStack.length > 0 &&
+      elementStack.at(-1).indent >= elementIndent
+    ) {
+      elementStack.pop();
+    }
+    const parent = elementStack.at(-1);
+    elementStack.push({ indent: elementIndent, name: element[2] });
+    if (element[2] !== 'meta-data' || parent?.name !== 'application') {
+      continue;
+    }
+
+    let name;
+    let value;
+    for (let childIndex = index + 1; childIndex < lines.length; childIndex += 1) {
+      const child = lines[childIndex];
+      const firstContentIndex = child.search(/\S/u);
+      if (
+        firstContentIndex >= 0 &&
+        firstContentIndex <= elementIndent &&
+        child.slice(firstContentIndex).startsWith('E: ')
+      ) {
+        break;
+      }
+      name ??= parseStringManifestAttribute(child, 'name');
+      value ??= parseStringManifestAttribute(child, 'value');
+    }
+
+    if (name !== sourceCommitMetadataName && name !== sourceStateMetadataName) {
+      continue;
+    }
+    if (value === undefined || metadata.has(name)) {
+      throw new Error('Two-adult E2E APK source provenance is invalid.');
+    }
+    metadata.set(name, value);
+  }
+
+  const commit = metadata.get(sourceCommitMetadataName);
+  const sourceState = metadata.get(sourceStateMetadataName);
+  if (!commitPattern.test(commit ?? '') || !['clean', 'dirty'].includes(sourceState)) {
+    throw new Error('Two-adult E2E APK source provenance is invalid.');
+  }
+  return Object.freeze({ commit, sourceState });
+}
+
+async function isExecutable(path) {
+  try {
+    await access(path, fsConstants.X_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function resolveAapt() {
+  const explicit = process.env.KINFLOW_AAPT_BIN;
+  if (explicit) {
+    if (await isExecutable(explicit)) {
+      return explicit;
+    }
+    throw new Error('Two-adult E2E Android manifest reader is unavailable.');
+  }
+
+  const roots = [
+    process.env.ANDROID_HOME,
+    process.env.ANDROID_SDK_ROOT,
+    join(homedir(), 'Android', 'Sdk'),
+    join(homedir(), 'Library', 'Android', 'sdk'),
+  ].filter((value, index, values) => value && values.indexOf(value) === index);
+  for (const root of roots) {
+    const buildTools = join(root, 'build-tools');
+    let entries;
+    try {
+      entries = await readdir(buildTools, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+    const versions = entries
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name)
+      .sort((left, right) =>
+        right.localeCompare(left, 'en', { numeric: true }),
+      );
+    for (const version of versions) {
+      const candidate = join(buildTools, version, 'aapt');
+      if (await isExecutable(candidate)) {
+        return candidate;
+      }
+    }
+  }
+  return 'aapt';
+}
+
+async function readApkProvenance(apkPath) {
+  let stdout;
+  try {
+    const aapt = await resolveAapt();
+    ({ stdout } = await execFile(
+      aapt,
+      ['dump', 'xmltree', apkPath, 'AndroidManifest.xml'],
+      {
+        encoding: 'utf8',
+        maxBuffer: maximumManifestDumpBytes,
+        timeout: 10_000,
+        windowsHide: true,
+      },
+    ));
+  } catch {
+    throw new Error('Two-adult E2E Android manifest reader is unavailable.');
+  }
+  return parseAndroidManifestProvenance(stdout);
 }
 
 function validateBuildIdentity(decoded, requireComplete) {
@@ -289,6 +435,7 @@ async function sha256File(path) {
 
 export async function verifyTwoAdultE2ECompletion({
   apkPath,
+  apkProvenanceReader = readApkProvenance,
   commitVerifier = verifyCommitExists,
   evidencePath,
   fileHasher = sha256File,
@@ -325,6 +472,28 @@ export async function verifyTwoAdultE2ECompletion({
     artifactSha256 !== decoded.artifactSha256
   ) {
     throw new Error('Two-adult E2E APK SHA-256 does not match.');
+  }
+
+  let provenance;
+  try {
+    provenance = await apkProvenanceReader(apkPath);
+  } catch {
+    throw new Error('Two-adult E2E APK source provenance could not be verified.');
+  }
+  if (
+    !isPlainObject(provenance) ||
+    !hasExactKeys(provenance, ['commit', 'sourceState']) ||
+    typeof provenance.commit !== 'string' ||
+    !commitPattern.test(provenance.commit) ||
+    !['clean', 'dirty'].includes(provenance.sourceState)
+  ) {
+    throw new Error('Two-adult E2E APK source provenance could not be verified.');
+  }
+  if (provenance.commit !== decoded.commit) {
+    throw new Error('Two-adult E2E APK source commit does not match.');
+  }
+  if (provenance.sourceState !== 'clean') {
+    throw new Error('Two-adult E2E APK source state is not clean.');
   }
 
   return result;

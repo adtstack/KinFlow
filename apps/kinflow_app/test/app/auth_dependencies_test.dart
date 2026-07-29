@@ -148,7 +148,7 @@ void main() {
     },
   );
 
-  test('Android manifest disables OS backup for Keystore ciphertext', () async {
+  test('Android manifest locks backup, links, and build provenance', () async {
     final String manifest = await File(
       'android/app/src/main/AndroidManifest.xml',
     ).readAsString();
@@ -160,6 +160,16 @@ void main() {
     expect(manifest, contains('android:scheme="https"'));
     expect(manifest, contains('android:host="\${kinflowAuthRedirectHost}"'));
     expect(manifest, contains('android:pathPrefix="/invite/"'));
+    expect(
+      manifest,
+      contains('android:name="me.newlines.kinflow.SOURCE_COMMIT"'),
+    );
+    expect(manifest, contains('android:value="\${kinflowSourceCommit}"'));
+    expect(
+      manifest,
+      contains('android:name="me.newlines.kinflow.SOURCE_STATE"'),
+    );
+    expect(manifest, contains('android:value="\${kinflowSourceState}"'));
   });
 }
 

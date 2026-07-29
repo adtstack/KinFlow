@@ -82,11 +82,20 @@ KINFLOW_FLUTTER_BIN=/private/tmp/kinflow-flutter-src-3.44.7/bin/flutter \
 
 `config/dev.local.json`은 app root 기준 경로다. build artifact만 필요하면 같은 config를 사용해 아래 gate를 실행한다.
 
+live evidence용 APK는 commit 후 clean worktree에서 빌드한다. 첫 명령은 아무것도 출력하지 않아야 한다.
+
+```bash
+git status --short
+git rev-parse HEAD
+```
+
 ```bash
 KINFLOW_FLUTTER_BIN=/private/tmp/kinflow-flutter-src-3.44.7/bin/flutter \
 KINFLOW_PUBLIC_CONFIG=config/dev.local.json \
   scripts/ci/android-build.sh dev
 ```
+
+build wrapper는 현재 40-hex `HEAD`와 build 시작 시 source state를 APK application metadata에 넣는다. `ci-reports/android/dev/android-dev.txt`의 `source_commit`이 위 `HEAD`와 같고 `source_state=clean`인지 확인한다. 직접 `flutter build`한 기본 APK나 dirty worktree APK는 실행 자체는 가능하지만 completion evidence validator가 거부한다.
 
 실제 실행 명령은 Flutter version과 현재 app bootstrap의 define 계약에 맞춰 pinned toolchain을 사용한다. 명령 출력과 screenshot에 publishable key 이외의 credential 또는 Google token이 없는지 확인한다. wrapper와 build gate는 exact public key allowlist만 허용하므로 client secret 또는 service-role key가 local JSON에 들어가면 실행 전에 실패한다.
 
@@ -177,7 +186,7 @@ cp \
   ci-reports/manual/google-android-two-adult-e2e.json
 ```
 
-실제 실행에 사용한 commit 40-hex, APK SHA-256, UTC timestamp와 기기 A/B의 API level을 채운다. 각 단계는 `pass`, `fail`, `not_run` 중 하나로만 기록한다. 이메일, token, invite URL, ADB serial, household/member UUID 또는 free-form note key를 추가하면 계약 검증이 실패한다.
+실제 실행에 사용한 APK에 내장된 source commit 40-hex, APK SHA-256, UTC timestamp와 기기 A/B의 API level을 채운다. commit은 임의의 기존 commit을 고르지 않고 Android build report의 `source_commit`을 그대로 사용한다. 각 단계는 `pass`, `fail`, `not_run` 중 하나로만 기록한다. 이메일, token, invite URL, ADB serial, household/member UUID 또는 free-form note key를 추가하면 계약 검증이 실패한다.
 
 모든 시나리오를 직접 관찰한 뒤 completion gate를 실행한다. 하나라도 `fail` 또는 `not_run`이면 성공하지 않는다.
 
@@ -187,7 +196,7 @@ node scripts/ci/android-two-adult-e2e-evidence.mjs \
   apps/kinflow_app/build/app/outputs/flutter-apk/app-dev-debug.apk
 ```
 
-validator PASS는 checklist completeness와 비식별 schema만 증명한다. 실제 관찰을 대체하지 않으므로 실행자와 검증자는 아래 항목을 함께 대조한다.
+validator는 checklist completeness, 비식별 schema, APK SHA-256, repository commit 존재와 APK에 내장된 clean source commit의 exact match를 검증한다. 실제 관찰을 대체하지 않으므로 실행자와 검증자는 아래 항목을 함께 대조한다.
 
 - commit, 설치 APK SHA-256, Android API level, build flavor/package
 - Google/Supabase environment 이름만 기록하고 OAuth client ID는 별도 provider setup evidence를 참조
@@ -207,6 +216,7 @@ validator PASS는 checklist completeness와 비식별 schema만 증명한다. �
 - invite link가 browser fallback 또는 다른 앱으로 열리는데 success로 기록됨
 - prod package가 debug/upload-only SHA에만 의존함
 - logout/purge 실패 뒤 새 로그인 action이 그대로 진행됨
+- APK에 내장된 source commit이 evidence와 다르거나 source state가 `dirty`임
 
 하나라도 발생하면 Phase 02 Exit Gate는 실패다. provider를 비활성화하고 자격증명 노출이 있었다면 즉시 폐기·교체한 뒤 원인 수정과 전체 시나리오 재실행이 필요하다.
 

@@ -41,6 +41,12 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <meta-data
+            android:name="me.newlines.kinflow.SOURCE_COMMIT"
+            android:value="${kinflowSourceCommit}" />
+        <meta-data
+            android:name="me.newlines.kinflow.SOURCE_STATE"
+            android:value="${kinflowSourceState}" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
