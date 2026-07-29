@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -6,10 +8,12 @@ import 'package:kinflow_app/app/app.dart';
 import 'package:kinflow_app/app/app_environment.dart';
 import 'package:kinflow_app/app/providers/app_providers.dart';
 import 'package:kinflow_app/app/router/app_router.dart';
+import 'package:kinflow_app/features/auth/application/ports/sensitive_local_state_purger.dart';
 import 'package:kinflow_app/features/auth/domain/repositories/auth_session_repository.dart';
 import 'package:kinflow_app/features/auth/presentation/providers/auth_providers.dart';
 import 'package:kinflow_app/features/household/data/services/ephemeral_pending_invite_store.dart';
 import 'package:kinflow_app/features/household/domain/repositories/household_repository.dart';
+import 'package:kinflow_app/features/household/domain/repositories/invite_repository.dart';
 import 'package:kinflow_app/features/household/presentation/providers/household_providers.dart';
 
 import '../../support/fakes/fake_auth_dependencies.dart';
@@ -88,6 +92,57 @@ void main() {
       expect(inviteRepository.acceptRequests.single.setActiveHousehold, isTrue);
       expect(harness.pendingStore.read(), isNull);
       expect(find.byKey(const Key('today.screen')), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'account switch discards an in-flight accept and previous invite state',
+    (WidgetTester tester) async {
+      final Completer<AcceptHouseholdInviteResult> acceptResponse =
+          Completer<AcceptHouseholdInviteResult>();
+      final FakeInviteRepository inviteRepository = FakeInviteRepository(
+        acceptCallback: (_) => acceptResponse.future,
+      );
+      final _InviteHarness harness = await _pumpInviteApp(
+        tester,
+        restoreResult: AuthSessionAvailable(authSessionFixture()),
+        householdRepository: FakeHouseholdRepository(
+          loadResults: const <LoadActiveHouseholdResult>[
+            NoActiveHousehold(),
+            NoActiveHousehold(),
+          ],
+        ),
+        inviteRepository: inviteRepository,
+      );
+
+      harness.router.go('/invite/$inviteTokenValue');
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('invite.accept')));
+      await tester.pump();
+      expect(inviteRepository.acceptRequests, hasLength(1));
+
+      harness.authRepository.emit(
+        AuthSessionEstablished(
+          authSessionFixture(userId: '77777777-7777-4777-8777-777777777777'),
+        ),
+      );
+      await harness.container
+          .read(authLifecycleControllerProvider)
+          .waitForPendingOperations();
+      await tester.pump();
+
+      expect(harness.pendingStore.read(), isNull);
+      expect(find.byKey(const Key('invite.missing')), findsOneWidget);
+      expect(find.byKey(const Key('invite.preview.summary')), findsNothing);
+      expect(find.byKey(const Key('today.screen')), findsNothing);
+
+      acceptResponse.complete(
+        HouseholdInviteAccepted(acceptedHouseholdInviteFixture()),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('invite.missing')), findsOneWidget);
+      expect(find.byKey(const Key('today.screen')), findsNothing);
     },
   );
 
@@ -245,6 +300,7 @@ Future<_InviteHarness> _pumpInviteApp(
   WidgetTester tester, {
   AuthSessionResult restoreResult = const AuthSessionAbsent(),
   LoadActiveHouseholdResult householdResult = const NoActiveHousehold(),
+  HouseholdRepository? householdRepository,
   FakeInviteRepository? inviteRepository,
   Locale? locale,
 }) async {
@@ -264,10 +320,13 @@ Future<_InviteHarness> _pumpInviteApp(
       authSessionRepositoryProvider.overrideWithValue(authRepository),
       authSignInLauncherProvider.overrideWithValue(signInLauncher),
       sensitiveLocalStatePurgerProvider.overrideWithValue(
-        RecordingSensitiveLocalStatePurger(),
+        CompositeSensitiveLocalStatePurger(
+          <SensitiveLocalStatePurgeParticipant>[pendingStore],
+        ),
       ),
       householdRepositoryProvider.overrideWithValue(
-        FakeHouseholdRepository(defaultLoadResult: householdResult),
+        householdRepository ??
+            FakeHouseholdRepository(defaultLoadResult: householdResult),
       ),
       householdCreationIdGeneratorProvider.overrideWithValue(
         FakeHouseholdCreationIdGenerator(),

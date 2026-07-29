@@ -31,10 +31,12 @@ final class InviteFlowController {
 
   InviteFlowState _state = const InviteFlowIdle();
   Future<void> _pending = Future<void>.value();
+  final Set<Future<void>> _operations = <Future<void>>{};
   int? _tokenFingerprint;
   InviteCommandId? _acceptId;
   bool? _acceptSetActive;
-  var _busy = false;
+  var _operationRevision = 0;
+  int? _busyRevision;
   var _disposed = false;
 
   InviteFlowState get state => _state;
@@ -45,27 +47,30 @@ final class InviteFlowController {
     if (_disposed) {
       return false;
     }
+    _advanceOperationRevision();
     final bool captured = _pendingInviteStore.capture(rawToken);
     if (!captured) {
       _emit(const InviteFlowMissing());
+    } else {
+      _emit(const InviteFlowIdle());
     }
     return captured;
   }
 
   Future<void> loadPreview() {
-    if (_busy || _disposed) {
+    if (_disposed || _busyRevision == _operationRevision) {
       return _pending;
     }
-    _busy = true;
-    _pending = _loadPreview().whenComplete(() => _busy = false);
-    return _pending;
+    return _startOperation(_loadPreview);
   }
 
-  Future<void> _loadPreview() async {
+  Future<void> _loadPreview(int revision) async {
     final InviteToken? token = _pendingInviteStore.read();
     if (token == null) {
-      _tokenFingerprint = null;
-      _emit(const InviteFlowMissing());
+      if (_isCurrent(revision)) {
+        _tokenFingerprint = null;
+        _emit(const InviteFlowMissing());
+      }
       return;
     }
     if (_tokenFingerprint != token.hashCode) {
@@ -78,7 +83,14 @@ final class InviteFlowController {
     try {
       result = await _repository.previewInvite(token);
     } on Object {
-      _emit(const InviteFlowFailed(InviteFailure(InviteFailureKind.internal)));
+      if (_isCurrent(revision)) {
+        _emit(
+          const InviteFlowFailed(InviteFailure(InviteFailureKind.internal)),
+        );
+      }
+      return;
+    }
+    if (!_isCurrent(revision)) {
       return;
     }
     switch (result) {
@@ -98,17 +110,19 @@ final class InviteFlowController {
         _state is InviteFlowPreviewReady ||
         _state is InviteFlowFailed &&
             (_state as InviteFlowFailed).preview != null;
-    if (_busy || _disposed || !hasPreview) {
+    if (_disposed || _busyRevision == _operationRevision || !hasPreview) {
       return _pending;
     }
-    _busy = true;
-    _pending = _accept(
-      setActiveHousehold: setActiveHousehold,
-    ).whenComplete(() => _busy = false);
-    return _pending;
+    return _startOperation(
+      (int revision) =>
+          _accept(revision: revision, setActiveHousehold: setActiveHousehold),
+    );
   }
 
-  Future<void> _accept({required bool setActiveHousehold}) async {
+  Future<void> _accept({
+    required int revision,
+    required bool setActiveHousehold,
+  }) async {
     final InviteToken? token = _pendingInviteStore.read();
     final InviteFlowState current = _state;
     final preview = switch (current) {
@@ -117,7 +131,9 @@ final class InviteFlowController {
       _ => null,
     };
     if (token == null || preview == null) {
-      _emit(const InviteFlowMissing());
+      if (_isCurrent(revision)) {
+        _emit(const InviteFlowMissing());
+      }
       return;
     }
     if (_acceptId == null || _acceptSetActive != setActiveHousehold) {
@@ -135,12 +151,17 @@ final class InviteFlowController {
         ),
       );
     } on Object {
-      _emit(
-        InviteFlowFailed(
-          const InviteFailure(InviteFailureKind.internal),
-          preview: preview,
-        ),
-      );
+      if (_isCurrent(revision)) {
+        _emit(
+          InviteFlowFailed(
+            const InviteFailure(InviteFailureKind.internal),
+            preview: preview,
+          ),
+        );
+      }
+      return;
+    }
+    if (!_isCurrent(revision)) {
       return;
     }
     switch (result) {
@@ -158,13 +179,11 @@ final class InviteFlowController {
   }
 
   void clear() {
-    if (_busy || _disposed) {
+    if (_disposed) {
       return;
     }
+    _advanceOperationRevision();
     _pendingInviteStore.clear();
-    _tokenFingerprint = null;
-    _acceptId = null;
-    _acceptSetActive = null;
     _emit(const InviteFlowMissing());
   }
 
@@ -173,8 +192,40 @@ final class InviteFlowController {
       return;
     }
     _disposed = true;
-    await _pending;
+    _operationRevision += 1;
+    _busyRevision = null;
+    await Future.wait<void>(List<Future<void>>.of(_operations));
     await _states.close();
+  }
+
+  Future<void> _startOperation(
+    Future<void> Function(int revision) operationBody,
+  ) {
+    final int revision = _operationRevision;
+    _busyRevision = revision;
+    late final Future<void> operation;
+    operation = operationBody(revision).whenComplete(() {
+      _operations.remove(operation);
+      if (_operationRevision == revision && _busyRevision == revision) {
+        _busyRevision = null;
+      }
+    });
+    _operations.add(operation);
+    _pending = operation;
+    return operation;
+  }
+
+  void _advanceOperationRevision() {
+    _operationRevision += 1;
+    _busyRevision = null;
+    _pending = Future<void>.value();
+    _tokenFingerprint = null;
+    _acceptId = null;
+    _acceptSetActive = null;
+  }
+
+  bool _isCurrent(int revision) {
+    return !_disposed && _operationRevision == revision;
   }
 
   void _emit(InviteFlowState next) {

@@ -138,6 +138,8 @@ void main() {
     );
     addTearDown(controller.dispose);
 
+    expect(controller.capture(inviteTokenValue), isTrue);
+    expect(store.read(), isNotNull);
     expect(controller.capture('short raw secret'), isFalse);
     expect(controller.state, isA<InviteFlowMissing>());
     expect(store.read(), isNull);
@@ -171,6 +173,81 @@ void main() {
       expect(controller.state, isA<InviteFlowPreviewReady>());
     },
   );
+
+  test('clear discards a superseded in-flight preview result', () async {
+    final Completer<PreviewHouseholdInviteResult> firstResponse =
+        Completer<PreviewHouseholdInviteResult>();
+    final Completer<PreviewHouseholdInviteResult> secondResponse =
+        Completer<PreviewHouseholdInviteResult>();
+    var previewCallCount = 0;
+    final FakeInviteRepository repository = FakeInviteRepository(
+      previewCallback: (_) {
+        final int callIndex = previewCallCount;
+        previewCallCount += 1;
+        return callIndex == 0 ? firstResponse.future : secondResponse.future;
+      },
+    );
+    final EphemeralPendingInviteStore store = EphemeralPendingInviteStore();
+    final InviteFlowController controller = InviteFlowController(
+      repository: repository,
+      idGenerator: FakeInviteCommandIdGenerator(),
+      pendingInviteStore: store,
+    );
+    addTearDown(controller.dispose);
+
+    controller.capture(inviteTokenValue);
+    final Future<void> first = controller.loadPreview();
+    controller.clear();
+    expect(controller.state, isA<InviteFlowMissing>());
+
+    const String replacementToken =
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefg';
+    controller.capture(replacementToken);
+    final Future<void> second = controller.loadPreview();
+    expect(repository.previewTokens, hasLength(2));
+
+    secondResponse.complete(
+      HouseholdInvitePreviewed(householdInvitePreviewFixture()),
+    );
+    await second;
+    expect(controller.state, isA<InviteFlowPreviewReady>());
+
+    firstResponse.complete(
+      const PreviewHouseholdInviteFailed(
+        InviteFailure(InviteFailureKind.temporarilyUnavailable),
+      ),
+    );
+    await first;
+    expect(controller.state, isA<InviteFlowPreviewReady>());
+    expect(store.read()?.value, replacementToken);
+  });
+
+  test('clear discards a superseded in-flight accept result', () async {
+    final Completer<AcceptHouseholdInviteResult> response =
+        Completer<AcceptHouseholdInviteResult>();
+    final EphemeralPendingInviteStore store = EphemeralPendingInviteStore();
+    final InviteFlowController controller = InviteFlowController(
+      repository: FakeInviteRepository(acceptCallback: (_) => response.future),
+      idGenerator: FakeInviteCommandIdGenerator(),
+      pendingInviteStore: store,
+    );
+    addTearDown(controller.dispose);
+    controller.capture(inviteTokenValue);
+    await controller.loadPreview();
+
+    final Future<void> acceptance = controller.accept(setActiveHousehold: true);
+    controller.clear();
+    expect(controller.state, isA<InviteFlowMissing>());
+    expect(store.read(), isNull);
+
+    response.complete(
+      HouseholdInviteAccepted(acceptedHouseholdInviteFixture()),
+    );
+    await acceptance;
+
+    expect(controller.state, isA<InviteFlowMissing>());
+    expect(store.read(), isNull);
+  });
 
   test('account-bound purge removes pending invitation authority', () async {
     final EphemeralPendingInviteStore store = EphemeralPendingInviteStore();

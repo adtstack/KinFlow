@@ -30,9 +30,9 @@ class _InviteLinkCaptureScreenState
       return;
     }
     _captured = true;
-    ref.read(inviteFlowProvider.notifier).capture(widget.rawToken);
     scheduleMicrotask(() {
       if (mounted) {
+        ref.read(inviteFlowProvider.notifier).capture(widget.rawToken);
         context.replace(AppRoutes.invite);
       }
     });

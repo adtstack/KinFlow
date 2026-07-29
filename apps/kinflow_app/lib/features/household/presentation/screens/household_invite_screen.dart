@@ -63,7 +63,7 @@ class _HouseholdInviteScreenState extends ConsumerState<HouseholdInviteScreen> {
       final nextUser = next.session?.userId;
       if (previousUser != null && previousUser != nextUser) {
         _switchConfirmed = false;
-        unawaited(ref.read(inviteFlowProvider.notifier).loadPreview());
+        ref.read(inviteFlowProvider.notifier).clear();
       }
     });
 

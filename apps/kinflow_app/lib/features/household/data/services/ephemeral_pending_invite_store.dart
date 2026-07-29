@@ -13,6 +13,7 @@ final class EphemeralPendingInviteStore
   bool capture(String rawToken) {
     final InviteToken? token = InviteToken.tryParse(rawToken);
     if (token == null) {
+      _token = null;
       return false;
     }
     _token = token;
