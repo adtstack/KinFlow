@@ -126,6 +126,23 @@ scripts/verify-android-app-links.sh \
   <owned-dev-host>
 ```
 
+실제 2기기 session을 시작하는 날에는 stale provider/hosting 상태를 사용하지 않도록 actual public config와 실행 APK로 아래 public readiness checkpoint를 다시 통과시킨다. 첫 명령은 공개 Auth settings에서 Google 활성화 여부만 확인하고 URL, publishable key 또는 response body를 출력하지 않는다. 두 번째 명령은 actual APK signer를 checked-in Pages source와 live endpoint에 연속 대조한다.
+
+```bash
+node scripts/ci/supabase-live-google-provider.mjs \
+  apps/kinflow_app/config/dev.local.json \
+  dev \
+  me.newlines.kinflow.dev
+
+scripts/verify-android-app-links.sh \
+  dev \
+  apps/kinflow_app/build/app/outputs/flutter-apk/app-dev-debug.apk \
+  apps/public_site/public/.well-known/assetlinks.json \
+  adtstack.github.io
+```
+
+둘 중 하나라도 실패하면 기기 preflight나 로그인으로 진행하지 않는다. 이 checkpoint는 Google ID token 발급이나 Supabase session 성공을 대체하지 않는다.
+
 기기에서 확인한다.
 
 ```bash

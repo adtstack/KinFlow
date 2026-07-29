@@ -40,7 +40,9 @@
 | `npm run ci:workflow` | PASS, 5 jobs / 17 pinned action uses / `contents: read` |
 | Flutter quality gate | PASS, 182 tests / opt-in live test 1 skip / coverage 78.52% |
 | `git diff --check` | PASS |
-| actual local dev APK inspector | PASS — `me.newlines.kinflow.dev`, clean commit `3df6eadc5339cd2b68509efc51cfe340333802dc`, SHA-256 `d7933ff9ee647c04552631107c98653665caf97f6443f4c359c3478fd84feec3` |
+| current actual-config dev APK inspector | PASS — `me.newlines.kinflow.dev`, clean commit `52b1782fcd4d25c5eee158ec9aca083c7cc499c3`, SHA-256 `a041e37a5069f3f65a2fb3073054227f2b9184bd0eea290ec81cb8c3c09b5272` |
+| current Supabase Google public settings | PASS — exact public settings endpoint, `external.google=true`; public config 값과 response body 미출력 |
+| current dev APK signer -> local/live association | PASS — checked-in Pages statement와 `adtstack.github.io` live endpoint exact match |
 | actual remote prod APK inspector | PASS — `me.newlines.kinflow`, clean implementation commit, SHA-256 `0522e5b8e840a68c6238843c96645f2140e7a74142c5aa9c2e25744391d80caa` |
 
 focused test의 all-pass fixture는 validator branch coverage만 제공한다. session test는 임시 repository에서 시작 상태 29개를 모두 `not_run`으로 만들며 실제 관찰 결과로 사용하지 않는다.
@@ -69,7 +71,7 @@ Android report의 build binding은 다음과 같다.
 
 ## Manual / Deferred Validation
 
-- 실제 Android target 두 대의 API level, signer, verified App Link와 installed package preflight는 **NOT RUN**이다.
+- read-only ADB inventory에서 연결/online Android target은 0대다. 두 target의 API level, signer, verified App Link와 installed package preflight는 **NOT RUN**이다.
 - 실제 Google account A/B chooser, Supabase session과 distinct adult membership 관찰은 **NOT RUN**이다.
 - household create, invite issue/cold dispatch/accept, restore/logout/account switch와 negative-path 27개 check는 모두 **NOT RUN**이다.
 - actual `ci-reports/manual/*.json` session은 만들지 않았고 result를 자동 또는 추정으로 `pass` 처리하지 않았다.
