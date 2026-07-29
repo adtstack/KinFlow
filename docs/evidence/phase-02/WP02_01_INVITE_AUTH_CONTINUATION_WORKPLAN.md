@@ -3,7 +3,7 @@
 - 작성일: 2026-07-29
 - 기준 commit: `42c2ab6`
 - Work Package: WP02-01 — Google sign-in 전후 invitation continuation
-- 상태: IN PROGRESS — DEVICE-INDEPENDENT RUNTIME CONTRACT
+- 상태: IMPLEMENTED — LOCAL + REMOTE AUTOMATED PASS / LIVE E2E PENDING
 
 ## Requirements
 
@@ -46,3 +46,11 @@
 
 - 이 검증은 실제 Google 및 두 기기 E2E를 대체하지 않는다.
 - 실제 성인 A/B가 두 Android 기기에서 preflight, Google session, invite accept, cold restore와 account-switch purge를 통과해야 WP02-01 전체가 완료된다.
+
+## Current Result
+
+- implementation commit `f8b1764`에서 invitation/auth continuation 통합 widget test를 추가했다.
+- focused test 7개, 전체 Flutter test 177개와 repository self-test 39개가 통과했다. 1개 opt-in live test는 의도대로 skip했다.
+- analyzer issue 0, coverage 77.52%, secret finding 0, generated drift 0이다.
+- GitHub Actions run `30416587279`의 foundation job 5개와 final gate가 모두 통과했다.
+- 실제 Google account, Supabase live session과 두 Android 기기는 사용하지 않았으므로 live E2E는 pending이다.
