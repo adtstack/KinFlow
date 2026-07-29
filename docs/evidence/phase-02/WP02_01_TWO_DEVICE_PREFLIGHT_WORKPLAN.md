@@ -68,5 +68,6 @@ node scripts/ci/android-two-device-preflight.mjs \
 
 - read-only two-device preflight와 parser/command/privacy contract 테스트를 구현했다.
 - repository self-test 31개, workflow contract와 high-confidence secret scan이 통과했다.
+- implementation commit `148b02c`의 GitHub Actions run `30414815240`에서 모든 job과 final gate가 통과했다.
 - 검증 시점 online ADB target은 0대이므로 live two-device preflight와 계정/session/invite E2E는 실행하지 않았다.
 - 상세 결과는 `WP02_01_TWO_DEVICE_PREFLIGHT_EVIDENCE.md`에 기록한다.
