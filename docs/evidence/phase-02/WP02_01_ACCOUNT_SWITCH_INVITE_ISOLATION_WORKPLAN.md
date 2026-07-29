@@ -3,7 +3,7 @@
 - 작성일: 2026-07-29
 - 기준 commit: `73eb28b`
 - Work Package: WP02-01 — live 27-check traceability / account-switch isolation
-- 상태: IN PROGRESS
+- 상태: IMPLEMENTED — LOCAL + REMOTE AUTOMATED PASS / LIVE ACCOUNT SWITCH PENDING
 
 ## Requirements
 
@@ -49,3 +49,11 @@
 
 - 이 fix는 account-switch isolation의 device-independent race를 닫지만 실제 Google chooser와 OEM lifecycle을 증명하지 않는다.
 - 실제 두 account·두 Android device의 live logout/switch observation과 completion JSON은 계속 필요하다.
+
+## Current Result
+
+- implementation commit `faa4eac`에서 account identity boundary가 이전 invite operation을 즉시 무효화하도록 수정했다.
+- focused controller/widget test 17개, 전체 Flutter test 180개와 repository self-test 39개가 통과했다. 1개 opt-in live test는 의도대로 skip했다.
+- analyzer issue 0, coverage 78.33%, secret finding 0, generated drift 0이다.
+- GitHub Actions run `30417534567`의 foundation job 5개와 final gate가 모두 통과했다.
+- 실제 Google chooser/account switch와 두 Android 기기는 사용하지 않았으므로 live check는 pending이다.
