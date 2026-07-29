@@ -2,7 +2,7 @@
 
 - 검증일: 2026-07-29
 - implementation commit: `4792dfdaed1f4212fe5285e006795a07cc582299`
-- 상태: **AUTOMATED EVIDENCE CONTRACT PASS / BUILD PROVENANCE SUPERSEDED / LIVE TWO-ADULT E2E NOT RUN**
+- 상태: **AUTOMATED EVIDENCE CONTRACT PASS / PROVENANCE AND SESSION CAPTURE HARDENED BY FOLLOW-UP / LIVE TWO-ADULT E2E NOT RUN**
 - 범위: 실제 dev Google Android 성인 2인 완료 결과의 completeness, build binding과 privacy shape
 
 ## Requirement Trace
@@ -30,7 +30,7 @@
 - `docs/evidence/phase-02/templates/GOOGLE_ANDROID_TWO_ADULT_E2E_TEMPLATE.json`
   - 모든 결과가 `not_run`인 tracked template; completion으로 사용할 수 없음
 - `GOOGLE_ANDROID_TWO_ADULT_RUNBOOK.md`
-  - ignored working copy, 금지 field, APK-bound completion 명령과 실제 관찰 경계
+  - 이 implementation 시점에는 ignored template working copy를 hand-edit했다. 현재 절차는 후속 `WP02_01_LIVE_EVIDENCE_SESSION_EVIDENCE.md`의 APK-derived `init`, allowlisted `record`와 redacted `status`로 교체됐다.
 
 ## Local Validation
 
@@ -76,7 +76,7 @@ GitHub Actions [run `30415718065`](https://github.com/adtstack/KinFlow/actions/r
 
 ## Remaining Risks / Completion Boundary
 
-1. exact schema는 manual 입력의 completeness와 privacy만 보장하며 운영자가 실제 화면을 관찰했는지는 자동 증명하지 못한다.
+1. exact schema와 후속 session recorder는 입력 범위, completeness와 privacy를 보장하지만 운영자가 실제 화면을 관찰했는지는 자동 증명하지 못한다.
 2. 이 구현 시점의 commit 존재 검사와 APK digest 검사는 서로 독립적이었다. 후속 provenance slice가 APK manifest의 source commit/clean state를 대조하지만, 두 기기에 정확히 같은 bytes가 설치됐는지는 Android package state만으로 직접 증명하지 않는다.
 3. OEM/Android version별 Google Credential Manager와 `pm get-app-links` 실제 동작은 live 두 기기에서 남아 있다.
 4. WP02-01과 Phase 02 Exit Gate는 실제 completion JSON과 manual observation evidence 전까지 미완료다.
@@ -90,8 +90,8 @@ GitHub Actions [run `30415718065`](https://github.com/adtstack/KinFlow/actions/r
 
 1. 서로 다른 online Android target 2대와 성인 Google test account 2개 준비
 2. current dev APK 설치 및 two-device preflight PASS
-3. tracked template를 `ci-reports/manual/`의 ignored working copy로 복사
-4. runbook 7절 27개 check를 직접 실행해 stable result만 기록
+3. runbook의 `session.mjs init`으로 actual APK와 A/B API level에 결속된 ignored session 신규 생성
+4. runbook 7절 27개 check를 직접 실행하고 allowlisted `record` command로 stable result만 기록
 5. completion validator에 working JSON과 실제 dev APK를 함께 전달해 commit/APK binding 포함 PASS
 
 위 결과 전에는 자동 fixture나 template를 `4-3b-2` 완료 증거로 사용하지 않는다.
