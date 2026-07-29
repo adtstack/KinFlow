@@ -38,8 +38,11 @@
 | Android package signer | PASS, expected debug SHA-256 |
 | Android domain verification | PASS, `adtstack.github.io: verified` |
 | HTTPS invite dispatch | PASS, `LaunchState: COLD`, `me.newlines.kinflow.dev/me.newlines.kinflow.MainActivity` |
+| GitHub Actions CI | PASS, run `30412758193`; all required jobs and final gate passed |
 
 Detailed command evidence is in `logs/wp02-01-dev-pages-deployment.log`. The ignored `config/dev.local.json` supplied only the public dev host plus placeholder provider values; it was not committed or copied to the Pages repository.
+
+Remote run: <https://github.com/adtstack/KinFlow/actions/runs/30412758193>
 
 ## Security / Privacy
 

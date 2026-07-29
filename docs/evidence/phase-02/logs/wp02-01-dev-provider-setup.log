@@ -1,0 +1,61 @@
+Phase 02 WP02-01 dev provider setup validation
+Date: 2026-07-29 Asia/Seoul
+Base commit: c43e78f
+
+[PASS] Google Auth Platform
+- project: kinflow-503900
+- audience: external / testing
+- operator-selected test users: 1 (email omitted)
+- Web OAuth client suffix: 6egjf4
+- Web redirect: exact Supabase callback
+- Android OAuth client suffix: sqbuf2
+- package: me.newlines.kinflow.dev
+- signing SHA-1: A2:12:1B:14:AA:68:34:21:B5:C5:81:B7:61:F1:B1:3C:AF:DC:24:8D
+
+[PASS] Supabase Google provider
+- project ref: ghsniwhntbjofvslfxeq
+- provider: enabled
+- client audiences: Web first, Android second
+- client secret: stored server-side only
+- skip nonce checks: false
+- allow missing provider email: false
+- prior browser autofill: cleared without saving
+
+[PASS] Public provider settings
+Command: node scripts/ci/supabase-live-google-provider.mjs apps/kinflow_app/config/dev.local.json dev me.newlines.kinflow.dev
+Result: exact HTTPS /auth/v1/settings returned Google enabled
+Safety: publishable key and response body were not printed
+
+[PASS] Repository Node tests
+- 26/26
+- live Supabase provider success/failure cases: 4
+
+[PASS] Ignored dev public config
+- path: apps/kinflow_app/config/dev.local.json
+- Git ignored: true
+- local mode: 0600
+- exact public key allowlist: pass
+- Google/Supabase server secrets: absent
+
+[PASS] Actual-config dev APK
+- bytes: 216121931
+- SHA-256: 6b900e88ad8bc4a9f71b31ade5e10140efd84663c56af536874056c69803993a
+- local and live App Link association: pass
+- Android API 36 domain: adtstack.github.io verified
+- app bootstrap: COLD / MainActivity
+
+[PASS] Previous Pages/App Link commit CI
+- run: 30412758193
+- required jobs and final gate: success
+
+[NOT RUN] Real Google login and Supabase session
+Reason: user requested login/device account interaction later.
+
+[NOT RUN] Two-adult/two-device invite E2E
+Reason: second adult test account and second Android device are pending.
+
+[OPEN WARNING] Google Project Checkup secure flows
+- native flow uses no embedded webview
+- Android app ownership verification remains pending until Play distribution setup
+
+Security: no email, token, cookie, client ID in full, client secret, publishable-key value, OAuth JSON or user identifier recorded.
