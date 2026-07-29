@@ -3,7 +3,7 @@
 - 작성일: 2026-07-29
 - 기준 commit: `0325c10`
 - Work Package: WP02-01 — two-adult completion APK/source provenance
-- 상태: IN PROGRESS
+- 상태: IMPLEMENTED — LOCAL + REMOTE AUTOMATED PASS / LIVE E2E PENDING
 
 ## Problem
 
@@ -52,3 +52,12 @@
 
 - provenance PASS는 live 관찰의 출처를 강화할 뿐 실제 관찰을 대신하지 않는다.
 - 성인 2인·Android 2기기 preflight와 exact 27개 check가 모두 실제로 `pass`인 completion JSON 전에는 4단계 live gate가 pending이다.
+
+## Current Result
+
+- implementation commit `3df6ead`에서 APK application metadata에 source commit/state를 넣고 completion validator가 exact commit + `clean`을 요구하도록 보강했다.
+- dirty dev/prod local build는 build gate를 통과하면서 `source_state=dirty`를 명시했고 completion verifier unit contract에서 거부됐다.
+- commit 후 ignored 실제 dev public config로 다시 만든 APK는 embedded `3df6eadc5339cd2b68509efc51cfe340333802dc` / `clean`, SHA-256 `d7933ff9ee647c04552631107c98653665caf97f6443f4c359c3478fd84feec3`으로 검증됐다.
+- repository self-test 41개, Flutter test 182개, analyzer issue 0, secret finding 0와 generated drift 0을 확인했다. 1개 opt-in live test는 의도대로 skip했다.
+- GitHub Actions run `30419331951`의 foundation job 5개와 final gate가 모두 통과했다.
+- actual Android target/account/session 관찰은 실행하지 않았으므로 live 결과는 27개 모두 `NOT RUN`이다.

@@ -13,7 +13,7 @@
 | FR-AUTH-003 / FR-AUTH-004 | PASS — A/B Google login, Supabase session, pre-session protected route 차단과 cold-start invite continuation을 개별 필수 check로 고정했다. |
 | FR-AUTH-005 / D-049 | PASS — logout purge, account chooser 재진입과 account-switch household isolation을 필수 check로 고정했다. |
 | WP02-04 / D-055 | PASS — one-time invite, preview/accept, replay와 concurrent accept idempotency를 필수 check로 고정했다. |
-| Build identity | HISTORICAL PARTIAL — `4792dfd`에서는 40-hex commit 존재와 APK SHA-256을 각각 확인했지만 APK 내부 source commit은 확인하지 않았다. 후속 `WP02_01_LIVE_EVIDENCE_PROVENANCE_WORKPLAN.md`가 이 간극을 fail-closed로 보강한다. |
+| Build identity | HISTORICAL PARTIAL — `4792dfd`에서는 40-hex commit 존재와 APK SHA-256을 각각 확인했지만 APK 내부 source commit은 확인하지 않았다. 후속 `WP02_01_LIVE_EVIDENCE_PROVENANCE_EVIDENCE.md`가 이 간극을 fail-closed로 보강했다. |
 | Security / Privacy | PASS — exact schema에는 이메일, token, invite URL/token, UUID, ADB serial과 free-form note를 저장할 위치가 없다. |
 
 ## Implemented Artifacts
