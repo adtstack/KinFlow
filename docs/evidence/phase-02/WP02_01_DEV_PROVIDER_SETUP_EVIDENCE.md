@@ -1,7 +1,7 @@
 # Phase 02 WP02-01 Dev Provider Setup Evidence
 
 - Work Package: WP02-01 — real dev Google Android / Supabase Auth provider
-- 기준 commit: base `c43e78f`
+- 기준 commit: base `c43e78f`; implementation `e6a2a6d`
 - 검증일: 2026-07-29
 - 환경: Google Cloud project `kinflow-503900`; Supabase project ref `ghsniwhntbjofvslfxeq`; Android API 36 `sdk_gphone64_arm64`
 - 결과: **EXTERNAL PROVIDER CONFIG + PUBLIC SETTINGS + ACTUAL-CONFIG APK PASS / REAL GOOGLE LOGIN PENDING**
@@ -70,11 +70,16 @@ Google Project Checkup의 `Use secure flows` warning은 남아 있다. 앱은 na
 | actual-config Android build gate | PASS |
 | APK signer → local/live association | PASS |
 | Android OS verified App Link | PASS |
+| GitHub Actions CI | PASS, run `30413630600`; all required jobs and final gate passed |
 | real Google account chooser and token exchange | NOT RUN |
 | Supabase session and protected route | NOT RUN |
 | logout/account switch purge on device | NOT RUN |
 
 Detailed command evidence is in `logs/wp02-01-dev-provider-setup.log`. Public settings validation never prints the publishable key or response body and caps the response at 64 KiB.
+
+Remote run: <https://github.com/adtstack/KinFlow/actions/runs/30413630600>
+
+Remote durations were dependency 1m09s, quality 3m47s, backend 2m53s, dev Android 4m52s, prod Android 4m50s and final gate 2s.
 
 ## Security / Privacy / External State
 
