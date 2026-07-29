@@ -129,7 +129,7 @@ prod는 package만 `me.newlines.kinflow`로 바꾼다. `auth.example.invalid`은
 
 ## 7. Two-Adult / Two-Device Scenario
 
-실제 token·이메일·초대 원문은 evidence에 복사하지 않고 opaque Supabase UUID와 stable result code만 기록한다.
+실제 token·이메일·초대 원문과 Supabase UUID는 evidence에 복사하지 않고 stable result code만 기록한다.
 
 로그인 전에 서로 다른 두 ADB target의 serial을 로컬 shell에서만 확인하고 아래 read-only preflight를 통과시킨다. serial은 evidence나 공유 log에 복사하지 않는다. 이 검사는 앱 설치나 기기 상태를 변경하지 않으며 API 24+, dev package 설치, 현재 dev signer와 OS verified App Link를 두 기기에서 모두 확인한다.
 
@@ -157,11 +157,32 @@ node scripts/ci/android-two-device-preflight.mjs \
 
 ## 8. Evidence Checklist
 
-- app version/commit, Android OS/device model, build flavor/package
-- Google/Supabase environment 이름과 OAuth client의 식별 가능한 끝 6자만 기록
-- 설치 artifact SHA-256과 signing certificate SHA-1/SHA-256
+실행 전 tracked template를 ignored report directory로 복사한다. 이 파일에는 실제 계정·기기 식별자를 추가하지 않는다.
+
+```bash
+mkdir -p ci-reports/manual
+cp \
+  docs/evidence/phase-02/templates/GOOGLE_ANDROID_TWO_ADULT_E2E_TEMPLATE.json \
+  ci-reports/manual/google-android-two-adult-e2e.json
+```
+
+실제 실행에 사용한 commit 40-hex, APK SHA-256, UTC timestamp와 기기 A/B의 API level을 채운다. 각 단계는 `pass`, `fail`, `not_run` 중 하나로만 기록한다. 이메일, token, invite URL, ADB serial, household/member UUID 또는 free-form note key를 추가하면 계약 검증이 실패한다.
+
+모든 시나리오를 직접 관찰한 뒤 completion gate를 실행한다. 하나라도 `fail` 또는 `not_run`이면 성공하지 않는다.
+
+```bash
+node scripts/ci/android-two-adult-e2e-evidence.mjs \
+  ci-reports/manual/google-android-two-adult-e2e.json \
+  apps/kinflow_app/build/app/outputs/flutter-apk/app-dev-debug.apk
+```
+
+validator PASS는 checklist completeness와 비식별 schema만 증명한다. 실제 관찰을 대체하지 않으므로 실행자와 검증자는 아래 항목을 함께 대조한다.
+
+- commit, 설치 APK SHA-256, Android API level, build flavor/package
+- Google/Supabase environment 이름만 기록하고 OAuth client ID는 별도 provider setup evidence를 참조
+- signing certificate는 기존 provider/App Link evidence를 참조하고 raw 기기 출력은 복사하지 않음
 - Google 로그인 성공/취소/오프라인/잘못된 SHA 시 stable UI 결과
-- two-adult household/member UUID는 필요하면 앞 8자만 기록
+- same household / distinct adult members는 stable PASS만 기록하고 UUID 또는 prefix는 제외
 - cold-start invite link, accept idempotency, logout/account switch purge 결과
 - `adb pm get-app-links`의 verified 상태
 - two-device preflight의 redacted `Device A` / `Device B` PASS와 API level; raw serial은 제외

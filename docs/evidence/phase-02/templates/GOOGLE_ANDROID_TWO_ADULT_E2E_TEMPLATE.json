@@ -1,0 +1,49 @@
+{
+  "contractVersion": "1",
+  "environment": "dev",
+  "applicationId": "me.newlines.kinflow.dev",
+  "commit": "replace_with_40_hex_commit",
+  "artifactSha256": "replace_with_64_hex_apk_sha256",
+  "recordedAtUtc": "replace_with_utc_timestamp",
+  "devices": {
+    "A": {
+      "alias": "Device A",
+      "apiLevel": 24,
+      "preflight": "not_run"
+    },
+    "B": {
+      "alias": "Device B",
+      "apiLevel": 24,
+      "preflight": "not_run"
+    }
+  },
+  "checks": {
+    "device_a_google_login": "not_run",
+    "device_a_supabase_session": "not_run",
+    "pre_session_protected_route_blocked": "not_run",
+    "household_created_once": "not_run",
+    "device_a_empty_today_opened": "not_run",
+    "invite_issued_once": "not_run",
+    "device_b_invite_link_dispatched_to_app": "not_run",
+    "device_b_cold_start_invite_captured": "not_run",
+    "device_b_google_login": "not_run",
+    "device_b_supabase_session": "not_run",
+    "device_b_invite_restored_after_login": "not_run",
+    "device_b_invite_previewed": "not_run",
+    "device_b_invite_accepted": "not_run",
+    "same_household_visible_on_both_devices": "not_run",
+    "distinct_adult_members_confirmed": "not_run",
+    "device_b_cold_session_restored": "not_run",
+    "device_b_logout_purged": "not_run",
+    "device_b_account_chooser_reopened": "not_run",
+    "device_b_account_switch_isolated": "not_run",
+    "google_cancel_stable": "not_run",
+    "google_offline_stable": "not_run",
+    "wrong_signing_sha_fail_closed": "not_run",
+    "expired_session_fail_closed": "not_run",
+    "revoked_session_fail_closed": "not_run",
+    "offline_launch_stable": "not_run",
+    "invite_replay_idempotent": "not_run",
+    "concurrent_invite_accept_idempotent": "not_run"
+  }
+}
