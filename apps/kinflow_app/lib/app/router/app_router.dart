@@ -8,6 +8,7 @@ import 'package:kinflow_app/features/auth/presentation/providers/auth_providers.
 import 'package:kinflow_app/features/auth/presentation/screens/auth_loading_screen.dart';
 import 'package:kinflow_app/features/auth/presentation/screens/sign_in_screen.dart';
 import 'package:kinflow_app/features/household/presentation/screens/household_onboarding_screen.dart';
+import 'package:kinflow_app/features/household/presentation/screens/household_members_screen.dart';
 import 'package:kinflow_app/features/household/presentation/screens/household_invite_creation_screen.dart';
 import 'package:kinflow_app/features/household/presentation/screens/household_invite_screen.dart';
 import 'package:kinflow_app/features/household/presentation/screens/invite_link_capture_screen.dart';
@@ -20,6 +21,7 @@ abstract final class AppRoutes {
   static const String invite = '/invite';
   static const String inviteCapture = '/invite/:token';
   static const String inviteCreate = '/family/invite';
+  static const String householdMembers = '/family/members';
   static const String signIn = '/sign-in';
   static const String today = '/today';
 }
@@ -100,6 +102,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           return const NoTransitionPage<void>(
             child: HouseholdInviteCreationScreen(),
           );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.householdMembers,
+        pageBuilder: (BuildContext context, GoRouterState state) {
+          return const NoTransitionPage<void>(child: HouseholdMembersScreen());
         },
       ),
       GoRoute(

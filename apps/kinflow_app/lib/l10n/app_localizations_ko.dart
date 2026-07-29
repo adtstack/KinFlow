@@ -244,6 +244,129 @@ class AppLocalizationsKo extends AppLocalizations {
   String get inviteGenericError => '초대 요청을 완료하지 못했습니다. 안전하게 다시 시도할 수 있습니다.';
 
   @override
+  String get todayMembersAction => '가구 구성원 관리';
+
+  @override
+  String get membersTitle => '가구 구성원';
+
+  @override
+  String get membersLoadingLabel => '가구 구성원을 불러오는 중입니다';
+
+  @override
+  String membersHeading(String householdName) {
+    return '$householdName 구성원';
+  }
+
+  @override
+  String get membersBody => '활성 성인 구성원과 역할을 확인하고 관리합니다. 모든 변경은 온라인에서 처리됩니다.';
+
+  @override
+  String get membersYouLabel => '나';
+
+  @override
+  String get membersRoleOwner => 'Owner';
+
+  @override
+  String get membersRoleAdmin => 'Admin';
+
+  @override
+  String get membersRoleMember => 'Member';
+
+  @override
+  String membersMenuTooltip(String memberName) {
+    return '$memberName 구성원 작업';
+  }
+
+  @override
+  String get memberPromoteAdminAction => 'Admin으로 변경';
+
+  @override
+  String get memberDemoteMemberAction => 'Member로 변경';
+
+  @override
+  String get memberTransferOwnerAction => 'Owner 이전';
+
+  @override
+  String get memberRemoveAction => '가구에서 제거';
+
+  @override
+  String get householdLeaveAction => '이 가구 나가기';
+
+  @override
+  String get memberRoleChangeTitle => '역할을 변경할까요?';
+
+  @override
+  String memberRoleChangeBody(String memberName, String role) {
+    return '$memberName님의 역할을 $role(으)로 변경합니다. 계속하면 Google에서 본인 확인을 요청합니다.';
+  }
+
+  @override
+  String get memberRemoveTitle => '구성원을 제거할까요?';
+
+  @override
+  String memberRemoveBody(String memberName) {
+    return '$memberName님은 즉시 이 가구에 접근할 수 없고, 이 구성원이 만든 사용 전 초대도 회수됩니다.';
+  }
+
+  @override
+  String get ownerTransferTitle => 'Owner를 이전할까요?';
+
+  @override
+  String ownerTransferBody(String memberName) {
+    return '$memberName님이 새 Owner가 되고 나는 Admin이 됩니다. 계속하면 Google에서 본인 확인을 요청합니다.';
+  }
+
+  @override
+  String get householdLeaveTitle => '이 가구에서 나갈까요?';
+
+  @override
+  String get householdLeaveBody =>
+      '내 구성원 자격과 이 가구 접근이 즉시 종료됩니다. 공동 기록은 가구에 남습니다.';
+
+  @override
+  String get ownerMustTransferBody =>
+      'Owner는 가구에서 나가기 전에 다른 성인에게 Owner를 이전해야 합니다.';
+
+  @override
+  String get memberActionInProgress => '변경을 안전하게 처리하는 중입니다';
+
+  @override
+  String get memberCancelAction => '취소';
+
+  @override
+  String get memberConfirmAction => '계속';
+
+  @override
+  String get membersLoadError => '가구 구성원을 불러오지 못했습니다. 연결 상태를 확인하고 다시 시도해 주세요.';
+
+  @override
+  String get membersPermissionError => '이 구성원 작업을 수행할 권한이 없습니다.';
+
+  @override
+  String get membersVersionConflictError =>
+      '구성원 정보가 다른 곳에서 변경되었습니다. 새로 불러온 뒤 다시 시도해 주세요.';
+
+  @override
+  String get membersOwnerTransferRequiredError =>
+      '마지막 Owner는 제거하거나 나갈 수 없습니다. 먼저 Owner를 이전해 주세요.';
+
+  @override
+  String get membersRecentAuthError =>
+      '이 변경에는 최근 Google 본인 확인이 필요합니다. 다시 시도해 주세요.';
+
+  @override
+  String get membersRecentAuthCancelled =>
+      'Google 본인 확인을 취소했습니다. 가구 정보는 변경되지 않았습니다.';
+
+  @override
+  String get membersAccountChangedError =>
+      '다른 Google 계정이 선택되어 변경을 중단했습니다. 현재 계정을 확인해 주세요.';
+
+  @override
+  String get membersGenericError =>
+      '가구 구성원 변경을 완료하지 못했습니다. 같은 요청을 안전하게 다시 시도할 수 있습니다.';
+
+  @override
   String get todayTitle => '오늘';
 
   @override

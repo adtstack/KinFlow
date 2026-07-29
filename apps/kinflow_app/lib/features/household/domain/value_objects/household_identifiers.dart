@@ -63,3 +63,24 @@ final class HouseholdCreationId {
   @override
   int get hashCode => value.hashCode;
 }
+
+final class HouseholdCommandId {
+  const HouseholdCommandId._(this.value);
+
+  final String value;
+
+  static HouseholdCommandId? tryParse(String value) {
+    final String normalized = value.trim().toLowerCase();
+    return _uuidPattern.hasMatch(normalized)
+        ? HouseholdCommandId._(normalized)
+        : null;
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is HouseholdCommandId && other.value == value;
+  }
+
+  @override
+  int get hashCode => value.hashCode;
+}

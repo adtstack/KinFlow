@@ -537,6 +537,216 @@ abstract class AppLocalizations {
   /// **'We couldn\'t complete the invitation request. It is safe to try again.'**
   String get inviteGenericError;
 
+  /// Opens household member management
+  ///
+  /// In en, this message translates to:
+  /// **'Manage household members'**
+  String get todayMembersAction;
+
+  /// Household member screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Household members'**
+  String get membersTitle;
+
+  /// Accessible roster loading label
+  ///
+  /// In en, this message translates to:
+  /// **'Loading household members'**
+  String get membersLoadingLabel;
+
+  /// Roster heading
+  ///
+  /// In en, this message translates to:
+  /// **'Members of {householdName}'**
+  String membersHeading(String householdName);
+
+  /// Roster screen explanation
+  ///
+  /// In en, this message translates to:
+  /// **'Review and manage active adult members and roles. Every change is completed online.'**
+  String get membersBody;
+
+  /// Badge for the current member
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get membersYouLabel;
+
+  /// Owner role label
+  ///
+  /// In en, this message translates to:
+  /// **'Owner'**
+  String get membersRoleOwner;
+
+  /// Admin role label
+  ///
+  /// In en, this message translates to:
+  /// **'Admin'**
+  String get membersRoleAdmin;
+
+  /// Member role label
+  ///
+  /// In en, this message translates to:
+  /// **'Member'**
+  String get membersRoleMember;
+
+  /// Accessible member action menu label
+  ///
+  /// In en, this message translates to:
+  /// **'Actions for {memberName}'**
+  String membersMenuTooltip(String memberName);
+
+  /// Promote a Member to Admin
+  ///
+  /// In en, this message translates to:
+  /// **'Change to Admin'**
+  String get memberPromoteAdminAction;
+
+  /// Demote an Admin to Member
+  ///
+  /// In en, this message translates to:
+  /// **'Change to Member'**
+  String get memberDemoteMemberAction;
+
+  /// Transfer household ownership
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer Owner'**
+  String get memberTransferOwnerAction;
+
+  /// Remove a household member
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from household'**
+  String get memberRemoveAction;
+
+  /// Leave the current household
+  ///
+  /// In en, this message translates to:
+  /// **'Leave this household'**
+  String get householdLeaveAction;
+
+  /// Role change confirmation title
+  ///
+  /// In en, this message translates to:
+  /// **'Change this role?'**
+  String get memberRoleChangeTitle;
+
+  /// Role change confirmation body
+  ///
+  /// In en, this message translates to:
+  /// **'Change {memberName} to {role}. Google will ask you to verify your identity before continuing.'**
+  String memberRoleChangeBody(String memberName, String role);
+
+  /// Member removal confirmation title
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this member?'**
+  String get memberRemoveTitle;
+
+  /// Member removal confirmation body
+  ///
+  /// In en, this message translates to:
+  /// **'{memberName} will immediately lose access to this household. Their unused invitations will also be revoked.'**
+  String memberRemoveBody(String memberName);
+
+  /// Owner transfer confirmation title
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer ownership?'**
+  String get ownerTransferTitle;
+
+  /// Owner transfer confirmation body
+  ///
+  /// In en, this message translates to:
+  /// **'{memberName} will become the new Owner and you will become an Admin. Google will ask you to verify your identity before continuing.'**
+  String ownerTransferBody(String memberName);
+
+  /// Household leave confirmation title
+  ///
+  /// In en, this message translates to:
+  /// **'Leave this household?'**
+  String get householdLeaveTitle;
+
+  /// Household leave confirmation body
+  ///
+  /// In en, this message translates to:
+  /// **'Your membership and access to this household will end immediately. Shared records will remain with the household.'**
+  String get householdLeaveBody;
+
+  /// Explains why an Owner cannot leave
+  ///
+  /// In en, this message translates to:
+  /// **'The Owner must transfer ownership to another adult before leaving the household.'**
+  String get ownerMustTransferBody;
+
+  /// Member mutation progress label
+  ///
+  /// In en, this message translates to:
+  /// **'Completing this change securely'**
+  String get memberActionInProgress;
+
+  /// Cancel a member confirmation
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get memberCancelAction;
+
+  /// Confirm a member mutation
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get memberConfirmAction;
+
+  /// Roster load error
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t load household members. Check your connection and try again.'**
+  String get membersLoadError;
+
+  /// Member action permission error
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t have permission to perform this member action.'**
+  String get membersPermissionError;
+
+  /// Stale member version error
+  ///
+  /// In en, this message translates to:
+  /// **'Member information changed elsewhere. Reload it and try again.'**
+  String get membersVersionConflictError;
+
+  /// Last Owner invariant error
+  ///
+  /// In en, this message translates to:
+  /// **'The last Owner cannot be removed or leave. Transfer ownership first.'**
+  String get membersOwnerTransferRequiredError;
+
+  /// Recent authentication required error
+  ///
+  /// In en, this message translates to:
+  /// **'This change needs a recent Google identity check. Try again.'**
+  String get membersRecentAuthError;
+
+  /// Recent authentication cancellation
+  ///
+  /// In en, this message translates to:
+  /// **'You cancelled the Google identity check. Household information was not changed.'**
+  String get membersRecentAuthCancelled;
+
+  /// Recent authentication account mismatch
+  ///
+  /// In en, this message translates to:
+  /// **'A different Google account was selected, so the change was stopped. Check the current account.'**
+  String get membersAccountChangedError;
+
+  /// Generic household member error
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t complete the member change. It is safe to retry the same request.'**
+  String get membersGenericError;
+
   /// Title for the Today destination
   ///
   /// In en, this message translates to:

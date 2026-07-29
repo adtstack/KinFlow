@@ -10,6 +10,7 @@ import 'package:kinflow_app/app/providers/app_providers.dart';
 import 'package:kinflow_app/app/providers/auth_dependencies.dart';
 import 'package:kinflow_app/app/providers/foundation_dependencies.dart';
 import 'package:kinflow_app/features/auth/presentation/providers/auth_providers.dart';
+import 'package:kinflow_app/features/auth/presentation/providers/recent_authentication_provider.dart';
 import 'package:kinflow_app/features/foundation/presentation/providers/foundation_providers.dart';
 import 'package:kinflow_app/features/household/presentation/providers/household_providers.dart';
 import 'package:kinflow_app/infrastructure/observability/app_logging_composition.dart';
@@ -98,11 +99,20 @@ void _runKinFlowApp({
             authSignInLauncherProvider.overrideWithValue(
               dependencies.signInLauncher,
             ),
+            recentAuthenticationServiceProvider.overrideWithValue(
+              dependencies.recentAuthenticationService,
+            ),
             sensitiveLocalStatePurgerProvider.overrideWithValue(
               dependencies.localStatePurger,
             ),
             householdRepositoryProvider.overrideWithValue(
               dependencies.householdRepository,
+            ),
+            householdMemberRepositoryProvider.overrideWithValue(
+              dependencies.householdMemberRepository,
+            ),
+            householdCommandIdGeneratorProvider.overrideWithValue(
+              dependencies.householdCommandIdGenerator,
             ),
             householdCreationIdGeneratorProvider.overrideWithValue(
               dependencies.householdCreationIdGenerator,

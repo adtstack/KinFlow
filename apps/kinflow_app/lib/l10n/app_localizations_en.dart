@@ -258,6 +258,132 @@ class AppLocalizationsEn extends AppLocalizations {
       'We couldn\'t complete the invitation request. It is safe to try again.';
 
   @override
+  String get todayMembersAction => 'Manage household members';
+
+  @override
+  String get membersTitle => 'Household members';
+
+  @override
+  String get membersLoadingLabel => 'Loading household members';
+
+  @override
+  String membersHeading(String householdName) {
+    return 'Members of $householdName';
+  }
+
+  @override
+  String get membersBody =>
+      'Review and manage active adult members and roles. Every change is completed online.';
+
+  @override
+  String get membersYouLabel => 'You';
+
+  @override
+  String get membersRoleOwner => 'Owner';
+
+  @override
+  String get membersRoleAdmin => 'Admin';
+
+  @override
+  String get membersRoleMember => 'Member';
+
+  @override
+  String membersMenuTooltip(String memberName) {
+    return 'Actions for $memberName';
+  }
+
+  @override
+  String get memberPromoteAdminAction => 'Change to Admin';
+
+  @override
+  String get memberDemoteMemberAction => 'Change to Member';
+
+  @override
+  String get memberTransferOwnerAction => 'Transfer Owner';
+
+  @override
+  String get memberRemoveAction => 'Remove from household';
+
+  @override
+  String get householdLeaveAction => 'Leave this household';
+
+  @override
+  String get memberRoleChangeTitle => 'Change this role?';
+
+  @override
+  String memberRoleChangeBody(String memberName, String role) {
+    return 'Change $memberName to $role. Google will ask you to verify your identity before continuing.';
+  }
+
+  @override
+  String get memberRemoveTitle => 'Remove this member?';
+
+  @override
+  String memberRemoveBody(String memberName) {
+    return '$memberName will immediately lose access to this household. Their unused invitations will also be revoked.';
+  }
+
+  @override
+  String get ownerTransferTitle => 'Transfer ownership?';
+
+  @override
+  String ownerTransferBody(String memberName) {
+    return '$memberName will become the new Owner and you will become an Admin. Google will ask you to verify your identity before continuing.';
+  }
+
+  @override
+  String get householdLeaveTitle => 'Leave this household?';
+
+  @override
+  String get householdLeaveBody =>
+      'Your membership and access to this household will end immediately. Shared records will remain with the household.';
+
+  @override
+  String get ownerMustTransferBody =>
+      'The Owner must transfer ownership to another adult before leaving the household.';
+
+  @override
+  String get memberActionInProgress => 'Completing this change securely';
+
+  @override
+  String get memberCancelAction => 'Cancel';
+
+  @override
+  String get memberConfirmAction => 'Continue';
+
+  @override
+  String get membersLoadError =>
+      'We couldn\'t load household members. Check your connection and try again.';
+
+  @override
+  String get membersPermissionError =>
+      'You don\'t have permission to perform this member action.';
+
+  @override
+  String get membersVersionConflictError =>
+      'Member information changed elsewhere. Reload it and try again.';
+
+  @override
+  String get membersOwnerTransferRequiredError =>
+      'The last Owner cannot be removed or leave. Transfer ownership first.';
+
+  @override
+  String get membersRecentAuthError =>
+      'This change needs a recent Google identity check. Try again.';
+
+  @override
+  String get membersRecentAuthCancelled =>
+      'You cancelled the Google identity check. Household information was not changed.';
+
+  @override
+  String get membersAccountChangedError =>
+      'A different Google account was selected, so the change was stopped. Check the current account.';
+
+  @override
+  String get membersGenericError =>
+      'We couldn\'t complete the member change. It is safe to retry the same request.';
+
+  @override
   String get todayTitle => 'Today';
 
   @override
@@ -601,6 +727,143 @@ class AppLocalizationsEnXa extends AppLocalizationsEn {
   @override
   String get inviteGenericError =>
       '[!! Ŵē çôûłđ ñôţ complete the secure invitation request. The same request remains safe to try again. !!]';
+
+  @override
+  String get todayMembersAction =>
+      '[!! Måñåĝē åłł šĥåŕēđ ĥôûšēĥôłđ mēmbēŕš !!]';
+
+  @override
+  String get membersTitle => '[!! Šĥåŕēđ ĥôûšēĥôłđ mēmbēŕš åñđ ŕôłēš !!]';
+
+  @override
+  String get membersLoadingLabel =>
+      '[!! Łôåđîñĝ åłł secure household members now !!]';
+
+  @override
+  String membersHeading(String householdName) {
+    return '[!! Complete members of the shared household $householdName !!]';
+  }
+
+  @override
+  String get membersBody =>
+      '[!! Ŕēvîēŵ åñđ måñåĝē every active adult member and role. Every protected change is completed securely online. !!]';
+
+  @override
+  String get membersYouLabel => '[!! Ŷôûŕ account !!]';
+
+  @override
+  String get membersRoleOwner => '[!! Ĥôûšēĥôłđ Ôŵñēŕ !!]';
+
+  @override
+  String get membersRoleAdmin => '[!! Ĥôûšēĥôłđ Åđmîñ !!]';
+
+  @override
+  String get membersRoleMember => '[!! Ĥôûšēĥôłđ Mēmbēŕ !!]';
+
+  @override
+  String membersMenuTooltip(String memberName) {
+    return '[!! Secure actions available for member $memberName !!]';
+  }
+
+  @override
+  String get memberPromoteAdminAction =>
+      '[!! Çĥåñĝē ţĥîš member securely ţô Åđmîñ !!]';
+
+  @override
+  String get memberDemoteMemberAction =>
+      '[!! Çĥåñĝē ţĥîš administrator ţô Mēmbēŕ !!]';
+
+  @override
+  String get memberTransferOwnerAction =>
+      '[!! Ţŕåñšƒēŕ household Ôŵñēŕ responsibility !!]';
+
+  @override
+  String get memberRemoveAction =>
+      '[!! Ŕēmôvē this adult from the complete household !!]';
+
+  @override
+  String get householdLeaveAction =>
+      '[!! Łēåvē ţĥîš complete shared household !!]';
+
+  @override
+  String get memberRoleChangeTitle =>
+      '[!! Çĥåñĝē ţĥîš protected household role now? !!]';
+
+  @override
+  String memberRoleChangeBody(String memberName, String role) {
+    return '[!! Change $memberName to $role. Ĝôôĝłē will ask you to verify your identity securely before the change continues. !!]';
+  }
+
+  @override
+  String get memberRemoveTitle => '[!! Ŕēmôvē ţĥîš household member now? !!]';
+
+  @override
+  String memberRemoveBody(String memberName) {
+    return '[!! $memberName will immediately lose access to this complete household, and every unused invitation they created will be revoked securely. !!]';
+  }
+
+  @override
+  String get ownerTransferTitle =>
+      '[!! Ţŕåñšƒēŕ complete household ownership now? !!]';
+
+  @override
+  String ownerTransferBody(String memberName) {
+    return '[!! $memberName will become the new Ôŵñēŕ and you will become an Åđmîñ. Ĝôôĝłē will ask you to verify your identity securely. !!]';
+  }
+
+  @override
+  String get householdLeaveTitle =>
+      '[!! Łēåvē ţĥîš complete shared household now? !!]';
+
+  @override
+  String get householdLeaveBody =>
+      '[!! Your membership and access end immediately. Every shared historical record remains safely with the household. !!]';
+
+  @override
+  String get ownerMustTransferBody =>
+      '[!! Ţĥē Ôŵñēŕ must securely transfer ownership to another adult before leaving this shared household. !!]';
+
+  @override
+  String get memberActionInProgress =>
+      '[!! Çômpłēţîñĝ ţĥîš protected household change securely now !!]';
+
+  @override
+  String get memberCancelAction => '[!! Çåñçēł without changing anything !!]';
+
+  @override
+  String get memberConfirmAction => '[!! Çôñţîñûē securely !!]';
+
+  @override
+  String get membersLoadError =>
+      '[!! We could not load every household member safely. Check the network connection and try again. !!]';
+
+  @override
+  String get membersPermissionError =>
+      '[!! You do not have permission to perform this protected household member action. !!]';
+
+  @override
+  String get membersVersionConflictError =>
+      '[!! Member information changed somewhere else. Reload the complete roster and try again. !!]';
+
+  @override
+  String get membersOwnerTransferRequiredError =>
+      '[!! The final Ôŵñēŕ cannot be removed or leave. Transfer ownership to another adult first. !!]';
+
+  @override
+  String get membersRecentAuthError =>
+      '[!! This protected change needs a recent Ĝôôĝłē identity check. Please try again securely. !!]';
+
+  @override
+  String get membersRecentAuthCancelled =>
+      '[!! You cancelled the Ĝôôĝłē identity check. No household information was changed anywhere. !!]';
+
+  @override
+  String get membersAccountChangedError =>
+      '[!! A different Ĝôôĝłē account was selected, so the protected change stopped. Check the current account carefully. !!]';
+
+  @override
+  String get membersGenericError =>
+      '[!! We could not complete this member change. The same protected request remains safe to retry. !!]';
 
   @override
   String get todayTitle => '[!! Ţôđåŷ schedule !!]';

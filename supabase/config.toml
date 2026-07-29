@@ -397,6 +397,9 @@ verify_jwt = false
 [functions.revoke-invite]
 verify_jwt = false
 
+[functions.manage-household-members]
+verify_jwt = false
+
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 

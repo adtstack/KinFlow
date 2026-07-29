@@ -22,6 +22,12 @@ class TodayEmptyScreen extends ConsumerWidget {
       title: localizations.todayTitle,
       actions: <Widget>[
         IconButton(
+          key: const Key('today.members'),
+          onPressed: () => context.go(AppRoutes.householdMembers),
+          tooltip: localizations.todayMembersAction,
+          icon: const Icon(Icons.group_outlined),
+        ),
+        IconButton(
           key: const Key('auth.logout'),
           onPressed: () =>
               unawaited(ref.read(authLifecycleProvider.notifier).logout()),

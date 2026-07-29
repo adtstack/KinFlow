@@ -7,16 +7,33 @@ import 'package:kinflow_app/features/household/application/invite_creation_contr
 import 'package:kinflow_app/features/household/application/invite_creation_state.dart';
 import 'package:kinflow_app/features/household/application/invite_flow_controller.dart';
 import 'package:kinflow_app/features/household/application/invite_flow_state.dart';
+import 'package:kinflow_app/features/household/application/household_members_controller.dart';
+import 'package:kinflow_app/features/household/application/household_members_state.dart';
 import 'package:kinflow_app/features/household/application/ports/pending_invite_store.dart';
 import 'package:kinflow_app/features/household/domain/repositories/invite_repository.dart';
+import 'package:kinflow_app/features/household/domain/repositories/household_member_repository.dart';
 import 'package:kinflow_app/features/household/domain/repositories/household_repository.dart';
+import 'package:kinflow_app/features/household/domain/entities/household_member.dart';
+import 'package:kinflow_app/features/household/domain/services/household_command_id_generator.dart';
 import 'package:kinflow_app/features/household/domain/services/household_creation_id_generator.dart';
 import 'package:kinflow_app/features/household/domain/services/invite_command_id_generator.dart';
 import 'package:kinflow_app/features/household/domain/value_objects/household_identifiers.dart';
+import 'package:kinflow_app/features/auth/presentation/providers/recent_authentication_provider.dart';
 
 final householdRepositoryProvider = Provider<HouseholdRepository>((ref) {
   throw StateError('HouseholdRepository override is required.');
 });
+
+final householdMemberRepositoryProvider = Provider<HouseholdMemberRepository>((
+  ref,
+) {
+  throw StateError('HouseholdMemberRepository override is required.');
+});
+
+final householdCommandIdGeneratorProvider =
+    Provider<HouseholdCommandIdGenerator>((ref) {
+      throw StateError('HouseholdCommandIdGenerator override is required.');
+    });
 
 final householdCreationIdGeneratorProvider =
     Provider<HouseholdCreationIdGenerator>((ref) {
@@ -36,6 +53,61 @@ final inviteCommandIdGeneratorProvider = Provider<InviteCommandIdGenerator>((
 final pendingInviteStoreProvider = Provider<PendingInviteStore>((ref) {
   throw StateError('PendingInviteStore override is required.');
 });
+
+final householdMembersControllerProvider =
+    Provider.autoDispose<HouseholdMembersController>((ref) {
+      final HouseholdMembersController controller = HouseholdMembersController(
+        repository: ref.watch(householdMemberRepositoryProvider),
+        idGenerator: ref.watch(householdCommandIdGeneratorProvider),
+        recentAuthenticationService: ref.watch(
+          recentAuthenticationServiceProvider,
+        ),
+      );
+      ref.onDispose(() => unawaited(controller.dispose()));
+      return controller;
+    });
+
+final householdMembersProvider =
+    NotifierProvider.autoDispose<
+      HouseholdMembersNotifier,
+      HouseholdMembersState
+    >(HouseholdMembersNotifier.new);
+
+final class HouseholdMembersNotifier extends Notifier<HouseholdMembersState> {
+  @override
+  HouseholdMembersState build() {
+    final HouseholdMembersController controller = ref.watch(
+      householdMembersControllerProvider,
+    );
+    final StreamSubscription<HouseholdMembersState> subscription = controller
+        .states
+        .listen((HouseholdMembersState nextState) => state = nextState);
+    ref.onDispose(() => unawaited(subscription.cancel()));
+    return controller.state;
+  }
+
+  Future<void> load(HouseholdId householdId) {
+    return ref.read(householdMembersControllerProvider).load(householdId);
+  }
+
+  Future<void> changeRole(HouseholdMember member, HouseholdMemberRole role) {
+    return ref
+        .read(householdMembersControllerProvider)
+        .changeRole(member, role);
+  }
+
+  Future<void> removeMember(HouseholdMember member) {
+    return ref.read(householdMembersControllerProvider).removeMember(member);
+  }
+
+  Future<void> leaveHousehold() {
+    return ref.read(householdMembersControllerProvider).leaveHousehold();
+  }
+
+  Future<void> transferOwner(HouseholdMember member) {
+    return ref.read(householdMembersControllerProvider).transferOwner(member);
+  }
+}
 
 final firstHouseholdOnboardingControllerProvider =
     Provider.autoDispose<FirstHouseholdOnboardingController>((ref) {
