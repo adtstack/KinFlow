@@ -150,10 +150,21 @@ node scripts/ci/android-two-device-preflight.mjs \
 4. 앱이 설치됐지만 실행 중이지 않은 기기 B에서 HTTPS invite link를 연다.
 5. B가 성인 계정 B로 Google 로그인한다.
 6. login 전 capture한 invite가 복원되어 preview 후 accept되는지 확인한다.
-7. A/B 양쪽에서 같은 household UUID와 서로 다른 adult member UUID가 보이는지 확인한다.
+7. A/B 양쪽이 Today에 진입한 것을 확인한 뒤, 아래 비공개 membership 대조 절차로 같은 household와 서로 다른 adult member인지 확인한다.
 8. B 앱을 force-stop/cold start하고 secure Supabase session으로 재진입하는지 확인한다.
 9. B logout 후 Google action이 account chooser를 다시 열고, A 또는 다른 계정으로 전환하는 동안 이전 household route/cache가 보이지 않는지 확인한다.
 10. expired/revoked session, offline launch, invite replay, concurrent accept를 다시 실행해 기존 automated contract와 실제 동작이 일치하는지 확인한다.
+
+### Private membership comparison for step 7
+
+앱 UI나 evidence에 UUID를 표시·복사하지 않는다. 공유되지 않는 operator browser에서 Supabase Dashboard의 Authentication Users와 Table Editor를 사용한다.
+
+1. test account A/B를 Authentication Users 화면에서 눈으로만 식별한다.
+2. `user_active_households`에서 두 auth user의 row가 같은 `household_id`와 서로 다른 `member_id`를 가리키는지 대조한다.
+3. `household_members`에서 두 member가 서로 다른 auth user에 연결되고 `removed_at`이 비어 있는지 확인한다.
+4. screenshot/export를 만들지 않고 화면을 닫은 뒤 completion JSON에는 `same_household_visible_on_both_devices`와 `distinct_adult_members_confirmed`의 stable result만 기록한다.
+
+이메일이나 UUID를 clipboard, SQL query history, shell command, screenshot, log 또는 evidence에 복사해야만 대조할 수 있다면 실행하지 말고 두 check를 `not_run`으로 유지한다.
 
 ## 8. Evidence Checklist
 
@@ -182,7 +193,7 @@ validator PASS는 checklist completeness와 비식별 schema만 증명한다. �
 - Google/Supabase environment 이름만 기록하고 OAuth client ID는 별도 provider setup evidence를 참조
 - signing certificate는 기존 provider/App Link evidence를 참조하고 raw 기기 출력은 복사하지 않음
 - Google 로그인 성공/취소/오프라인/잘못된 SHA 시 stable UI 결과
-- same household / distinct adult members는 stable PASS만 기록하고 UUID 또는 prefix는 제외
+- same household / distinct adult members는 비공개 Table Editor에서 대조하고 stable PASS만 기록하며 UUID 또는 prefix/suffix는 제외
 - cold-start invite link, accept idempotency, logout/account switch purge 결과
 - `adb pm get-app-links`의 verified 상태
 - two-device preflight의 redacted `Device A` / `Device B` PASS와 API level; raw serial은 제외

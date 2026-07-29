@@ -3,7 +3,7 @@
 - 작성일: 2026-07-29
 - 기준 commit: `f207207`
 - Work Package: WP02-01 — live 27-check traceability / offline auth UI boundary
-- 상태: IN PROGRESS
+- 상태: IMPLEMENTED — LOCAL + REMOTE AUTOMATED PASS / LIVE NETWORK CHECKS PENDING
 
 ## Requirements
 
@@ -44,3 +44,11 @@
 
 - synthetic failure는 deterministic UI/state contract만 증명한다.
 - 실제 Android 기기에서 Google chooser 중 network 차단과 offline cold launch를 관찰해야 두 live check가 최종 PASS다.
+
+## Current Result
+
+- implementation commit `914f19e`에서 temporary Google failure와 offline restore widget contract를 추가했다.
+- focused app-shell test 13개, 전체 Flutter test 182개와 repository self-test 39개가 통과했다. 1개 opt-in live test는 의도대로 skip했다.
+- analyzer issue 0, coverage 78.52%, secret finding 0, generated drift 0이다.
+- GitHub Actions run `30418063029`의 foundation job 5개와 final gate가 모두 통과했다.
+- 실제 network 차단, Google chooser와 Android cold launch는 실행하지 않았으므로 두 live check는 pending이다.
