@@ -11,6 +11,7 @@ import 'package:kinflow_app/app/providers/app_providers.dart';
 import 'package:kinflow_app/app/providers/auth_dependencies.dart';
 import 'package:kinflow_app/app/router/app_router.dart';
 import 'package:kinflow_app/features/auth/application/ports/sensitive_local_state_purger.dart';
+import 'package:kinflow_app/features/auth/domain/failures/auth_failure.dart';
 import 'package:kinflow_app/features/auth/domain/repositories/auth_session_repository.dart';
 import 'package:kinflow_app/features/auth/domain/services/auth_sign_in_launcher.dart';
 import 'package:kinflow_app/features/auth/presentation/providers/auth_providers.dart';
@@ -228,6 +229,78 @@ void main() {
     expect(launcher.requestCount, 1);
     expect(find.byKey(const Key('auth.signIn')), findsOneWidget);
     expect(find.byKey(const Key('today.screen')), findsNothing);
+  });
+
+  testWidgets('temporary Google failure stays generic and retryable', (
+    WidgetTester tester,
+  ) async {
+    final FakeAuthSignInLauncher launcher = FakeAuthSignInLauncher(
+      results: const <AuthSignInRequestResult>[
+        AuthSignInRequestFailed(
+          AuthFailure(AuthFailureKind.temporarilyUnavailable),
+        ),
+        AuthSignInRequestStarted(),
+      ],
+    );
+    await _pumpShell(
+      tester,
+      environment: AppEnvironment.prod,
+      initializer: _successfulInitialization,
+      authRepository: FakeAuthSessionRepository(),
+      signInLauncher: launcher,
+    );
+    await tester.pumpAndSettle();
+
+    final Finder buttonFinder = find.widgetWithText(
+      FilledButton,
+      'Continue with Google',
+    );
+    await tester.tap(buttonFinder);
+    await tester.pumpAndSettle();
+
+    expect(launcher.requestCount, 1);
+    expect(
+      find.text(
+        'Google sign-in is temporarily unavailable. Please try again later.',
+      ),
+      findsOneWidget,
+    );
+    expect(tester.widget<FilledButton>(buttonFinder).onPressed, isNotNull);
+    expect(find.byKey(const Key('today.screen')), findsNothing);
+
+    await tester.tap(buttonFinder);
+    await tester.pump();
+
+    expect(launcher.requestCount, 2);
+    expect(find.text('Connecting to Google'), findsWidgets);
+    expect(find.byKey(const Key('today.screen')), findsNothing);
+  });
+
+  testWidgets('offline session restore stays locked outside product routes', (
+    WidgetTester tester,
+  ) async {
+    await _pumpShell(
+      tester,
+      environment: AppEnvironment.prod,
+      initializer: _successfulInitialization,
+      authRepository: FakeAuthSessionRepository(
+        restoreResult: const AuthSessionFailed(
+          AuthFailure(AuthFailureKind.temporarilyUnavailable),
+        ),
+      ),
+      signInLauncher: FakeAuthSignInLauncher(),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('auth.signIn')), findsOneWidget);
+    expect(
+      find.text(
+        'Google sign-in is temporarily unavailable. Please try again later.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('today.screen')), findsNothing);
+    expect(find.byKey(const Key('household.onboarding')), findsNothing);
   });
 
   testWidgets('shows auth loading until session restore completes', (
