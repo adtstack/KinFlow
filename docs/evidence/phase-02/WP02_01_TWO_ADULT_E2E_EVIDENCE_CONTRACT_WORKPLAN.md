@@ -66,5 +66,6 @@
 
 - exact JSON template, completion validator, repository commit existence와 APK SHA-256 binding을 구현했다.
 - focused contract test 8개와 repository self-test 39개, workflow contract와 secret scan이 통과했다.
+- implementation commit `4792dfd`의 GitHub Actions run `30415718065`에서 모든 job과 final gate가 통과했다.
 - tracked template는 구조 검증만 통과하고 completion mode에서는 의도대로 실패한다.
 - 실제 계정/기기 시나리오는 실행하지 않았으므로 `4-3b-2`와 Phase 02 Exit Gate는 pending이다.

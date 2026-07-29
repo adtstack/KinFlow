@@ -1,0 +1,38 @@
+Phase 02 WP02-01 two-adult E2E evidence contract
+Date: 2026-07-29
+Implementation commit: 4792dfdaed1f4212fe5285e006795a07cc582299
+
+Contract
+- exact root/device/check allowlists: PASS
+- required E2E checks: 27
+- completion requires all checks and both preflights PASS
+- repository commit object binding: PASS
+- streaming APK SHA-256 binding: PASS
+- tracked template completion: REJECTED AS EXPECTED
+- free-form identity/secret-shaped fields: REJECTED
+- raw verifier error masking: PASS
+
+Local automated validation
+- focused evidence contract: PASS, 8/8
+- repository CI self-tests: PASS, 39/39
+- workflow and supply-chain contract: PASS
+- Node syntax check: PASS
+- git diff --check: PASS
+- high-confidence secret scan: PASS, finding 0
+
+Remote CI
+- run: 30415718065
+- dependency audit: PASS, 1m11s
+- backend: PASS, 2m46s
+- quality: PASS, 3m28s
+- Android prod: PASS, 4m30s
+- Android dev: PASS, 4m35s
+- final gate: PASS, 4s
+
+Deferred
+- live two-device preflight: NOT RUN
+- Google/Supabase A/B sessions: NOT RUN
+- household/invite/cold-start/account-switch E2E: NOT RUN
+- actual completion JSON: NOT CREATED
+
+Result: AUTOMATED TWO-ADULT E2E EVIDENCE CONTRACT PASS; LIVE E2E PENDING.
