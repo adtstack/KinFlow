@@ -131,6 +131,19 @@ prod는 package만 `me.newlines.kinflow`로 바꾼다. `auth.example.invalid`은
 
 실제 token·이메일·초대 원문은 evidence에 복사하지 않고 opaque Supabase UUID와 stable result code만 기록한다.
 
+로그인 전에 서로 다른 두 ADB target의 serial을 로컬 shell에서만 확인하고 아래 read-only preflight를 통과시킨다. serial은 evidence나 공유 log에 복사하지 않는다. 이 검사는 앱 설치나 기기 상태를 변경하지 않으며 API 24+, dev package 설치, 현재 dev signer와 OS verified App Link를 두 기기에서 모두 확인한다.
+
+```bash
+node scripts/ci/android-two-device-preflight.mjs \
+  <device-a-serial> \
+  <device-b-serial> \
+  me.newlines.kinflow.dev \
+  adtstack.github.io \
+  6A:C5:22:6C:F7:1B:20:1C:99:49:E8:1F:75:14:49:AD:94:53:64:A9:46:5C:ED:0C:69:19:00:51:C5:6E:C7:D5
+```
+
+`Device A`와 `Device B` 모두 package installed, signer matched, App Link verified를 출력해야 한다. 같은 serial, offline/unbooted, 미지원 API, package 미설치, signer 불일치 또는 host 미검증이면 다음 단계로 진행하지 않는다. 실패 시 ADB 원문을 증거로 붙이지 말고 기기에서 직접 원인을 수정한 뒤 다시 실행한다.
+
 1. 기기 A에서 성인 계정 A로 Google 로그인한다.
 2. 첫 가구를 만들고 빈 Today에 진입한다.
 3. A가 invite를 한 번 발급한다.
@@ -151,6 +164,7 @@ prod는 package만 `me.newlines.kinflow`로 바꾼다. `auth.example.invalid`은
 - two-adult household/member UUID는 필요하면 앞 8자만 기록
 - cold-start invite link, accept idempotency, logout/account switch purge 결과
 - `adb pm get-app-links`의 verified 상태
+- two-device preflight의 redacted `Device A` / `Device B` PASS와 API level; raw serial은 제외
 - raw ID/access/refresh token, 이메일, client secret, invite token은 기록하지 않음
 
 ## 9. Stop Conditions
