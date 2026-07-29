@@ -1,0 +1,48 @@
+Phase 02 WP02-01 dev Pages deployment validation
+Date: 2026-07-29 Asia/Seoul
+Base commit: 4ef94e7
+
+[PASS] Public repository creation
+- repository: adtstack/adtstack.github.io
+- visibility: public
+- Pages source: main /
+- HTTPS enforced: true
+
+[PASS] Pages deployment
+- deployment commit: 47b57e1694a671c6a7525274e89a695b15b4b376
+- build status: built
+- site: https://adtstack.github.io/
+- association: https://adtstack.github.io/.well-known/assetlinks.json
+
+[PASS] Local and live association gate
+Command: scripts/verify-android-app-links.sh dev apps/kinflow_app/build/app/outputs/flutter-apk/app-dev-debug.apk apps/public_site/public/.well-known/assetlinks.json adtstack.github.io
+Result: local contract, APK signer match and live HTTP contract passed
+
+[PASS] Google Digital Asset Links API
+- relation: delegate_permission/common.handle_all_urls
+- package: me.newlines.kinflow.dev
+- certificate SHA-256: expected current debug signer
+
+[PASS] Host-aware dev APK build
+Command: KINFLOW_PUBLIC_CONFIG=config/dev.local.json scripts/ci/android-build.sh dev
+- bytes: 216121761
+- SHA-256: 98ca27547f584125bd9c1d53cd73acbdb39071a9babb2a238196e7358aef623a
+- manifest host source: adtstack.github.io
+
+[PASS] Android API 36 OS verification
+- package: me.newlines.kinflow.dev
+- domain: adtstack.github.io
+- state: verified
+
+[PASS] HTTPS invite dispatch
+- URL path: /invite/evidence-token
+- launch state: COLD
+- activity: me.newlines.kinflow.dev/me.newlines.kinflow.MainActivity
+
+[NOT RUN] Google/Supabase provider token exchange
+Reason: Google API user data policy consent remains an operator-only action.
+
+[NOT RUN] Two-adult/two-device E2E
+Reason: provider setup and two real adult accounts/devices are still pending.
+
+Security: no email, token, cookie, client secret, publishable-key value, invite original or user identifier recorded.

@@ -4,14 +4,16 @@
 
 ## Dev Android App Link Asset
 
-`public/.well-known/assetlinks.json`은 현재 로컬 dev APK의 공개 association만 담는다.
+`public/.well-known/assetlinks.json`은 현재 로컬 dev APK의 공개 association만 담고 GitHub Pages에 배포한다.
 
 - package: `me.newlines.kinflow.dev`
 - signing source: 현재 운영자의 Android debug keystore
-- 용도: owned dev invite host의 `/.well-known/assetlinks.json`
+- dev host: `https://adtstack.github.io`
+- live association: `https://adtstack.github.io/.well-known/assetlinks.json`
+- deploy repository: `adtstack/adtstack.github.io`, `main` branch root
 - prod 배포: 금지
 
-Astro scaffold가 추가되면 `public/` 아래 파일은 경로를 바꾸지 않고 정적 asset으로 배포한다. 그 전에도 이 파일 자체를 dev host의 web root에 배포할 수 있다. 서버는 HTTPS 200, `Content-Type: application/json`으로 redirect 없이 응답해야 한다.
+`public/`은 dev Pages 저장소의 배포 원본이다. `.nojekyll`은 well-known 경로를 그대로 제공하고, 최소 landing page와 `robots.txt`는 검색 색인을 차단한다. 사용자 데이터, analytics, credential 또는 production secret은 이 디렉터리에 두지 않는다. 서버는 HTTPS 200, `Content-Type: application/json`으로 redirect 없이 응답해야 한다.
 
 배포 전 설치 APK와 exact package/signing fingerprint를 다시 비교한다.
 
@@ -29,7 +31,7 @@ scripts/verify-android-app-links.sh \
   dev \
   apps/kinflow_app/build/app/outputs/flutter-apk/app-dev-debug.apk \
   apps/public_site/public/.well-known/assetlinks.json \
-  <owned-dev-host>
+  adtstack.github.io
 ```
 
 다른 운영자 keystore나 signing key로 APK를 만들면 검증은 실패한다. 새 APK의 인증된 SHA-256으로 파일을 명시적으로 갱신하고 다시 검증한다. production association은 Play App Signing으로 사용자에게 전달되는 인증서가 확정되기 전에는 만들지 않는다.
