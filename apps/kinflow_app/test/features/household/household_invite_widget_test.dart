@@ -49,6 +49,48 @@ void main() {
     expect(harness.pendingStore.read()?.value, inviteTokenValue);
   });
 
+  testWidgets(
+    'pending invite resumes after provider session and can be accepted',
+    (WidgetTester tester) async {
+      final FakeInviteRepository inviteRepository = FakeInviteRepository();
+      final _InviteHarness harness = await _pumpInviteApp(
+        tester,
+        inviteRepository: inviteRepository,
+      );
+
+      harness.router.go('/invite/$inviteTokenValue');
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('invite.signIn')));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('auth.signIn.google')));
+      await tester.pump();
+      expect(harness.signInLauncher.requestCount, 1);
+
+      harness.authRepository.emit(AuthSessionEstablished(authSessionFixture()));
+      await tester.pumpAndSettle();
+
+      final Uri inviteUri = harness.router.routeInformationProvider.value.uri;
+      expect(inviteUri.path, '/invite');
+      expect(inviteUri.queryParameters, isEmpty);
+      expect(inviteUri.toString(), isNot(contains(inviteTokenValue)));
+      expect(harness.pendingStore.read()?.value, inviteTokenValue);
+      expect(find.byKey(const Key('invite.preview.summary')), findsOneWidget);
+
+      final FilledButton accept = tester.widget<FilledButton>(
+        find.byKey(const Key('invite.accept')),
+      );
+      expect(accept.onPressed, isNotNull);
+      await tester.tap(find.byKey(const Key('invite.accept')));
+      await tester.pumpAndSettle();
+
+      expect(inviteRepository.acceptRequests, hasLength(1));
+      expect(inviteRepository.acceptRequests.single.setActiveHousehold, isTrue);
+      expect(harness.pendingStore.read(), isNull);
+      expect(find.byKey(const Key('today.screen')), findsOneWidget);
+    },
+  );
+
   testWidgets('signed-in adult with no household accepts and enters Today', (
     WidgetTester tester,
   ) async {
@@ -185,12 +227,16 @@ void main() {
 
 final class _InviteHarness {
   const _InviteHarness({
+    required this.authRepository,
     required this.container,
+    required this.signInLauncher,
     required this.router,
     required this.pendingStore,
   });
 
+  final FakeAuthSessionRepository authRepository;
   final ProviderContainer container;
+  final FakeAuthSignInLauncher signInLauncher;
   final GoRouter router;
   final EphemeralPendingInviteStore pendingStore;
 }
@@ -205,6 +251,7 @@ Future<_InviteHarness> _pumpInviteApp(
   final FakeAuthSessionRepository authRepository = FakeAuthSessionRepository(
     restoreResult: restoreResult,
   );
+  final FakeAuthSignInLauncher signInLauncher = FakeAuthSignInLauncher();
   final EphemeralPendingInviteStore pendingStore =
       EphemeralPendingInviteStore();
   final ProviderContainer container = ProviderContainer(
@@ -215,7 +262,7 @@ Future<_InviteHarness> _pumpInviteApp(
       ),
       appInitializerProvider.overrideWithValue(_successfulInitialization),
       authSessionRepositoryProvider.overrideWithValue(authRepository),
-      authSignInLauncherProvider.overrideWithValue(FakeAuthSignInLauncher()),
+      authSignInLauncherProvider.overrideWithValue(signInLauncher),
       sensitiveLocalStatePurgerProvider.overrideWithValue(
         RecordingSensitiveLocalStatePurger(),
       ),
@@ -243,7 +290,9 @@ Future<_InviteHarness> _pumpInviteApp(
   );
   await tester.pumpAndSettle();
   return _InviteHarness(
+    authRepository: authRepository,
     container: container,
+    signInLauncher: signInLauncher,
     router: container.read(appRouterProvider),
     pendingStore: pendingStore,
   );
