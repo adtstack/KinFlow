@@ -177,26 +177,45 @@ node scripts/ci/android-two-device-preflight.mjs \
 
 ## 8. Evidence Checklist
 
-실행 전 tracked template를 ignored report directory로 복사한다. 이 파일에는 실제 계정·기기 식별자를 추가하지 않는다.
+two-device preflight에서 확인한 API level과 실제 실행 APK를 사용해 ignored session file을 초기화한다. 파일 이름은 실행마다 새 이름을 사용한다. `init`은 기존 파일을 덮어쓰지 않으며 APK의 package, embedded clean source commit과 SHA-256을 직접 읽는다.
 
 ```bash
-mkdir -p ci-reports/manual
-cp \
-  docs/evidence/phase-02/templates/GOOGLE_ANDROID_TWO_ADULT_E2E_TEMPLATE.json \
-  ci-reports/manual/google-android-two-adult-e2e.json
+node scripts/ci/android-two-adult-e2e-session.mjs init \
+  ci-reports/manual/google-android-two-adult-e2e-20260729-1300.json \
+  apps/kinflow_app/build/app/outputs/flutter-apk/app-dev-debug.apk \
+  dev \
+  <device-a-api-level> \
+  <device-b-api-level>
 ```
 
-실제 실행에 사용한 APK에 내장된 source commit 40-hex, APK SHA-256, UTC timestamp와 기기 A/B의 API level을 채운다. commit은 임의의 기존 commit을 고르지 않고 Android build report의 `source_commit`을 그대로 사용한다. 각 단계는 `pass`, `fail`, `not_run` 중 하나로만 기록한다. 이메일, token, invite URL, ADB serial, household/member UUID 또는 free-form note key를 추가하면 계약 검증이 실패한다.
+초기 상태는 device preflight 2개와 check 27개가 모두 `not_run`이다. 관찰 직후 exact target과 stable result만 기록한다. preflight target은 `device_a_preflight`, `device_b_preflight`이고 scenario target은 `WP02_01_LIVE_CHECK_TRACEABILITY.md`의 exact check key다.
+
+```bash
+node scripts/ci/android-two-adult-e2e-session.mjs record \
+  ci-reports/manual/google-android-two-adult-e2e-20260729-1300.json \
+  device_a_preflight \
+  pass
+
+node scripts/ci/android-two-adult-e2e-session.mjs record \
+  ci-reports/manual/google-android-two-adult-e2e-20260729-1300.json \
+  device_a_google_login \
+  pass
+
+node scripts/ci/android-two-adult-e2e-session.mjs status \
+  ci-reports/manual/google-android-two-adult-e2e-20260729-1300.json
+```
+
+result는 `pass`, `fail`, `not_run`만 허용된다. session file을 hand-edit하지 않으며 이메일, token, invite URL, ADB serial, household/member UUID 또는 free-form note를 command나 file에 추가하지 않는다. `record`는 canonical UTC timestamp를 갱신하고 exact schema를 검증한 뒤 atomic replace한다.
 
 모든 시나리오를 직접 관찰한 뒤 completion gate를 실행한다. 하나라도 `fail` 또는 `not_run`이면 성공하지 않는다.
 
 ```bash
 node scripts/ci/android-two-adult-e2e-evidence.mjs \
-  ci-reports/manual/google-android-two-adult-e2e.json \
+  ci-reports/manual/google-android-two-adult-e2e-20260729-1300.json \
   apps/kinflow_app/build/app/outputs/flutter-apk/app-dev-debug.apk
 ```
 
-validator는 checklist completeness, 비식별 schema, APK SHA-256, repository commit 존재와 APK에 내장된 clean source commit의 exact match를 검증한다. 실제 관찰을 대체하지 않으므로 실행자와 검증자는 아래 항목을 함께 대조한다.
+validator는 checklist completeness, 비식별 schema, APK application ID/SHA-256, repository commit 존재와 APK에 내장된 clean source commit의 exact match를 검증한다. 실제 관찰을 대체하지 않으므로 실행자와 검증자는 아래 항목을 함께 대조한다.
 
 - commit, 설치 APK SHA-256, Android API level, build flavor/package
 - Google/Supabase environment 이름만 기록하고 OAuth client ID는 별도 provider setup evidence를 참조

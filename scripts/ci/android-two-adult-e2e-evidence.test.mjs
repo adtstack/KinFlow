@@ -6,11 +6,14 @@ import { join } from 'node:path';
 import test from 'node:test';
 
 import {
+  inspectTwoAdultE2EApk,
   loadTwoAdultE2EEvidence,
   maximumTwoAdultEvidenceBytes,
+  parseAndroidBadgingApplicationId,
   parseAndroidManifestProvenance,
   sourceCommitMetadataName,
   sourceStateMetadataName,
+  twoAdultApplicationIds,
   twoAdultE2ECheckKeys,
   validateTwoAdultE2EEvidence,
   verifyTwoAdultE2ECompletion,
@@ -102,6 +105,7 @@ test('binds complete evidence to an existing commit and exact APK digest', async
 
   let verifiedCommit;
   const result = await verifyTwoAdultE2ECompletion({
+    apkApplicationIdReader: async () => complete.applicationId,
     apkPath,
     apkProvenanceReader: async () => cleanProvenance(complete.commit),
     commitVerifier: async (commit) => {
@@ -117,12 +121,81 @@ test('binds complete evidence to an existing commit and exact APK digest', async
   await writeFile(evidencePath, JSON.stringify(complete), 'utf8');
   await assert.rejects(
     verifyTwoAdultE2ECompletion({
+      apkApplicationIdReader: async () => complete.applicationId,
       apkPath,
       apkProvenanceReader: async () => cleanProvenance(complete.commit),
       commitVerifier: async () => true,
       evidencePath,
     }),
     /APK SHA-256 does not match/u,
+  );
+});
+
+test('parses one exact Android package from APK badging', () => {
+  const badging = `package: name='me.newlines.kinflow.dev' versionCode='1' versionName='0.1.0-dev'
+sdkVersion:'24'`;
+  assert.equal(
+    parseAndroidBadgingApplicationId(badging),
+    'me.newlines.kinflow.dev',
+  );
+  assert.throws(
+    () => parseAndroidBadgingApplicationId(`${badging}\n${badging}`),
+    /application ID is invalid/u,
+  );
+  assert.throws(
+    () => parseAndroidBadgingApplicationId("package: name='Unsafe Package'"),
+    /application ID is invalid/u,
+  );
+});
+
+test('inspects a clean APK without accepting caller-supplied identity', async () => {
+  const commit = 'e'.repeat(40);
+  const artifactSha256 = 'f'.repeat(64);
+  const inspected = await inspectTwoAdultE2EApk({
+    apkApplicationIdReader: async () => twoAdultApplicationIds.dev,
+    apkPath: 'synthetic.apk',
+    apkProvenanceReader: async () => cleanProvenance(commit),
+    commitVerifier: async (candidate) => candidate === commit,
+    expectedApplicationId: twoAdultApplicationIds.dev,
+    fileHasher: async () => artifactSha256,
+  });
+  assert.deepEqual(inspected, {
+    applicationId: twoAdultApplicationIds.dev,
+    artifactSha256,
+    commit,
+  });
+  await assert.rejects(
+    inspectTwoAdultE2EApk({
+      apkApplicationIdReader: async () => twoAdultApplicationIds.prod,
+      apkPath: 'synthetic.apk',
+      apkProvenanceReader: async () => cleanProvenance(commit),
+      commitVerifier: async () => true,
+      expectedApplicationId: twoAdultApplicationIds.dev,
+      fileHasher: async () => artifactSha256,
+    }),
+    /application ID does not match/u,
+  );
+
+  const sensitiveCanary = 'SENSITIVE_BADGING_OUTPUT_DO_NOT_EMIT';
+  await assert.rejects(
+    inspectTwoAdultE2EApk({
+      apkApplicationIdReader: async () => {
+        throw new Error(sensitiveCanary);
+      },
+      apkPath: 'synthetic.apk',
+      apkProvenanceReader: async () => cleanProvenance(commit),
+      commitVerifier: async () => true,
+      expectedApplicationId: twoAdultApplicationIds.dev,
+      fileHasher: async () => artifactSha256,
+    }),
+    (error) => {
+      assert.equal(
+        error.message,
+        'Two-adult E2E APK application ID could not be verified.',
+      );
+      assert.equal(error.message.includes(sensitiveCanary), false);
+      return true;
+    },
   );
 });
 
@@ -171,12 +244,21 @@ test('rejects mismatched, dirty, and unreadable APK source provenance', async (c
   const evidencePath = join(directory, 'complete.json');
   await writeFile(evidencePath, JSON.stringify(complete), 'utf8');
   const base = {
+    apkApplicationIdReader: async () => complete.applicationId,
     apkPath: join(directory, 'synthetic.apk'),
     commitVerifier: async () => true,
     evidencePath,
     fileHasher: async () => complete.artifactSha256,
   };
 
+  await assert.rejects(
+    verifyTwoAdultE2ECompletion({
+      ...base,
+      apkApplicationIdReader: async () => twoAdultApplicationIds.prod,
+      apkProvenanceReader: async () => cleanProvenance(complete.commit),
+    }),
+    /application ID does not match/u,
+  );
   await assert.rejects(
     verifyTwoAdultE2ECompletion({
       ...base,

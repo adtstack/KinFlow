@@ -11,6 +11,10 @@ export const maximumTwoAdultEvidenceBytes = 32 * 1024;
 export const maximumTwoAdultApkBytes = 1024 * 1024 * 1024;
 export const sourceCommitMetadataName = 'me.newlines.kinflow.SOURCE_COMMIT';
 export const sourceStateMetadataName = 'me.newlines.kinflow.SOURCE_STATE';
+export const twoAdultApplicationIds = Object.freeze({
+  dev: 'me.newlines.kinflow.dev',
+  prod: 'me.newlines.kinflow',
+});
 
 export const twoAdultE2ECheckKeys = Object.freeze([
   'device_a_google_login',
@@ -54,10 +58,6 @@ const rootKeys = Object.freeze([
 ]);
 const deviceKeys = Object.freeze(['alias', 'apiLevel', 'preflight']);
 const resultCodes = new Set(['fail', 'not_run', 'pass']);
-const applicationIds = Object.freeze({
-  dev: 'me.newlines.kinflow.dev',
-  prod: 'me.newlines.kinflow',
-});
 const commitPlaceholder = 'replace_with_40_hex_commit';
 const artifactPlaceholder = 'replace_with_64_hex_apk_sha256';
 const timePlaceholder = 'replace_with_utc_timestamp';
@@ -157,6 +157,23 @@ export function parseAndroidManifestProvenance(manifestDump) {
   return Object.freeze({ commit, sourceState });
 }
 
+export function parseAndroidBadgingApplicationId(badging) {
+  if (
+    typeof badging !== 'string' ||
+    Buffer.byteLength(badging, 'utf8') > maximumManifestDumpBytes
+  ) {
+    throw new Error('Two-adult E2E APK application ID is invalid.');
+  }
+  const matches = [...badging.matchAll(/^package:\s+name='([^']+)'(?:\s|$)/gmu)];
+  if (
+    matches.length !== 1 ||
+    !/^[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)+$/u.test(matches[0][1])
+  ) {
+    throw new Error('Two-adult E2E APK application ID is invalid.');
+  }
+  return matches[0][1];
+}
+
 async function isExecutable(path) {
   try {
     await access(path, fsConstants.X_OK);
@@ -225,11 +242,27 @@ async function readApkProvenance(apkPath) {
   return parseAndroidManifestProvenance(stdout);
 }
 
+async function readApkApplicationId(apkPath) {
+  let stdout;
+  try {
+    const aapt = await resolveAapt();
+    ({ stdout } = await execFile(aapt, ['dump', 'badging', apkPath], {
+      encoding: 'utf8',
+      maxBuffer: maximumManifestDumpBytes,
+      timeout: 10_000,
+      windowsHide: true,
+    }));
+  } catch {
+    throw new Error('Two-adult E2E Android badging reader is unavailable.');
+  }
+  return parseAndroidBadgingApplicationId(stdout);
+}
+
 function validateBuildIdentity(decoded, requireComplete) {
-  if (!Object.hasOwn(applicationIds, decoded.environment)) {
+  if (!Object.hasOwn(twoAdultApplicationIds, decoded.environment)) {
     throw new Error('Two-adult E2E environment is invalid.');
   }
-  if (decoded.applicationId !== applicationIds[decoded.environment]) {
+  if (decoded.applicationId !== twoAdultApplicationIds[decoded.environment]) {
     throw new Error(
       'Two-adult E2E application ID does not match the environment.',
     );
@@ -353,7 +386,7 @@ export function validateTwoAdultE2EEvidence(
   });
 }
 
-async function readTwoAdultE2EEvidence(path) {
+export async function readTwoAdultE2EEvidence(path) {
   let metadata;
   try {
     metadata = await stat(path);
@@ -433,7 +466,78 @@ async function sha256File(path) {
   return digest.digest('hex');
 }
 
+export async function inspectTwoAdultE2EApk({
+  apkApplicationIdReader = readApkApplicationId,
+  apkPath,
+  apkProvenanceReader = readApkProvenance,
+  commitVerifier = verifyCommitExists,
+  expectedApplicationId,
+  fileHasher = sha256File,
+}) {
+  if (!Object.values(twoAdultApplicationIds).includes(expectedApplicationId)) {
+    throw new Error('Two-adult E2E expected application ID is invalid.');
+  }
+
+  let applicationId;
+  try {
+    applicationId = await apkApplicationIdReader(apkPath);
+  } catch {
+    throw new Error('Two-adult E2E APK application ID could not be verified.');
+  }
+  if (applicationId !== expectedApplicationId) {
+    throw new Error('Two-adult E2E APK application ID does not match.');
+  }
+
+  let provenance;
+  try {
+    provenance = await apkProvenanceReader(apkPath);
+  } catch {
+    throw new Error('Two-adult E2E APK source provenance could not be verified.');
+  }
+  if (
+    !isPlainObject(provenance) ||
+    !hasExactKeys(provenance, ['commit', 'sourceState']) ||
+    typeof provenance.commit !== 'string' ||
+    !commitPattern.test(provenance.commit) ||
+    !['clean', 'dirty'].includes(provenance.sourceState)
+  ) {
+    throw new Error('Two-adult E2E APK source provenance could not be verified.');
+  }
+  if (provenance.sourceState !== 'clean') {
+    throw new Error('Two-adult E2E APK source state is not clean.');
+  }
+
+  let commitExists;
+  try {
+    commitExists = await commitVerifier(provenance.commit);
+  } catch {
+    throw new Error('Two-adult E2E commit could not be verified.');
+  }
+  if (commitExists !== true) {
+    throw new Error('Two-adult E2E commit could not be verified.');
+  }
+
+  let artifactSha256;
+  try {
+    artifactSha256 = await fileHasher(apkPath);
+  } catch {
+    throw new Error('Two-adult E2E APK could not be verified.');
+  }
+  if (
+    typeof artifactSha256 !== 'string' ||
+    !artifactSha256Pattern.test(artifactSha256)
+  ) {
+    throw new Error('Two-adult E2E APK could not be verified.');
+  }
+  return Object.freeze({
+    applicationId,
+    artifactSha256,
+    commit: provenance.commit,
+  });
+}
+
 export async function verifyTwoAdultE2ECompletion({
+  apkApplicationIdReader = readApkApplicationId,
   apkPath,
   apkProvenanceReader = readApkProvenance,
   commitVerifier = verifyCommitExists,
@@ -472,6 +576,16 @@ export async function verifyTwoAdultE2ECompletion({
     artifactSha256 !== decoded.artifactSha256
   ) {
     throw new Error('Two-adult E2E APK SHA-256 does not match.');
+  }
+
+  let apkApplicationId;
+  try {
+    apkApplicationId = await apkApplicationIdReader(apkPath);
+  } catch {
+    throw new Error('Two-adult E2E APK application ID could not be verified.');
+  }
+  if (apkApplicationId !== decoded.applicationId) {
+    throw new Error('Two-adult E2E APK application ID does not match.');
   }
 
   let provenance;
