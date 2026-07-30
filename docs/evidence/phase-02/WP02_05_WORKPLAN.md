@@ -3,7 +3,7 @@
 - 작성일: 2026-07-29
 - 기준 commit: `2b68351`
 - Work Package: WP02-05 Role/Owner lifecycle
-- 상태: IN PROGRESS / VALIDATION DEFERRED BY USER
+- 상태: IN PROGRESS / AUTOMATED PASS / LIVE GATE PENDING
 - 선행 결과: WP02-01~04 automated implementation은 완료했으며 실제 Google 로그인·Android 2기기 검증은 별도 live gate로 남아 있다.
 
 ## Requirements
@@ -60,9 +60,9 @@
 4. mutation 성공 뒤 server roster를 다시 읽는다. 자기 나가기 성공 뒤 auth lifecycle을 refresh해 fallback household 또는 no-household route를 다시 계산한다.
 5. 로컬에 roster persistent cache를 추가하지 않으며 화면 dispose/account switch 시 provider state만 남지 않게 한다.
 
-## Validation — Deferred Batch
+## Validation — Automated Batch Complete / Live Deferred
 
-사용자 요청에 따라 이번 구현 turn에서는 test, analyze, build, local reset과 CI를 실행하지 않는다. 후속 배치에서 아래를 한 번에 수행한다.
+2026-07-30 자동 검증 배치에서 아래 항목을 수행했고 `WP02_05_EVIDENCE.md`에 실제 결과를 기록했다.
 
 - clean migration reset, schema lint, direct RPC/CRUD grant와 RLS matrix
 - role capability matrix, last-owner invariant, atomic transfer와 stale version
@@ -70,10 +70,14 @@
 - recent-auth missing/refresh-only/wrong-user/expired/fresh OAuth cases와 JWT redaction
 - idempotency replay/reuse/concurrency와 immutable audit shape
 - Flutter repository/controller/route/dialog/account-switch/localization/a11y tests
-- generated drift, analyze, full Flutter/backend quality, dev/prod Android build와 GitHub final gate
-- 실제 성인 2계정/2기기 Owner 이전·제거·재진입 검증
+- generated drift, analyze, full Flutter/backend quality와 dev/prod Android clean build
 
-검증 전에는 WP02-05를 COMPLETE 또는 PASS로 표기하지 않는다.
+아래 항목은 아직 남아 있다.
+
+- push 후 GitHub final gate
+- 실제 성인 2계정/2기기 Owner 이전·제거·재진입과 hosted Google OAuth `amr` 검증
+
+원격 CI와 live gate 전에는 WP02-05를 COMPLETE 또는 최종 PASS로 표기하지 않는다.
 
 ## Explicit Non-scope
 
@@ -92,5 +96,5 @@
 
 ## Next Entry Condition
 
-- deferred validation batch가 green이고 evidence가 기록되어야 WP02-05 완료로 전환한다.
+- 자동 배치는 green이다. GitHub CI와 실제 Google/2기기 live gate가 green이고 evidence가 기록되어야 WP02-05 완료로 전환한다.
 - 이후 WP02-06 adult activation handoff, WP02-07 end-to-end authorization을 순서대로 진행한다.

@@ -1,19 +1,19 @@
 # Phase 02 WP02-05 Evidence
 
 - Work Package: WP02-05 Role/Owner lifecycle
-- 기준 commit: base `2b68351`; implementation `c6dc075`
-- 기록일: 2026-07-29
-- 결과: **IMPLEMENTATION PRESENT / ALL VALIDATION DEFERRED BY USER / NOT PASS**
+- 기준 commit: base `2b68351`; implementation `c6dc075`; automated validation `6a23ed9`
+- 기록일: 2026-07-30
+- 결과: **AUTOMATED PASS / LIVE GOOGLE + TWO-DEVICE GATE PENDING / NOT COMPLETE**
 
 ## Requirement Status
 
 | ID | 상태 | 현재 증거 |
 |---|---|---|
-| FR-AUTH-006 | IN PROGRESS | Google 재인증 service와 Supabase JWT `amr` OAuth timestamp 검증 경계를 구현했다. account deletion/payment 적용과 실제 계정 검증은 남아 있다. |
-| FR-HH-006 | IN PROGRESS | Owner/Admin 역할 matrix, expected member version, 멱등 command와 immutable audit 구현이 존재한다. 실행 검증은 하지 않았다. |
-| FR-HH-007 | IN PROGRESS | remove/leave tombstone, RLS 차단 기반, active household fallback과 생성자 invite revoke를 한 transaction에 구현했다. device registration은 아직 schema가 없어 Phase 05 범위다. |
-| FR-HH-008 | IN PROGRESS | 현재 Owner→Admin, 대상 성인→Owner, owner pointer를 한 transaction에서 변경하고 기존 deferred invariant를 재확인한다. 실행 검증은 하지 않았다. |
-| API-009/010 | IN PROGRESS | same-household/role/version/idempotency 검사와 stable Edge error mapping이 코드에 있다. DB·RLS integration test는 NOT RUN이다. |
+| FR-AUTH-006 | IN PROGRESS | refresh-only/wrong-user/expired/fresh OAuth `amr`와 credential redaction 자동 계약이 통과했다. hosted Google 실제 계정, account deletion/payment 적용은 남아 있다. |
+| FR-HH-006 | IN PROGRESS | Owner/Admin 역할 matrix, expected version, 멱등 replay/reuse와 immutable audit를 DB 64개·Edge 18개·Flutter 테스트에서 검증했다. 실제 성인 2계정 검증은 남아 있다. |
+| FR-HH-007 | IN PROGRESS | remove/leave tombstone, 즉시 RLS 차단, active-household fallback과 생성자 invite revoke transaction이 로컬 PostgreSQL에서 통과했다. device registration은 Phase 05 범위다. |
+| FR-HH-008 | IN PROGRESS | Owner 왕복 이전에서 정확히 한 Owner, pointer, version, replay를 로컬 PostgreSQL에서 검증했다. 실제 Google re-auth와 2기기 이전은 남아 있다. |
+| API-009/010 | IN PROGRESS | outsider/role/version/idempotency 오류와 stable Edge mapping이 clean reset, pgTAP와 Edge unit contract에서 통과했다. hosted Edge 검증은 남아 있다. |
 
 ## Implementation Inventory
 
@@ -33,23 +33,27 @@
   - `/family/members` roster, role change, removal, leave와 Owner transfer 확인 UI
   - EN/KO/pseudo ARB와 generated localization
 
-## Commands Run This Turn
+## Automated Validation Results
 
-구현에 필요한 source generation/format만 실행했다.
+모든 로컬 명령은 Flutter SDK 3.44.7 / Dart 3.12.2, Node 24.15.0과 잠금파일 기준으로 2026-07-30 실행했다.
 
-- `dart format` — 새·수정 Dart source 정렬
-- `flutter gen-l10n` — ARB generated localization 갱신
-- pinned Dart 3.12.2 `build_runner build` — json_serializable DTO 생성
+| Gate | 실제 결과 |
+|---|---|
+| `scripts/ci/flutter-quality.sh` | PASS — Node contract 47, Flutter 201 pass/1 live-only skip, analyzer 0, format/codegen drift 0, line coverage 73.47% (2,971/4,044) |
+| `scripts/ci/supabase-backend.sh` | PASS — clean DB reset, 5 migrations apply, schema lint 0, pgTAP 271/271, invite Edge 22/22, member lifecycle Edge 18/18, invite live contract와 Flutter local adapter |
+| dependency/license | PASS — Pub 149개, npm 15개 license allowlist |
+| offline OSV | PASS — lockfile-only actual dependency scan, known vulnerability 0 |
+| Android dev debug | PASS — commit `6a23ed9`, source `clean`, 216,192,138 bytes, SHA-256 `f3d8ecfed08b118287953395d4b9a94abb65fcfd9d146767814b5280fcbea349` |
+| Android prod debug | PASS — commit `6a23ed9`, source `clean`, 216,192,104 bytes, SHA-256 `e16b074eed3df4f1b535582b41a69bf119ae6b0b25def67c309f29c5c50e555f` |
 
-아래 검증 명령은 사용자 요청에 따라 **전부 NOT RUN**이다.
+Android 두 flavor 모두 package/label, compile/target API 36, min API 24, `allowBackup=false`, HTTPS App Link `autoVerify`, 최소 권한 allowlist와 source provenance 감사를 통과했다.
 
-- Flutter test / analyze / coverage
-- Supabase reset / migration apply / schema lint / pgTAP
-- Edge unit/live contract
-- dependency/security scan
-- Android dev/prod build
-- GitHub Actions CI
-- 실제 Google 계정 로그인, 성인 2인·2기기 Owner 이전/제거
+아래 live/release 검증은 기존 합의대로 **NOT RUN**이다.
+
+- 실제 Google 계정 로그인과 hosted Supabase OAuth `amr` shape
+- 실제 성인 2계정·Android 2기기 Owner 이전/제거/재진입
+- production Supabase migration/Edge 배포
+- GitHub Actions 원격 CI — 이 evidence commit을 push한 뒤 별도로 확인한다.
 
 ## Security / Privacy Boundary
 
@@ -61,11 +65,10 @@
 
 ## Remaining Risks
 
-1. migration을 실제 PostgreSQL에 적용하지 않아 SQL syntax, grant, trigger와 deferred constraint 동작이 아직 증명되지 않았다.
-2. Edge recent-auth의 실제 hosted Supabase JWT `amr` shape와 Google 재로그인 UX가 실제 계정에서 확인되지 않았다.
-3. Flutter analyzer/widget/a11y/200% text와 account-switch race를 실행하지 않았다.
-4. removal 직후 이미 그려진 원격 기기의 메모리 화면은 다음 navigation/network refresh 전까지 남을 수 있다. 권위적 서버 read/write는 RLS에서 즉시 차단하도록 설계했지만 실기기 증거가 필요하다.
-5. chore/calendar assignment table이 아직 없으므로 향후 schema는 removed member historical reference 보존과 active-only 새 assignment 정책을 별도로 검증해야 한다.
+1. hosted Supabase JWT의 실제 Google OAuth `amr`와 재로그인 UX는 실제 계정에서 확인되지 않았다.
+2. removal 직후 원격 기기의 이미 그려진 메모리 화면은 다음 navigation/network refresh 전까지 남을 수 있다. 권위적 read/write의 즉시 RLS 차단은 자동 검증했지만 실기기 화면 잔존은 확인해야 한다.
+3. Android 빌드는 미래 Flutter에서 `sentry_flutter`의 Kotlin Gradle Plugin 적용 방식이 차단될 수 있다는 비차단 경고를 냈다. Flutter 업그레이드 전 호환 버전을 재평가한다.
+4. chore/calendar assignment table이 아직 없으므로 향후 schema는 removed member historical reference 보존과 active-only 새 assignment 정책을 별도로 검증해야 한다.
 
 ## Rollback
 
@@ -74,4 +77,4 @@
 
 ## Completion Boundary
 
-이 문서는 구현 존재만 기록한다. `WP02_05_WORKPLAN.md`의 deferred validation batch가 green이고 실제 결과가 이 문서에 추가될 때만 WP02-05를 COMPLETE/PASS로 바꾼다.
+자동 검증 배치는 PASS다. 그러나 Work Plan이 요구한 실제 Google 성인 2계정·Android 2기기 live gate는 남아 있으므로 WP02-05는 IN PROGRESS다. 원격 CI와 live gate가 모두 green이고 그 결과가 추가될 때만 COMPLETE/PASS로 바꾼다.
