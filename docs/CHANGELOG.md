@@ -1,6 +1,6 @@
 # Documentation Changelog
 
-## Unreleased — 2026-07-23 — Phase 00 product-scope decisions
+## Unreleased — 2026-07-30 — Phase 00 decisions and Phase 01/02 implementation
 
 - Android 단일 출시, dev/prod 두 환경, 개인 운영 주체, Google 로그인 승인(D-002, D-032, D-052~D-054, ADR-0002)
 - production `me.newlines.kinflow`, dev `me.newlines.kinflow.dev` 식별자 승인
@@ -13,6 +13,10 @@
 - 사용자 연구, 법률·Store 검토, 가격·보관 정책, 앱 식별자·console owner, 실제 기기/provider PoC는 미완료 상태 유지
 - WP02-01 인증 session/PKCE 저장에 Android Keystore-backed `flutter_secure_storage 10.3.1`을 고정하고 Supabase runtime composition과 backup-disabled 계약 추가
 - WP02-02 가구 authorization boundary에 IANA timezone 검증, 정확히 한 active Owner invariant, role helper, removed-member stale selection 차단과 62개 pgTAP 공격 테스트 추가
+- WP02-03 첫 가구·Owner membership·profile·active selection 원자적 생성과 onboarding/empty Today 구현
+- WP02-04 hash-only 단일 사용 초대, create/preview/accept/revoke Edge command와 로그인 전후 App Link continuation 구현
+- dev Google/Supabase provider, `adtstack.github.io` Digital Asset Links와 Android verified App Link 준비 완료; 실제 성인 2계정·2기기 live E2E는 `0/27 NOT RUN` 유지
+- WP02-05 역할 변경·제거·나가기·최근 인증 Owner 이전·immutable audit 구현과 DB 271/271, invite Edge 22/22, member Edge 18/18 검증
 
 ## v1.2 — 2026-07-22 — Version terminology and SDK patch correction
 

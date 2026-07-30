@@ -2,7 +2,7 @@
 
 KinFlow는 성인 2인이 가구를 만들고 집안일을 나누어 완료하는 Android-first 가족 협업 앱이다.
 
-현재 구현 범위는 Phase 02 WP02-04의 household/invite 자동화와 Google Android credential-independent integration이다. GitHub-hosted `CI gate`가 검증하는 범위와 실제 Google/Supabase provider, owned App Link domain, 성인 2계정·2기기 검증은 구분한다.
+현재 구현 범위는 Phase 02 WP02-02~05의 가구 권한·첫 가구 온보딩·초대·구성원 역할/Owner lifecycle 자동화와 Google Android integration이다. dev Google/Supabase provider와 owned App Link domain은 구성·검증했지만, 실제 Google 성인 2계정·Android 2기기 live gate와 production 배포는 아직 완료하지 않았다. GitHub-hosted `CI gate`의 자동 증거와 실제 계정·기기 증거는 구분한다.
 
 ## Accepted baseline
 
@@ -28,6 +28,9 @@ KinFlow는 성인 2인이 가구를 만들고 집안일을 나누어 완료하�
 - 성인 2인 seed와 별도 household를 이용한 cross-household 격리 검증
 - Flutter Supabase infrastructure adapter와 local health connectivity test
 - Google native sign-in → Supabase Auth token exchange adapter와 secure logout purge; 공개 Web client ID가 없으면 fail-closed
+- 가구·Owner membership·active selection을 한 transaction으로 만드는 첫 가구 온보딩
+- hash-only 단일 사용 초대와 preview/accept/revoke Edge command, 로그인 전후 App Link continuation
+- Admin/Member 역할 변경, 제거·나가기, 최근 인증 기반 Owner 이전과 immutable audit
 
 자세한 변경 근거는 `docs/adr/ADR-0002-android-first-release.md`를 따른다.
 
@@ -107,4 +110,4 @@ scripts/ci/android-build.sh dev
 scripts/ci/android-build.sh prod
 ```
 
-Flutter package cache만 사용하는 검증은 `KINFLOW_PUB_OFFLINE=1`을 추가한다. 기준 원격 실행은 [CI run 30332633213](https://github.com/adtstack/KinFlow/actions/runs/30332633213)이며 모든 source job과 최종 `CI gate`가 통과했다. branch protection/ruleset 적용은 별도 repository 관리 작업으로 남아 있다.
+Flutter package cache만 사용하는 검증은 `KINFLOW_PUB_OFFLINE=1`을 추가한다. 최신 기준 원격 실행은 [CI run 30503641477](https://github.com/adtstack/KinFlow/actions/runs/30503641477)이며 모든 source job과 최종 `CI gate`가 통과했다. branch protection/ruleset 적용은 별도 repository 관리 작업으로 남아 있다.
