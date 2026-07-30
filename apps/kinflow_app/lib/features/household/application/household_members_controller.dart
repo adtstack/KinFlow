@@ -10,13 +10,11 @@ import 'package:kinflow_app/features/household/domain/services/household_command
 import 'package:kinflow_app/features/household/domain/value_objects/household_identifiers.dart';
 
 final class HouseholdMembersController {
-  HouseholdMembersController({
-    required HouseholdMemberRepository repository,
-    required HouseholdCommandIdGenerator idGenerator,
-    required RecentAuthenticationService recentAuthenticationService,
-  }) : _repository = repository,
-       _idGenerator = idGenerator,
-       _recentAuthenticationService = recentAuthenticationService;
+  HouseholdMembersController(
+    this._repository,
+    this._idGenerator,
+    this._recentAuthenticationService,
+  );
 
   final HouseholdMemberRepository _repository;
   final HouseholdCommandIdGenerator _idGenerator;

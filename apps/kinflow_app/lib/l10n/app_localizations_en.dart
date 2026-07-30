@@ -791,7 +791,7 @@ class AppLocalizationsEnXa extends AppLocalizationsEn {
 
   @override
   String memberRoleChangeBody(String memberName, String role) {
-    return '[!! Change $memberName to $role. Ĝôôĝłē will ask you to verify your identity securely before the change continues. !!]';
+    return '[!! Change $memberName to $role. Ĝôôĝłē will ask you to verify your identity securely once more before the change continues. !!]';
   }
 
   @override
@@ -808,7 +808,7 @@ class AppLocalizationsEnXa extends AppLocalizationsEn {
 
   @override
   String ownerTransferBody(String memberName) {
-    return '[!! $memberName will become the new Ôŵñēŕ and you will become an Åđmîñ. Ĝôôĝłē will ask you to verify your identity securely. !!]';
+    return '[!! $memberName will become the new Ôŵñēŕ and you will become an Åđmîñ. Ĝôôĝłē will ask you to verify your identity securely. No household role changes until this secure confirmation succeeds completely. !!]';
   }
 
   @override
@@ -817,7 +817,7 @@ class AppLocalizationsEnXa extends AppLocalizationsEn {
 
   @override
   String get householdLeaveBody =>
-      '[!! Your membership and access end immediately. Every shared historical record remains safely with the household. !!]';
+      '[!! Your membership and access end immediately. Every shared historical record remains safely with the household. You can only return after another active adult sends a completely new invitation. !!]';
 
   @override
   String get ownerMustTransferBody =>
@@ -855,15 +855,15 @@ class AppLocalizationsEnXa extends AppLocalizationsEn {
 
   @override
   String get membersRecentAuthCancelled =>
-      '[!! You cancelled the Ĝôôĝłē identity check. No household information was changed anywhere. !!]';
+      '[!! You cancelled the Ĝôôĝłē identity check. No household information was changed anywhere. Try again whenever you are ready. !!]';
 
   @override
   String get membersAccountChangedError =>
-      '[!! A different Ĝôôĝłē account was selected, so the protected change stopped. Check the current account carefully. !!]';
+      '[!! A different Ĝôôĝłē account was selected, so the protected change stopped. Check the current account carefully. Return and select the original signed-in account. !!]';
 
   @override
   String get membersGenericError =>
-      '[!! We could not complete this member change. The same protected request remains safe to retry. !!]';
+      '[!! We could not complete this member change. The same protected request remains safe to retry. Nothing was partially applied. !!]';
 
   @override
   String get todayTitle => '[!! Ţôđåŷ schedule !!]';

@@ -57,11 +57,9 @@ final pendingInviteStoreProvider = Provider<PendingInviteStore>((ref) {
 final householdMembersControllerProvider =
     Provider.autoDispose<HouseholdMembersController>((ref) {
       final HouseholdMembersController controller = HouseholdMembersController(
-        repository: ref.watch(householdMemberRepositoryProvider),
-        idGenerator: ref.watch(householdCommandIdGeneratorProvider),
-        recentAuthenticationService: ref.watch(
-          recentAuthenticationServiceProvider,
-        ),
+        ref.watch(householdMemberRepositoryProvider),
+        ref.watch(householdCommandIdGeneratorProvider),
+        ref.watch(recentAuthenticationServiceProvider),
       );
       ref.onDispose(() => unawaited(controller.dispose()));
       return controller;

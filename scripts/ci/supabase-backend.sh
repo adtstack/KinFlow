@@ -88,6 +88,8 @@ npm run supabase:test
 printf '%s\n' 'pgtap_rls=PASS' >>"$kinflow_report_dir/backend-summary.txt"
 node --test supabase/tests/invite-edge-contract.test.mjs
 printf '%s\n' 'invite_edge_unit_contract=PASS' >>"$kinflow_report_dir/backend-summary.txt"
+node --test supabase/tests/member-lifecycle-edge-contract.test.mjs
+printf '%s\n' 'member_lifecycle_edge_unit_contract=PASS' >>"$kinflow_report_dir/backend-summary.txt"
 npm run supabase:health
 printf '%s\n' 'edge_contract=PASS' >>"$kinflow_report_dir/backend-summary.txt"
 kinflow_status="$(npx supabase status -o env 2>/dev/null)"

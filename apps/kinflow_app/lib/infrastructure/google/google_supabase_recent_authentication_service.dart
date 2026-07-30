@@ -25,10 +25,7 @@ final class GoogleSupabaseRecentAuthenticationService
     required SupabaseClient client,
   }) {
     return GoogleSupabaseRecentAuthenticationService.withSessionReader(
-      serverClientId: serverClientId,
-      identityGateway: identityGateway,
-      tokenExchange: tokenExchange,
-      sessionReader: () {
+      () {
         final Session? session = client.auth.currentSession;
         final User? user = client.auth.currentUser;
         if (session == null || user == null) {
@@ -39,15 +36,18 @@ final class GoogleSupabaseRecentAuthenticationService
           accessToken: session.accessToken,
         );
       },
+      serverClientId: serverClientId,
+      identityGateway: identityGateway,
+      tokenExchange: tokenExchange,
     );
   }
 
-  const GoogleSupabaseRecentAuthenticationService.withSessionReader({
+  const GoogleSupabaseRecentAuthenticationService.withSessionReader(
+    this._sessionReader, {
     required this.serverClientId,
     required this.identityGateway,
     required this.tokenExchange,
-    required RecentAuthenticationSessionReader sessionReader,
-  }) : _sessionReader = sessionReader;
+  });
 
   final String serverClientId;
   final GoogleIdentityGateway identityGateway;
