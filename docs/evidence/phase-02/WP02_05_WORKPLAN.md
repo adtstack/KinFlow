@@ -3,7 +3,7 @@
 - 작성일: 2026-07-29
 - 기준 commit: `2b68351`
 - Work Package: WP02-05 Role/Owner lifecycle
-- 상태: IN PROGRESS / AUTOMATED PASS / LIVE GATE PENDING
+- 상태: IN PROGRESS / AUTOMATED + CI PASS / LIVE GATE PENDING
 - 선행 결과: WP02-01~04 automated implementation은 완료했으며 실제 Google 로그인·Android 2기기 검증은 별도 live gate로 남아 있다.
 
 ## Requirements
@@ -72,12 +72,11 @@
 - Flutter repository/controller/route/dialog/account-switch/localization/a11y tests
 - generated drift, analyze, full Flutter/backend quality와 dev/prod Android clean build
 
-아래 항목은 아직 남아 있다.
+GitHub Actions run `30503354545`의 final gate도 PASS다. 아래 live 항목만 남아 있다.
 
-- push 후 GitHub final gate
 - 실제 성인 2계정/2기기 Owner 이전·제거·재진입과 hosted Google OAuth `amr` 검증
 
-원격 CI와 live gate 전에는 WP02-05를 COMPLETE 또는 최종 PASS로 표기하지 않는다.
+live gate 전에는 WP02-05를 COMPLETE 또는 최종 PASS로 표기하지 않는다.
 
 ## Explicit Non-scope
 
@@ -96,5 +95,5 @@
 
 ## Next Entry Condition
 
-- 자동 배치는 green이다. GitHub CI와 실제 Google/2기기 live gate가 green이고 evidence가 기록되어야 WP02-05 완료로 전환한다.
+- 자동 배치와 GitHub CI는 green이다. 실제 Google/2기기 live gate가 green이고 evidence가 기록되어야 WP02-05 완료로 전환한다.
 - 이후 WP02-06 adult activation handoff, WP02-07 end-to-end authorization을 순서대로 진행한다.

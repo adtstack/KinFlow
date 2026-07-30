@@ -3,7 +3,7 @@
 - Work Package: WP02-05 Role/Owner lifecycle
 - 기준 commit: base `2b68351`; implementation `c6dc075`; automated validation `6a23ed9`
 - 기록일: 2026-07-30
-- 결과: **AUTOMATED PASS / LIVE GOOGLE + TWO-DEVICE GATE PENDING / NOT COMPLETE**
+- 결과: **LOCAL + REMOTE CI PASS / LIVE GOOGLE + TWO-DEVICE GATE PENDING / NOT COMPLETE**
 
 ## Requirement Status
 
@@ -45,6 +45,7 @@
 | offline OSV | PASS — lockfile-only actual dependency scan, known vulnerability 0 |
 | Android dev debug | PASS — commit `6a23ed9`, source `clean`, 216,192,138 bytes, SHA-256 `f3d8ecfed08b118287953395d4b9a94abb65fcfd9d146767814b5280fcbea349` |
 | Android prod debug | PASS — commit `6a23ed9`, source `clean`, 216,192,104 bytes, SHA-256 `e16b074eed3df4f1b535582b41a69bf119ae6b0b25def67c309f29c5c50e555f` |
+| GitHub Actions CI | PASS — run `30503354545`: quality 3m36s, dependency 1m09s, backend 2m39s, Android prod 4m30s, Android dev 4m34s, final gate PASS |
 
 Android 두 flavor 모두 package/label, compile/target API 36, min API 24, `allowBackup=false`, HTTPS App Link `autoVerify`, 최소 권한 allowlist와 source provenance 감사를 통과했다.
 
@@ -53,7 +54,6 @@ Android 두 flavor 모두 package/label, compile/target API 36, min API 24, `all
 - 실제 Google 계정 로그인과 hosted Supabase OAuth `amr` shape
 - 실제 성인 2계정·Android 2기기 Owner 이전/제거/재진입
 - production Supabase migration/Edge 배포
-- GitHub Actions 원격 CI — 이 evidence commit을 push한 뒤 별도로 확인한다.
 
 ## Security / Privacy Boundary
 
@@ -77,4 +77,4 @@ Android 두 flavor 모두 package/label, compile/target API 36, min API 24, `all
 
 ## Completion Boundary
 
-자동 검증 배치는 PASS다. 그러나 Work Plan이 요구한 실제 Google 성인 2계정·Android 2기기 live gate는 남아 있으므로 WP02-05는 IN PROGRESS다. 원격 CI와 live gate가 모두 green이고 그 결과가 추가될 때만 COMPLETE/PASS로 바꾼다.
+로컬 자동 검증과 원격 CI는 PASS다. 그러나 Work Plan이 요구한 실제 Google 성인 2계정·Android 2기기 live gate는 남아 있으므로 WP02-05는 IN PROGRESS다. live gate가 green이고 그 결과가 추가될 때만 COMPLETE/PASS로 바꾼다.
