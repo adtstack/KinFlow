@@ -110,4 +110,4 @@ scripts/ci/android-build.sh dev
 scripts/ci/android-build.sh prod
 ```
 
-Flutter package cache만 사용하는 검증은 `KINFLOW_PUB_OFFLINE=1`을 추가한다. 최신 기준 원격 실행은 [CI run 30503641477](https://github.com/adtstack/KinFlow/actions/runs/30503641477)이며 모든 source job과 최종 `CI gate`가 통과했다. branch protection/ruleset 적용은 별도 repository 관리 작업으로 남아 있다.
+Flutter package cache만 사용하는 검증은 `KINFLOW_PUB_OFFLINE=1`을 추가한다. Phase 02 상태 정합성 기준 원격 실행은 [CI run 30504563368](https://github.com/adtstack/KinFlow/actions/runs/30504563368)이며 모든 source job과 최종 `CI gate`가 통과했다. branch protection/ruleset 적용은 별도 repository 관리 작업으로 남아 있다.
