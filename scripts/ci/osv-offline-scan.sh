@@ -77,6 +77,7 @@ OSV_SCANNER_LOCAL_DB_CACHE_DIRECTORY="$kinflow_cache" \
   --format json \
   --output-file "$kinflow_report_dir/osv-report.json" \
   --lockfile "$kinflow_repo_root/package-lock.json" \
+  --lockfile "$kinflow_repo_root/apps/public_site/package-lock.json" \
   --lockfile "$kinflow_repo_root/apps/kinflow_app/pubspec.lock"
 
 {

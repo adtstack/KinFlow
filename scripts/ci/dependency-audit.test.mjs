@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import {
   classifyLicense,
+  parseNpmBuildLock,
   parseNpmLock,
   parsePubspecLock,
 } from './dependency-audit.mjs';
@@ -58,6 +59,41 @@ test('parseNpmLock requires v3 and de-duplicates platform packages', () => {
   assert.throws(
     () => parseNpmLock({ lockfileVersion: 2, packages: {} }),
     /lockfileVersion 3/u,
+  );
+});
+
+test('parseNpmBuildLock accepts build-only dependencies and rejects browser runtime packages', () => {
+  const packages = parseNpmBuildLock({
+    lockfileVersion: 3,
+    packages: {
+      '': {},
+      'node_modules/astro': {
+        dev: true,
+        license: 'MIT',
+        version: '7.2.0',
+      },
+    },
+  });
+  assert.deepEqual(packages, [
+    {
+      ecosystem: 'npm-build',
+      license: 'MIT',
+      name: 'astro',
+      version: '7.2.0',
+    },
+  ]);
+  assert.throws(
+    () =>
+      parseNpmBuildLock({
+        lockfileVersion: 3,
+        packages: {
+          'node_modules/client-sdk': {
+            license: 'MIT',
+            version: '1.0.0',
+          },
+        },
+      }),
+    /browser runtime dependency is forbidden/u,
   );
 });
 

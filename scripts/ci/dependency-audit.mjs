@@ -13,6 +13,18 @@ const allowedLicenses = new Set([
   'MPL-2.0',
 ]);
 
+const allowedBuildOnlyLicenses = new Set([
+  ...allowedLicenses,
+  '0BSD',
+  'Apache-2.0 AND LGPL-3.0-or-later',
+  'Apache-2.0 AND LGPL-3.0-or-later AND MIT',
+  'BlueOak-1.0.0',
+  'CC0-1.0',
+  'ISC',
+  'LGPL-3.0-or-later',
+  'Python-2.0',
+]);
+
 export function parsePubspecLock(source) {
   const packages = [];
   let inPackages = false;
@@ -87,6 +99,37 @@ export function parseNpmLock(lock) {
   return deduplicatePackages(packages);
 }
 
+export function parseNpmBuildLock(lock) {
+  if (lock.lockfileVersion !== 3 || !lock.packages) {
+    throw new Error('package-lock.json must use lockfileVersion 3.');
+  }
+
+  const packages = [];
+  for (const [path, metadata] of Object.entries(lock.packages)) {
+    const marker = 'node_modules/';
+    const markerIndex = path.lastIndexOf(marker);
+    if (markerIndex < 0) continue;
+    const packagePath = path.slice(markerIndex + marker.length);
+    const segments = packagePath.split('/');
+    const name = packagePath.startsWith('@')
+      ? segments.slice(0, 2).join('/')
+      : segments[0];
+    if (!name || typeof metadata.version !== 'string') {
+      throw new Error(`Incomplete npm build lock entry: ${path}.`);
+    }
+    if (metadata.dev !== true) {
+      throw new Error(`Public-site browser runtime dependency is forbidden: ${name}.`);
+    }
+    packages.push({
+      ecosystem: 'npm-build',
+      license: metadata.license,
+      name,
+      version: metadata.version,
+    });
+  }
+  return deduplicatePackages(packages);
+}
+
 export function classifyLicense(source) {
   const normalized = source.toLowerCase();
   if (normalized.includes('mozilla public license version 2.0')) {
@@ -147,17 +190,22 @@ async function auditPubLicenses(appRoot, pubPackages) {
   return audited.sort((left, right) => left.name.localeCompare(right.name));
 }
 
-function auditNpmLicenses(packages) {
+function auditNpmLicenses(packages, reviewedLicenses = allowedLicenses) {
   return packages
     .map((entry) => {
-      assertAllowedLicense('npm', entry.name, entry.license);
+      assertAllowedLicense('npm', entry.name, entry.license, reviewedLicenses);
       return { license: entry.license, name: entry.name, version: entry.version };
     })
     .sort((left, right) => left.name.localeCompare(right.name));
 }
 
-function assertAllowedLicense(ecosystem, name, license) {
-  if (typeof license !== 'string' || !allowedLicenses.has(license)) {
+function assertAllowedLicense(
+  ecosystem,
+  name,
+  license,
+  reviewedLicenses = allowedLicenses,
+) {
+  if (typeof license !== 'string' || !reviewedLicenses.has(license)) {
     throw new Error(
       `${ecosystem} package ${name} has an unreviewed license: ${license ?? 'unknown'}.`,
     );
@@ -191,13 +239,27 @@ async function main() {
   const npmPackages = parseNpmLock(
     JSON.parse(await readFile(resolve(repositoryRoot, 'package-lock.json'), 'utf8')),
   );
+  const publicSiteBuildPackages = parseNpmBuildLock(
+    JSON.parse(
+      await readFile(
+        resolve(repositoryRoot, 'apps/public_site/package-lock.json'),
+        'utf8',
+      ),
+    ),
+  );
   const pubLicenses = await auditPubLicenses(appRoot, pubLock);
   const npmLicenses = auditNpmLicenses(npmPackages);
+  const publicSiteBuildLicenses = auditNpmLicenses(
+    publicSiteBuildPackages,
+    allowedBuildOnlyLicenses,
+  );
   const report = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     licenses: {
       allowed: [...allowedLicenses].sort(),
+      allowedBuildOnly: [...allowedBuildOnlyLicenses].sort(),
       npm: npmLicenses,
+      npmBuild: publicSiteBuildLicenses,
       pub: pubLicenses,
     },
   };
@@ -205,7 +267,7 @@ async function main() {
   await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
 
   process.stdout.write(
-    `Dependency license audit passed: ${pubLicenses.length} Pub and ${npmLicenses.length} npm packages.\n`,
+    `Dependency license audit passed: ${pubLicenses.length} Pub, ${npmLicenses.length} npm runtime, and ${publicSiteBuildLicenses.length} npm build-only packages.\n`,
   );
 }
 
