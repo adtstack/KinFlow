@@ -93,13 +93,19 @@ pending → leased → succeeded
 - subscription lifecycle
 - privacy/security event
 
-각 rule은 recipient, schedule instant, quiet hours, dedupe, expiry를 계산한다.
+각 rule은 recipient, base schedule instant, 개인 lead time, quiet hours, dedupe, expiry를 계산한다. Calendar는 exact recipient의 고정 lead를 base에서 먼저 뺀 뒤 quiet hours를 적용하며, source payload는 개인 시간을 복제하지 않는다. preference 변경은 미평가 candidate만 재스케줄하고 평가된 이력은 동결한다.
+
+Calendar는 기존 기본 lead 1개와 additional fixed lead 최대 2개를 지원한다. 각 source는 같은 occurrence/version/audience 안에서 private lead identity로 dedupe되고 exact 5-key content-free payload를 공유한다. occurrence/horizon capture는 current set을 모두 생성하며 설정 변경은 future-only source를 추가하고 pending resolution/push만 이동한다. 제거된 explicit source는 current preference 재검사에서 stale 처리하고 evaluated history는 보존한다. preference v1은 전체 집합, v2는 additional 값을 보존하며 v3만 전체 집합을 strict 편집한다.
+
+Calendar Snooze는 이미 materialized된 caller-owned reminder를 새 explicit schedule source로 교체한다. 5·10·30분, 연속 최대 3회, occurrence base start 후 1시간 이내를 서버가 검사하고, original item version과 UUID command receipt로 response-loss를 멱등 처리한다. 새 source는 content-free이며 quiet hours·inbox·Android push worker를 재사용하고, 이후 lead preference 변경은 explicit Snooze 시각을 다시 계산하지 않는다.
 
 ## 9. Delivery
 
 - inbox first
 - push provider next
-- email은 초대/보안/구독/삭제 등 승인된 유형
+- email은 초대/보안/구독/삭제와 D-069에서 승인한 opted-in generic Chore/Calendar fallback 유형만 허용한다. category preference는 기본 OFF이며 inbox·push와 독립적이다.
+- generic fallback은 confirmed Auth address를 service-only claim 동안만 사용한다. address-free queue에는 source/recipient/subject identity와 stable result code만 남기고 family content, email, provider body/raw error를 저장하지 않는다.
+- email provider I/O 전에 lease-bound submission marker를 기록한다. `202`만 accepted, `429/500/502/503/504`만 최대 5회 bounded retry이며 marker 이후 network ambiguity는 terminal quarantine한다. optional provider receipt는 SHA-256만 보존한다.
 - stale notification은 provider 제출 생략 가능
 - provider receipt와 invalid token 정리
 - 내용 최소화, 잠금 화면 privacy setting
@@ -124,6 +130,10 @@ iOS/Android background execution을 정확한 스케줄러로 간주하지 않�
 - duplicate/out-of-order domain event
 - provider outage
 - quiet hours boundary
+- exact-recipient Calendar lead와 pending-only reschedule/frozen-history boundary
+- Calendar primary-plus-two source identity, future-only add, removed-source stale suppression과 v1/v2/v3 compatibility
+- Calendar Snooze count/window, optimistic replay, pre-due suppression, due inbox/push와 explicit schedule 보존
+- email preference/channel independence, confirmed-address ephemeral boundary, quiet-hours/one-hour expiry, marker-before-I/O, explicit retry mapping, address/content-free persistence와 aggregate-only worker response
 - app states foreground/background/terminated
 - notification tap authz
 - account/household switch purge

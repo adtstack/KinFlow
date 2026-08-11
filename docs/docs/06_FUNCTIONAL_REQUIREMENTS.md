@@ -58,6 +58,10 @@
 | FR-CHORE-008 | MUST | 전체 시리즈 변경 | 미래 미완료 회차 재생성, 과거 완료 이력 유지 |
 | FR-CHORE-009 | MUST | 목록/필터 | Today/upcoming/overdue/completed, assignee filter |
 | FR-CHORE-010 | SHOULD | template | 초기 template는 앱 내 정적/서버 seed, 개인정보 없음 |
+| FR-CHORE-011 | P1 | 가족 주간 리포트 | 최근 완료 가구 주차의 bounded aggregate, 구성원별 최소 기여, 콘텐츠·analytics·persistent cache 없음 |
+| FR-CHORE-012 | P1 | 이번 회차부터 시리즈 수정 | 선택한 active scheduled occurrence의 server-derived recurrence slot 이후 미완료 회차만 새 revision으로 변경, 이전·완료 이력 보존 |
+| FR-CHORE-013 | P1 | 이번 회차부터 시리즈 취소 | 선택한 active scheduled occurrence의 server-derived recurrence slot 이후 미완료 회차 취소, 이전 예정 prefix와 완료 이력 보존 |
+| FR-CHORE-014 | P1 | 선택 경계 취소 즉시 Undo | 원래 취소 actor·command와 exact cancellation-result version에 결합된 process-memory Undo, private metadata-only pre-state 복원, 새 immutable resumed revision, transient same-key retry와 terminal fail-closed |
 
 ## 5. 일정 (`FR-CAL`)
 
@@ -71,6 +75,10 @@
 | FR-CAL-006 | MUST | 전체 series 수정 | 과거 이력 보존, 미래 materialization 갱신 |
 | FR-CAL-007 | MUST | agenda/calendar 조회 | locale week start, pagination, loading/empty/error |
 | FR-CAL-008 | SHOULD | 충돌 표시 | 같은 구성원의 overlap 힌트, 저장 차단은 아님 |
+| FR-CAL-009 | SHOULD | 외부 캘린더 단방향 import | 명시적 `.ics` 선택·검토·일정별 선택, bounded RFC subset, provider 계정·자동 sync 없음 |
+| FR-CAL-010 | P1 | 이번 회차부터 시리즈 수정 | 선택한 active scheduled non-exception occurrence의 server-derived immutable recurrence slot 이후 source 회차만 새 revision으로 변경, 이전 회차와 기존 한 회차 예외 보존 |
+| FR-CAL-011 | P1 | 이번 회차부터 시리즈 취소 | 선택한 active scheduled non-exception occurrence의 server-derived immutable recurrence slot부터 이후 모든 회차와 예외를 취소, 이전 회차·예외와 actionable prefix 보존 |
+| FR-CAL-012 | P1 | 선택 경계 취소 즉시 Undo | 원래 취소 actor·command와 exact cancellation-result version에 결합된 process-memory Undo, private metadata-only pre-state 복원, 새 immutable resumed revision, transient·reload same-key retry와 terminal fail-closed |
 
 ## 6. Today (`FR-TODAY`)
 
@@ -93,6 +101,9 @@
 | FR-NOTIF-005 | MUST | deep link | 로그인/가구/권한 검증 후 안전한 destination |
 | FR-NOTIF-006 | MUST | 중복 방지 | idempotency key, provider receipt, retry cap |
 | FR-NOTIF-007 | SHOULD | 알림 category 설정 | assignment/due/event/approval 별 opt-in |
+| FR-NOTIF-010 | P1 | 개인별 Calendar 알림 선행 시간 | 정시·5·10·15·30·60분 전, exact 수신자별 계산, lead 이후 quiet hours, 미전달 reminder만 재스케줄 |
+| FR-NOTIF-011 | P1 | Calendar 알림 다시 알림 | active 본인 Calendar inbox에서 5·10·30분, 연속 최대 3회, 시작 후 1시간 이내; 원본과 재예약을 원자적으로 교체하고 동일 command 재시도는 중복 없이 같은 결과 |
+| FR-NOTIF-012 | P1 | Calendar 복수 사전 알림 | 개인·가구별 기본 1개와 추가 최대 2개의 distinct 고정 시간; 각 알림은 content-free 기존 경로로 독립 전달하고 v1/v2 설정 호환·미전달 future-only reconciliation·평가 이력 동결 |
 
 ## 8. 구독 (`FR-SUB`)
 

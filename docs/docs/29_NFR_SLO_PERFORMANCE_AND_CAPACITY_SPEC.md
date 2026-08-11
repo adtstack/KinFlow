@@ -104,3 +104,33 @@ Beta 전 load test model과 비용 alarm을 설정한다.
 ## 11. SLO 운영
 
 각 SLO는 numerator/denominator, exclusions, source, owner, alert, review cadence를 갖는다. 사용자 기반이 작을 때 비율만으로 alert하지 않고 절대 건수와 synthetic test를 함께 사용한다.
+
+### Android push provider-submit SLO
+
+- target: provider delivery가 quiet hours/current preference/latest state를 통과해 materialize된 시점부터 5분 안에 FCM accepted 95%
+- rolling local primitive: 최근 24시간 중 관찰 시각 5분 이전에 eligible해진 delivery
+- exclusions: preference/latest-state/endpoint 변화로 정상 취소된 delivery. `STALE_DELIVERY_WINDOW`는 miss에 포함한다.
+- low-volume trigger: 비율 표본이 20건 미만이어도 miss 3건 또는 stale suppression 1건이면 critical 후보
+- degraded trigger: active provider backoff, ambiguity 1건 또는 expired lease
+- source: `get_notification_push_reliability_health`; raw token, household/member/subject/delivery identifier와 provider body는 dashboard/alert에 금지
+- owner/runbook: backend operator / `docs/evidence/phase-05/WP05_05_RUNBOOK.md`
+- production status: local aggregate contract only. hosted dashboard/pager와 실제 outage drill은 release Gate다.
+
+### Billing reconciliation health baseline
+
+- local signal: queued, leased, retry-wait, dead-letter, 최근 24시간 succeeded/dead-letter, expired lease, oldest due와 next retry aggregate
+- retry primitive: 최대 5 attempts; 첫 네 실패는 1분, 5분, 30분, 2시간 뒤 재시도하고 마지막 실패는 terminal dead letter
+- periodic repair: active persisted household assignment가 있는 stale RevenueCat customer만 bounded enqueue하며 active job이 있으면 중복 생성하지 않음
+- privacy: provider event/customer/transaction/product ID, subscriber attribute, receipt와 raw webhook/API body는 queue health·transition·alert에 금지
+- source: `get_billing_reconciliation_health`; worker response도 scheduled/claimed/succeeded/retry/dead-letter count만 포함
+- production status: local synthetic contract only. hosted cron, dashboard/pager, 실제 RevenueCat latency/outage와 10분 materialization target은 마지막 Billing Gate에서 측정·승인
+
+### Billing assignment safety baseline
+
+- purchase/restore preflight: Store 호출 전에 authenticated Owner/Admin의 explicit assignment prepare가 terminal outcome을 반환해야 함
+- provisional bound: 30분 뒤 만료하며 verified transaction 없이는 Plus grant·periodic reconciliation 대상이 아님
+- concurrency: user + household advisory lock과 active unique indexes로 동시 선택에서 최대 하나만 `ready`
+- conflict safety: customer/household conflict에서 Store call 0, implicit release/transfer 0, 반대편 identifier leakage 0
+- recovery: same identity/environment `ASSIGNMENT_REQUIRED`만 idempotent requeue; immutable transition 필수
+- support: expected version + allowlisted reason + SHA-256 case reference + correlation ID 없이 resolution 금지; source reset과 target move는 atomic
+- production status: local pgTAP/Flutter synthetic contract only. provider ownership, hosted cleanup/operator workflow, Store account/reinstall/device는 마지막 Billing Gate

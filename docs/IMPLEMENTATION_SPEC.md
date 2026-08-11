@@ -12,7 +12,7 @@
 - 사용법: 한 파일만 제공 가능한 코딩 에이전트용
 - 최근 제품 범위 결정: 2026-07-23 — 대한민국 단일 시장·Seoul 리전, Android 단일 출시, dev/prod, 개인 운영, Google 로그인, 성인 2인 Activation 우선, Managed Child P1
 
-> ADR-0002와 `DECISIONS.md`의 D-002/D-032/D-052~D-056이 이 합본 안의 이전 iOS 동시 출시·staging·인증 provider·Phase 02 sequencing·DB naming 예시보다 우선한다.
+> ADR-0002와 `DECISIONS.md`의 D-002/D-032/D-052~D-070이 이 합본 안의 이전 iOS 동시 출시·staging·인증 provider·Phase 02 sequencing·DB naming 및 후속 P1 범위 예시보다 우선한다.
 
 
 ---
@@ -689,7 +689,7 @@ MVP는 완전한 offline-first가 아니다.
 Domain event/outbox
   → notification rule evaluator
   → notification job (dedupe key)
-  → recipient preference/quiet hours
+  → recipient preference/lead time/quiet hours
   → inbox row 생성
   → platform delivery attempt
   → provider receipt 처리
@@ -705,10 +705,13 @@ in-app inbox 생성이 push provider 성공에 의존하지 않는다.
 - notification payload에는 최소 식별자만 포함하고 민감한 가족 내용을 넣지 않는다.
 - tap 시 deep link route를 서버 권한 재검증 후 연다.
 - local notification은 사용자 기기 편의이며 server due job의 권위를 대체하지 않는다.
+- Calendar Snooze는 caller-owned active inbox item의 versioned/idempotent server command로만 수행한다. 원본 inbox와 pending push를 원자적으로 supersede하고 content-free replacement source를 기존 server worker에 넣으며 client local alarm을 schedule authority로 사용하지 않는다.
 
 ## 9. Quiet hours와 시간대
 
 - household reminder 기준과 사용자 quiet hours를 분리한다.
+- Calendar는 exact recipient lead를 base instant에서 먼저 빼고 quiet hours를 적용한다. preference 변경은 미평가 candidate만 재스케줄하고 terminal history는 동결한다.
+- Snooze는 5·10·30분, 연속 최대 3회, occurrence base start 후 1시간 이내로 제한하며 explicit source는 이후 lead preference 변경으로 이동하지 않는다.
 - 일정 원래 timezone과 수신자 timezone을 구분한다.
 - DST 전환 시 중복/누락이 없도록 occurrence instant를 사용한다.
 - 발송 지연이 허용 범위를 넘으면 inbox에는 남기고 stale push를 생략할 수 있다.
@@ -941,14 +944,38 @@ mobile purchase/restore
 
 클라이언트 SDK의 `CustomerInfo`만으로 server mutation 권한이나 household Plus 한도를 열지 않는다.
 
+### WP06-03A local client flow (2026-08-08)
+
+- client는 current user + active household의 server entitlement를 먼저 읽고 exact authenticated user identity만 billing port에 bind한다.
+- Store catalog와 localized price는 provider-neutral immutable object로만 운반하며, catalog/SDK unavailable은 server entitlement를 지우지 않는다.
+- Store purchase success와 provider snapshot은 refetch 신호일 뿐이다. current household의 newer server Plus와 billing-owner flag가 일치해야 purchase confirmed가 된다.
+- confirmation timeout은 pending을 유지하고 explicit refresh를 제공한다. restore conflict나 identity mismatch는 자동 이전·재구매 없이 fail closed한다.
+- account/household switch, logout과 dispose는 in-flight generation을 무효화하며 account switch는 이전 provider identity clear 성공 뒤에만 새 identity를 bind한다.
+- Evidence: `docs/evidence/phase-06/WP06_03A_EVIDENCE.md`. RevenueCat SDK, UI와 실제 sandbox/account/device 결과는 아직 포함하지 않는다.
+
+### WP06-05 local household assignment flow (2026-08-08)
+
+- purchase/restore 전에 active Owner/Admin이 혜택 household를 명시하고 server가 authenticated identity와 runtime provider/environment로 30분 provisional binding을 만든다.
+- provisional은 entitlement가 아니며 verified transaction만 confirmed로 승격한다. customer/household conflict는 counterparty identifier 없이 Store 호출 전에 닫는다.
+- purchaser membership drift는 Plus를 자동 삭제·이전하지 않고 support-required로 표시한다. service-only transfer는 expected version, allowlisted reason, SHA-256 case reference, correlation ID와 immutable audit를 요구한다.
+- Evidence: `docs/evidence/phase-06/WP06_05_EVIDENCE.md`. provider ownership, support operator UI, 실제 Store account/reinstall/device는 마지막 Billing Gate다.
+
+### WP06-06 local lifecycle and feature enforcement (2026-08-08)
+
+- D-027 수치는 OPEN으로 유지한다. Free/Plus policy가 모두 active/finalized이고 `members`, `activeSeries`를 포함한 뒤 service-only expected-version activation이 성공해야 mutation enforcement가 켜진다.
+- active member 추가/복구와 recurring chore/calendar 최초 생성·재활성화는 household+feature advisory lock 안에서 authoritative usage를 다시 계산한다. one-time series는 제외한다.
+- downgrade·expiry·refund·revoke 뒤 existing over-limit data를 삭제하지 않는다. 기존 read/update/cancel/delete와 one-time creation은 보존하고 새 member/recurring expansion만 제한한다.
+- client는 provider/customer/transaction/owner/member identifier나 가족 콘텐츠가 없는 exact aggregate gate만 읽고, server `KFB10/KFB11/KFB12`를 localized policy/limit UX로 표시한다.
+- Evidence: `docs/evidence/phase-06/WP06_06_EVIDENCE.md`. numeric policy, hosted activation, paywall과 실제 Store/provider/account/device는 마지막 Billing Gate다.
+
 ## 4. 상태 모델
 
-`household_entitlement.status` 예시:
+`household_entitlement.status`:
 
-- `inactive`
+- `none`
 - `trialing`
 - `active`
-- `grace_period`
+- `grace`
 - `billing_issue`
 - `expired`
 - `revoked`
@@ -970,10 +997,12 @@ mobile purchase/restore
 1. 로그인과 active household 확인
 2. 상품과 가격을 store에서 조회
 3. household 혜택 범위와 자동 갱신 설명
-4. 구매 진행
-5. SDK success를 임시 pending으로 표시
-6. 서버 entitlement 확인
-7. timeout 시 중복 구매를 유도하지 않고 복원/상태 갱신 제공
+4. server에 explicit provisional household assignment 준비
+5. conflict면 Store 호출 없이 support 경로 제공
+6. 구매 진행
+7. SDK success를 임시 pending으로 표시
+8. verified transaction과 서버 entitlement 확인
+9. timeout 시 중복 구매를 유도하지 않고 복원/상태 갱신 제공
 
 ## 6. 복원과 계정 변경
 
@@ -987,7 +1016,7 @@ mobile purchase/restore
 - billing household 변경 요청
 - 구매가 다른 RevenueCat App User ID에 연결됨
 
-자동 이전 정책은 사업 결정 없이는 구현하지 않는다. 충돌 시 안전하게 잠그고 지원 경로를 제공한다.
+자동 이전은 하지 않는다. 충돌 시 안전하게 잠그고 aggregate support request를 제공하며 실제 이전은 ownership verification 뒤 service-only audited command로만 실행한다.
 
 ## 7. Store lifecycle
 
@@ -1016,10 +1045,11 @@ mobile purchase/restore
 
 ## 9. Feature gate
 
-- 서버: Plus 전용 mutation과 한도를 강제
-- 클라이언트: UX용 visibility/upsell
+- 서버: finalized policy activation 후 member와 recurring-series expansion을 직렬화해 강제
+- 클라이언트: exact aggregate gate를 UX에만 사용하고 client count/캐시를 authority로 사용하지 않음
 - offline cache의 오래된 Plus 상태로 destructive mutation을 허용하지 않음
-- entitlement downgrade 시 기존 데이터는 유지하되 새 생성/확장을 제한하는 정책을 명시
+- entitlement downgrade 시 기존 데이터와 비확장 작업은 유지하고 새 member/recurring expansion만 제한
+- D-027 전에는 enforcement disabled, gate는 `policy_unavailable`이며 limit을 추정하지 않음
 
 ## 10. Free/Plus OPEN 결정
 
@@ -2601,11 +2631,13 @@ UI는 nullable user 하나로 모든 상태를 추론하지 않는다.
 
 한 계정이 여러 household를 가질 수 있으나 Store MVP UI는 단순화할 수 있다. active household는 client preference일 뿐 서버 권한이 아니다. 전환 시:
 
-- previous household cache/provider dispose
-- notification/filter context 갱신
-- P1 child acting mode 종료
-- entitlement refetch
-- Realtime channel 재구성
+- 목록은 `auth.uid()`에 직접 연결된 non-removed adult membership의 household name, 본인 member ID/role/version, 현재 선택 여부와 selection version만 반환한다. roster, owner ID, member count, invite, billing과 profile 정보는 반환하지 않는다.
+- mutation은 target household ID와 expected selection version만 받고 target member ID는 서버가 파생한다. 같은 target은 현재 version의 no-op이며 다른 target은 exact version에서만 한 번 증가한다.
+- previous household encrypted read cache, submitted guided-setup resume와 pending invite continuation을 정리한 뒤 새 active-household envelope를 기록한다. 확인할 수 없는 purge/write는 authenticated content를 `localPurgeFailed`로 잠근다.
+- Settings에서 다른 가구 선택을 명시적으로 확인하고 성공 후 Today를 authoritative reload한다.
+- non-Owner 가구 나가기는 기존 leave transaction의 exact nullable fallback household/member pair를 그대로 소비한다. 별도 refresh로 fallback을 재추정하지 않고 이전 가구 read cache, submitted guided resume와 pending invite를 정리한 뒤 fallback active snapshot 또는 no-household clear를 commit한다. local transition 실패는 departed roster를 다시 열지 않고 `localPurgeFailed`로 닫는다.
+- notification/filter context를 갱신하고 entitlement를 다시 읽으며 Realtime channel을 재구성한다. RevenueCat identity는 auth user ID이므로 household 전환만으로 바꾸지 않는다.
+- Store MVP에는 P1 child acting mode가 없으며 전환 기능이 Managed Child surface를 만들지 않는다.
 
 ## 8. Managed Child(P1 계약, Store MVP 비범위)
 
@@ -2745,7 +2777,7 @@ pending → leased → succeeded
 - subscription lifecycle
 - privacy/security event
 
-각 rule은 recipient, schedule instant, quiet hours, dedupe, expiry를 계산한다.
+각 rule은 recipient, base schedule instant, 개인 lead time, quiet hours, dedupe, expiry를 계산한다. Calendar Snooze는 caller-owned materialized reminder를 bounded explicit content-free source로 교체하고 optimistic item version과 UUID command receipt로 response-loss를 멱등 처리한다.
 
 ## 9. Delivery
 
@@ -2776,6 +2808,8 @@ iOS/Android background execution을 정확한 스케줄러로 간주하지 않�
 - duplicate/out-of-order domain event
 - provider outage
 - quiet hours boundary
+- exact-recipient Calendar lead와 pending-only reschedule/frozen-history boundary
+- Calendar Snooze count/window, optimistic replay, pre-due suppression, due inbox/push와 explicit schedule 보존
 - app states foreground/background/terminated
 - notification tap authz
 - account/household switch purge
@@ -2800,6 +2834,16 @@ abstract interface class BillingService {
 
 `purchases_flutter` type은 adapter 밖으로 노출하지 않는다.
 
+### 1.1 WP06-03A local contract
+
+- `BillingPort`는 provider-neutral identity, catalog, purchase, restore, clear와 client invalidation snapshot만 노출한다.
+- catalog/package는 opaque Store identifier, Store-localized price와 billing period를 immutable value로 운반한다. 실제 product ID·가격·통화·trial 문구를 앱에 하드코딩하지 않는다.
+- `BillingFlowController`는 server entitlement를 먼저 읽는다. provider 또는 catalog가 unavailable이어도 기존 server status는 표시하고 새 purchase만 닫는다.
+- purchase Store success는 newer server Plus이면서 current user가 billing owner일 때만 확정한다. bounded confirmation이 끝나도 Free를 Plus로 추정하지 않고 pending + explicit refresh를 유지한다.
+- restore empty/conflict/pending/found, purchase cancel/pending/retryable/final failure는 서로 다른 stable state/result다.
+- duplicate action은 한 provider call로 합치며 logout/account/household switch와 dispose는 이전 generation의 늦은 결과를 무효화한다. identity clear 실패 시 새 user bind를 막는다.
+- 이 local contract는 deterministic fake port로 검증됐다. RevenueCat concrete SDK, paywall composition과 actual sandbox/account/device는 후속 Gate다.
+
 ## 2. Initialization
 
 - app boot에서 configuration 가능
@@ -2813,6 +2857,8 @@ abstract interface class BillingService {
 ```text
 catalogLoading
 catalogReady
+assignmentPreparing
+assignmentConflict
 purchasing
 storeSuccessServerPending
 active
@@ -2827,36 +2873,62 @@ Store success 직후 Plus를 영구 활성화하지 않고 server confirmation p
 
 ## 4. Server reconciliation
 
-- webhook primary asynchronous signal
-- 필요 시 authenticated refresh endpoint
-- customer identity mapping
-- provider transaction unique
-- authoritative entitlement recompute
-- client polling/backoff 제한
-- mismatch alert
+- \`POST /functions/v1/revenuecat-webhook\`은 dedicated full Authorization과 \`X-RevenueCat-Webhook-Signature\` HMAC을 모두 검증한다. HMAC 입력은 재직렬화 JSON이 아니라 \`timestamp + "." + raw body bytes\`이고 허용 오차는 300초다.
+- 최대 256 KiB JSON만 수용하며 인증을 JSON parse보다 먼저 수행한다. 성공·중복·ignore·manual-review는 provider/customer/transaction 식별자 없이 빠른 200 aggregate response를 반환한다.
+- private inbox는 provider event ID + raw SHA-256 hash로 exact replay를 한 row에 합치고 같은 ID/다른 body를 거부한다. 동일 event의 동시 최초 delivery도 transaction advisory lock으로 직렬화한다.
+- webhook payload는 entitlement authority가 아니라 refresh trigger다. leased worker가 고정된 RevenueCat API v1 subscriber endpoint를 exact auth UUID로 다시 조회하고 identity, environment, configured entitlement, product, subscription, store와 timestamp를 strict parse한다.
+- provider request time을 ordering clock으로 active/trial/grace/billing issue/cancel-valid/expired/refunded snapshot을 normalized \`reconciliation\` event로 바꿔 WP06-01 \`apply_verified_billing_event\`에 전달한다.
+- worker는 \`FOR UPDATE SKIP LOCKED\`, opaque lease, 최대 5 attempts와 1m/5m/30m/2h의 네 retry를 사용하고 5번째 실패를 terminal로 닫는다. network/429/5xx/RPC failure만 retry하고 identity/environment/schema/unmapped failure는 dead letter다.
+- persisted active billing assignment가 없으면 현재 active household를 추정하지 않고 \`ASSIGNMENT_REQUIRED\` dead letter로 닫는다. WP06-05 prepare만 같은 identity/environment의 해당 work를 idempotently requeue한다.
+- raw webhook/provider response는 저장하지 않으며 immutable aggregate transition audit와 queue health만 남긴다. RevenueCat dashboard/API key, hosted scheduler/alert와 실계정·Store·기기 검증은 마지막 Billing Gate다.
 
 ## 5. Household assignment
 
-구매 전 active household를 확인하고 혜택을 명시한다. 한 구매가 여러 household를 자동으로 유료화하지 않는다. billing household 변경/이전은 정책과 audit가 필요한 command다.
+구매 전 active household를 확인하고 혜택을 명시한다. 한 구매가 여러 household를 자동으로 유료화하지 않는다.
+
+- active Owner/Admin의 idempotent prepare가 Store 호출보다 먼저 실행되고 server는 provider/environment/customer를 trusted context에서 파생한다.
+- `ready|already_ready|customer_conflict|household_conflict`만 반환하며 30분 provisional은 verified transaction 전까지 Plus가 아니다.
+- cancel/restore-empty/final failure는 matching provisional만 해제한다. pending/success는 유지하고 confirmed client release는 support-required다.
+- status는 binding/ownership/member-health/can-prepare/support/version/expiry의 aggregate projection만 제공한다.
+- valid prepare는 same-identity `ASSIGNMENT_REQUIRED`를 requeue하고 periodic reconciliation은 confirmed만 schedule한다.
+- service-only remediation은 expected version, reason, hashed case reference와 immutable audit로 source reset + target entitlement 이동을 atomic하게 처리한다.
+- exact contract: `docs/contracts/billing-assignment.yaml.md`.
 
 ## 6. Feature flags와 limits
 
-서버 response:
+D-027 확정 전 기본 gate response 예시:
 
 ```json
 {
-  "entitlement": "plus",
-  "status": "active",
-  "validUntil": "...",
-  "limits": {
-    "members": 10,
-    "activeSeries": 100
-  },
-  "verifiedAt": "..."
+  "decision": "policy_unavailable",
+  "householdId": "<current-household-uuid>",
+  "featureKey": "members",
+  "requestedDelta": 1,
+  "currentUsage": 0,
+  "limit": null,
+  "remainingAfterDelta": null,
+  "plan": "free",
+  "entitlementStatus": "none",
+  "enforcementEnabled": false,
+  "limitsFinalized": false,
+  "entitlementVersion": 1,
+  "policyVersion": 1,
+  "runtimeVersion": 1,
+  "evaluatedAt": "2026-08-08T00:00:00Z"
 }
 ```
 
-client는 UX에 사용하고 server가 mutation에서 다시 강제한다.
+client는 이 aggregate projection을 UX에만 사용하고 server가 mutation에서 다시 강제한다. provider/customer/transaction/receipt/billing owner/member identifier와 가족 콘텐츠는 projection에 포함하지 않는다.
+
+### 6.1 WP06-06 activation and enforcement
+
+- `configure_billing_feature_enforcement(enabled, expectedVersion, correlationId)`는 service role만 호출한다. enable은 active finalized Free/Plus 정책 모두에 `members`, `activeSeries`가 존재하고 Plus가 Free보다 작지 않을 때만 허용하며 immutable policy audit를 남긴다.
+- enabled 상태의 필수 plan을 inactive/unfinalized로 만들거나 필수 key를 제거할 수 없다. incident 대응을 위한 runtime emergency disable은 허용한다.
+- `get_household_feature_gate(household, feature, delta)`는 active member에게 `allowed | policy_unavailable | feature_unconfigured | limit_reached`만 반환한다. delta 범위는 1..1000이고 결과는 entitlement/policy/runtime version을 함께 운반한다.
+- actual enforcement는 household+feature transaction advisory lock과 entitlement/catalog row lock 뒤 usage를 재계산한다. client count나 cached Plus는 authority가 아니다.
+- `members`는 removed member를 제외한다. `activeSeries`는 recurring active chore/event series만 합산하고 one-time은 제외한다.
+- member insert/reactivation 및 recurring series 최초 revision/reactivation은 같은 authority를 호출한다. `KFB10/KFB11`은 policy unavailable, `KFB12`는 limit reached로 Flutter와 invite Edge에 전달한다.
+- exact 계약은 `docs/contracts/billing-feature-enforcement.yaml.md`에 정의한다. numeric limits는 D-027 승인 전까지 설정·활성화하지 않는다.
 
 ## 7. Restore conflict
 
@@ -2866,6 +2938,8 @@ client는 UX에 사용하고 server가 mutation에서 다시 강제한다.
 - 중복 purchase 유도 금지
 - support/ownership verification path
 - manual action audit
+
+WP06-05는 aggregate request와 audited resolution을 local automation으로 구현했다. RevenueCat ownership verification, ticket/operator UI와 actual Store evidence는 마지막 Billing Gate다.
 
 ## 8. Cancellation/Expiry
 
@@ -2882,6 +2956,8 @@ client는 UX에 사용하고 server가 mutation에서 다시 강제한다.
 - refund/revoke/expiry
 - network loss after store success
 - duplicate tap and transaction
+
+Local evidence: `docs/evidence/phase-06/WP06_03A_EVIDENCE.md`와 `docs/evidence/phase-06/WP06_05_EVIDENCE.md`. 실제 Store 항목은 완료로 간주하지 않는다.
 
 ## 10. Store copy
 
@@ -3143,6 +3219,8 @@ Beta 전 load test model과 비용 alarm을 설정한다.
 ## 11. SLO 운영
 
 각 SLO는 numerator/denominator, exclusions, source, owner, alert, review cadence를 갖는다. 사용자 기반이 작을 때 비율만으로 alert하지 않고 절대 건수와 synthetic test를 함께 사용한다.
+
+WP05-05 Android push local baseline은 quiet hours/current state 통과 후 provider materialization을 schedule로 삼아 24시간 95%-within-5m submit SLO를 계산한다. 정상 state/preference/endpoint 취소는 제외하고 stale는 miss다. 표본 20건 미만에도 miss 3건 또는 stale 1건을 critical 후보로 사용하며 alert에는 raw token과 household/member/subject/delivery identifier 및 provider body를 금지한다. hosted dashboard/pager와 실제 outage drill은 release Gate다.
 
 
 ---
@@ -3762,6 +3840,23 @@ Chores Value Gate 통과, recurrence time library ADR 승인.
 - concurrent edits
 - deleted/stale deep link
 - Realtime reconnect
+- 2026-08-08 local automated slice: Calendar/Today의 content-free household
+  watermark 구독, connect/reconnect/resume authoritative refetch,
+  duplicate/out-of-order generation 억제, in-flight drain, retained stale
+  content, occurrence locator deep link와 stale mutation 복구가 구현되었다.
+  삭제·취소·권한변경 target은 같은 content-free unavailable 경계로 닫는다.
+  실제 계정·두 기기·remote·실기기 검증은 남는다.
+
+### WP04-07 Same-member overlap hint
+
+- timed/all-day/mixed half-open overlap preview
+- same active household participant intersection
+- bounded recurrence, explicit edit self-exclusion, deterministic truncation
+- 2026-08-08 local automated slice: 생성·one-time 수정·반복 한 회차 수정·전체
+  시리즈 수정 editor에서 제목·설명 없는 요청으로 같은 구성원의 겹침을
+  확인하고 최대 10개 상세를 표시한다. checking/none/conflict/unavailable 모든
+  상태에서 저장은 가능하다. hosted query plan과 실제 계정·두 기기·실기기는
+  마지막 Gate로 유지한다.
 
 ## 자동 검증
 
@@ -3810,6 +3905,13 @@ Chores/Calendar domain event와 occurrence 안정화.
 - idempotent handler
 - monitoring/replay
 
+상태: `LOCAL IMPLEMENTED (2026-08-08)`
+
+- content-free Chore Outbox의 skip-locked lease/heartbeat, 최대 5회 deterministic retry, dead letter/replay를 구현했다.
+- latest occurrence/series/recipient 평가 결과를 source event당 candidate 또는 allowlisted suppression으로 원자적·멱등 확정한다.
+- service-role-only mediated API, immutable transition audit, pause/resume, aggregate health와 dedicated-secret Edge worker가 있다.
+- hosted scheduler/alert, endpoint/provider delivery와 실계정·실기기는 후속 Gate다.
+
 ### WP05-02 Notification preferences/inbox
 
 - per-type settings
@@ -3817,12 +3919,27 @@ Chores/Calendar domain event와 occurrence 안정화.
 - in-app durable inbox
 - read/unread/badge
 
+상태: `LOCAL IMPLEMENTED (2026-08-08)`
+
+- `chore_due|chore_assignment` category별 versioned preference, IANA timezone quiet hours, recipient 전용 content-free durable inbox를 구현했다.
+- 자정 교차와 DST gap/fold를 결정적으로 처리하며 quiet hours는 provider delivery timing에만 영향을 주고 inbox persistence와 분리한다.
+- latest state/current preference 재평가, superseded 취소, keyset pagination, 개별/전체 읽음과 server-authoritative badge를 DB와 Flutter에 연결했다.
+- endpoint/token, provider send, OS permission/lifecycle/tap deep link와 실계정·실기기는 WP05-03/04 및 마지막 Gate에 남긴다.
+
 ### WP05-03 Device registration
 
 - installation identity
 - FCM token lifecycle
 - logout/account switch/removal purge
 - invalid token cleanup
+
+상태: `LOCAL IMPLEMENTED (2026-08-08)`
+
+- 환경별 secure installation UUID와 account-bound pending/active binding proof를 분리하고 Android namespace 및 iOS Keychain account를 auth storage와 격리했다.
+- authenticated Edge 등록에서 raw provider token을 AES-256-GCM으로 봉인하고 SHA-256 fingerprint로 dedupe하며 registration UUID·expected version으로 response-loss replay, metadata refresh와 token rotation을 구분한다.
+- 같은 active fingerprint의 계정 재할당, 256-bit proof 기반 logout/account-switch 해지, member removal 자동 해지와 stale fingerprint가 새 token을 끄지 못하는 provider invalidation을 구현했다.
+- Flutter lifecycle은 raw token을 저장하지 않고 pending proof를 network 전에 저장한다. 응답 유실 상태를 현재 callback token으로 exact replay해 동시에 도착한 token rotation을 놓치지 않으며, 원격 해지가 실패하면 proof를 보존하고 auth local purge를 fail-closed 처리한다.
+- Android FCM SDK token 획득, OS permission, provider send/receipt hash, foreground/background/terminated 표시와 tap은 WP05-04에서 로컬 자동화로 연결했다. 실제 Firebase project·실기기와 iOS/APNs는 마지막 Gate/별도 ADR에 남긴다.
 
 ### WP05-04 Mobile push
 
@@ -3832,12 +3949,29 @@ Chores/Calendar domain event와 occurrence 안정화.
 - background/terminated handler
 - deep link tap authz
 
+상태: `LOCAL IMPLEMENTED (2026-08-08)`
+
+- source event를 durable inbox와 독립적으로 재평가하고 현재 preference·quiet hours·latest state·active Android endpoint를 통과한 `(source_event_id, endpoint_id)` delivery만 만든다.
+- 최대 5회 lease/finalize와 exact replay, stale lease/fingerprint 방어, invalid-token endpoint 해지, provider receipt SHA-256 hash와 rollback pause를 구현했다.
+- dedicated secret Edge worker가 versioned AES-GCM keyring으로 token을 memory에서 열고 service-account OAuth를 거쳐 최소 식별자·generic localization key만 FCM HTTP v1에 전송한다.
+- optional all-or-none Android Firebase public options, 명시적 pre-prompt action, denied settings/inbox fallback, token rotation, foreground local presentation과 background/terminated/local tap continuation을 연결했다.
+- tap payload는 capability로 신뢰하지 않고 auth·active household 준비 후 server latest-state target RPC를 통과할 때만 Today로 이동하며 실패는 알림 센터로 fail closed한다.
+- synthetic/fake DB·Edge·Flutter vertical slice와 Android dev debug APK build는 통과했다. 실제 Firebase project/service account, hosted scheduler, 실계정·실기기와 OEM matrix는 마지막 Gate다.
+
 ### WP05-05 Reliability
 
 - provider outage/backoff
 - duplicate/out-of-order
 - stale suppression
 - queue alert/SLO
+
+상태: `LOCAL IMPLEMENTED (2026-08-08)`
+
+- provider I/O 직전 exact lease/token submission marker를 기록하고 explicit 429/5xx만 Retry-After·exponential delay·deterministic jitter로 재시도한다.
+- marker 이후 timeout/malformed success/completion loss는 terminal ambiguity로 격리해 자동·수동 replay를 금지하고 durable inbox를 fallback으로 유지한다.
+- provider-wide backoff, delivery-ID Android tag, remaining one-hour TTL, stale cancellation과 최근 no-endpoint recovery를 구현했다.
+- immutable content-free transition, exhausted-only bounded replay, aggregate queue/provider health와 24시간 provider-submit SLO/low-volume alert를 제공한다.
+- clean 29-migration reset, 34-file/1,907-test DB regression과 97-test JavaScript regression을 통과했다. hosted alert와 실제 Firebase/provider/device incident drill은 마지막 Gate다.
 
 ### WP05-06 Offline/read cache
 
@@ -3846,7 +3980,13 @@ Chores/Calendar domain event와 occurrence 안정화.
 - one safe chore-completion outbox PoC
 - membership/session/version/TTL revalidation
 
-Offline mutation이 위험하거나 가치가 낮으면 read-only cache로 남긴다.
+상태: `LOCAL IMPLEMENTED (2026-08-08)`
+
+- Android 전용 encrypted storage의 fixed slot에 active household, chore list와 Today first-page snapshot을 저장한다. exact contract/user/session/household/TTL/size 검증과 기존 strict parser 재검증을 통과한 값만 일시적 provider unavailable 상황에서 표시한다.
+- logout, session termination/revocation, account switch, no-active-household와 household change 경계에서 purge 또는 exact replacement하며 purge 실패는 `localPurgeFailed` lock으로 fail closed한다. Web persistent cache는 compose하지 않는다.
+- cached-at/reconnect/read-only 상태를 en/ko/en-XA UI에 표시하고 cached 상태의 mutation, filter와 pagination을 UI와 controller 양쪽에서 차단한다. authoritative refresh가 성공하면 read-only 상태를 해제한다.
+- Flutter 전체 회귀 539 pass와 local-connectivity opt-in 1 skip, analyzer issue 0, formatter drift 0 및 config/codegen/secret/whitespace Gate를 통과했다.
+- D-018 safety Gate가 모두 입증되지 않아 chore-completion outbox는 의도적으로 비활성화했다. 실계정·실기기 cache forensic은 마지막 Gate다.
 
 ## 자동 검증
 
@@ -3859,7 +3999,7 @@ Offline mutation이 위험하거나 가치가 낮으면 read-only cache로 남�
 
 ## 수동 검증
 
-- iOS/Android actual device permission states
+- Android actual device permission states
 - foreground/background/terminated push
 - notification tap after resource delete/membership removal
 - provider/network outage
@@ -3893,6 +4033,13 @@ App Store/Google Play 구매·복원·갱신·만료·환불을 RevenueCat과 �
 - customer/transaction/event/household entitlement
 - state model와 audit
 - server feature limit
+- 상태: **LOCAL IMPLEMENTED (2026-08-08)**
+- 구현: provider/environment별 customer와 SHA-256 transaction reference, encrypted receipt boundary, 하나의 active customer↔household assignment, authoritative entitlement와 immutable transition/policy audit
+- 순서/복구: verified normalized event의 exact replay 멱등성, payload 충돌 거부, stale/equal-time quarantine, 취소·grace·billing issue·expiry·refund/revoke·restore materialization
+- 권한: billing mutation과 policy/limit command는 service-only이고 active household member는 provider/receipt/transaction 식별자 없는 entitlement projection만 읽는다.
+- Flutter: provider-independent entitlement domain/repository와 strict Supabase RPC mapper까지 구현했으며 SDK·paywall·화면 composition은 후속 WP다.
+- 정책 Gate: D-027 가격·수치 한도가 OPEN이므로 ingestion은 기본 disabled, limits는 unfinalized/fail-closed다. 실제 Store/RevenueCat 계정·sandbox·기기는 마지막 Gate다.
+- Evidence: `docs/evidence/phase-06/WP06_01_EVIDENCE.md`
 
 ### WP06-02 Product catalog/paywall
 
@@ -3908,6 +4055,12 @@ App Store/Google Play 구매·복원·갱신·만료·환불을 RevenueCat과 �
 - offerings/purchase/restore
 - pending server confirmation
 - error mapping
+- 상태: **PARTIAL — WP06-03A LOCAL IMPLEMENTED (2026-08-08)**
+- 구현: provider SDK type이 노출되지 않는 immutable catalog/package, exact authenticated identity bind, purchase/restore result와 retry semantics
+- 권위: Store success와 client snapshot은 Plus를 직접 열지 않으며 current household server entitlement의 newer Plus + billing-owner 확인만 구매를 확정한다.
+- 안전성: duplicate action coalescing, bounded confirmation/explicit refresh, store·catalog 장애 시 기존 server entitlement 보존, logout/account/household switch generation invalidation과 identity-clear fail-closed
+- 후속: `purchases_flutter` concrete adapter, app composition/paywall UI, product/API key와 실제 sandbox/account/device 검증은 WP06-03B 및 마지막 Billing Gate다.
+- Evidence: `docs/evidence/phase-06/WP06_03A_EVIDENCE.md`
 
 ### WP06-04 Webhook/reconciliation
 
@@ -3915,6 +4068,12 @@ App Store/Google Play 구매·복원·갱신·만료·환불을 RevenueCat과 �
 - transaction/customer upsert
 - entitlement materialize
 - dead letter/alert
+- 상태: **LOCAL IMPLEMENTED (2026-08-08)**
+- ingress: exact full Authorization + raw-body HMAC-SHA256, metadata-only replay inbox와 collision 거부
+- reconciliation: stale assigned-customer schedule, \`FOR UPDATE SKIP LOCKED\` lease, fixed RevenueCat subscriber endpoint와 strict snapshot mapping
+- 권위/복구: persisted active assignment만 사용하고 missing assignment는 dead letter. 최대 5 attempts, 네 retry, immutable transition과 aggregate health 제공
+- 후속: WP06-05 local assignment/remediation은 완료. RevenueCat/Play account·secret·hosted scheduler·operator UI·실기기는 마지막 Billing Gate
+- Evidence: \`docs/evidence/phase-06/WP06_04_EVIDENCE.md\`
 
 ### WP06-05 Household assignment/conflicts
 
@@ -3922,12 +4081,26 @@ App Store/Google Play 구매·복원·갱신·만료·환불을 RevenueCat과 �
 - purchaser leaves/owner change
 - restore conflict
 - manual remediation audit
+- 상태: **LOCAL IMPLEMENTED (2026-08-08)**
+- active Owner/Admin preflight, 30분 provisional→verified confirmed, user/household 동시성 invariant와 privacy-minimized conflict projection 구현
+- cancel/restore-empty/final failure release, pending 유지, same-identity `ASSIGNMENT_REQUIRED` requeue와 confirmed-only periodic repair 구현
+- membership drift entitlement 보존, aggregate support request와 expected-version/hash/correlation 기반 service-only atomic transfer 및 immutable audit 구현
+- Flutter strict RPC mapper/composition/preflight/conflict-no-Store-call/scope-switch invalidation 구현
+- provider ownership, support ticket/operator UI, hosted cleanup, actual Store account/reinstall/device는 마지막 Billing Gate
+- Evidence: `docs/evidence/phase-06/WP06_05_EVIDENCE.md`
 
 ### WP06-06 Lifecycle/limits
 
 - active/trial/grace/billing issue/expired/refund
 - server/client gates
 - downgrade data preservation
+- 상태: **LOCAL IMPLEMENTED (2026-08-08)**
+- D-027 수치를 임의로 정하지 않고 양 요금제 finalized + expected-version service activation과 immutable audit를 구현
+- active member 및 recurring chore/calendar 최초 생성·재활성화를 household+feature advisory lock으로 직렬화하고 one-time과 기존 데이터 작업을 보존
+- exact aggregate gate와 Flutter lifecycle/strict mapper/localized KFB10~12 UX 구현
+- clean 33-migration reset, WP06-06 pgTAP 48/48, full DB 2,166, Flutter 635 pass + opt-in 1 skip, JavaScript 115/115 + invite 25/25, analyzer/DB lint 통과
+- D-027 numeric policy, paywall/product/price와 실제 Store/provider/account/device는 마지막 Billing Gate
+- Evidence: `docs/evidence/phase-06/WP06_06_EVIDENCE.md`
 
 ## 자동 검증
 
@@ -3971,19 +4144,36 @@ mismatch 또는 중복 결제 위험 시 purchase entry를 remote kill switch로
 
 ### WP07-01 Account deletion
 
-- in-app request/status/cancel 가능 범위
-- shared data anonymize/tombstone
-- last Owner resolution
-- token/device/cache cleanup
-- active subscription 안내
+- 상태: **LOCAL IMPLEMENTED (2026-08-08)** — Phase 07 Exit Gate는 미통과
+- 앱 내 exact-shape preflight/request/status/cancel과 10분 이내 동일 사용자 OAuth 재인증
+- 기본 24시간 취소 창, 사용자 단위 serialized idempotency와 optimistic cancel version
+- due request를 `FOR UPDATE SKIP LOCKED`로 claim하는 bounded lease/retry/dead-letter worker
+- last Owner를 요청과 tombstone 직전에 재검증하고 shared household/chore/calendar를 보존
+- profile/membership identity와 endpoint provider material을 tombstone하고 personal inbox/preference/selection을 정리한 뒤 Auth Admin soft-delete
+- active Store subscription은 자동 취소하지 않으며 사용자 acknowledgment를 강제하고 billing history를 보존
+- 요청 접수 뒤 remote endpoint revoke, RevenueCat/Google identity reset, secure auth/cache/pending invite purge를 포함한 기존 logout lifecycle 실행
+- EN/KO/EN-XA ARB UI, status/cancel/owner-resolution/subscription gate와 compact 200% pseudo 자동 검증
+- 규범 계약과 증적: `docs/contracts/account-deletion.yaml.md`, `docs/evidence/phase-07/WP07_01_EVIDENCE.md`
+- 공개 웹 경로, household deletion/export, 법률/보관 승인, hosted scheduler와 실계정·Store·실기기는 후속 Gate
 
-### WP07-02 Household deletion/export
+### WP07-02A Personal data export
 
-- Owner authorization
-- async job/status
-- short-lived download
-- retention/audit
-- public deletion request site
+- 상태: **LOCAL IMPLEMENTED (2026-08-08)** — Phase 07 Exit Gate는 미통과
+- 본인 profile/membership/authored content/participation/notification/provider-ID-free billing/privacy history만 포함
+- exact preflight/request/status/cancel/download/revoke와 request/download/revoke 동일 사용자 최근 OAuth
+- generation 3건·purge 10건 bounded lease, 최대 5회 retry/dead-letter와 private `privacy-exports` JSON/TXT
+- raw token은 1회 URL에만 존재하고 DB에는 SHA-256만 저장하며 5분 expiry/atomic consume/revoke를 적용
+- artifact 기본 24시간·최대 10 MiB, checksum/size 검증 뒤 `no-store` attachment stream, expiry/revoke purge
+- provider-neutral Flutter domain/controller, defensive parser, fail-closed URL launcher, EN/KO/EN-XA와 200% pseudo 검증
+- 규범 계약과 증적: `docs/contracts/data-export.yaml.md`, `docs/evidence/phase-07/WP07_02A_EVIDENCE.md`
+- hosted Storage lifecycle/scheduler와 실계정·browser·다중기기·실기기는 마지막 Gate
+
+### WP07-02B Household deletion/export
+
+- Owner authorization과 full shared-household export
+- async household job/status와 retention/audit
+- other-member notification/consent와 ownership transfer 정책
+- public deletion request site는 WP07-07에서 구현
 
 ### WP07-03 Security hardening
 
@@ -4088,6 +4278,10 @@ Compliance Gate 통과, TestFlight/Play closed testing 준비.
 - local cache schema
 - old/new client with migrated DB
 - mandatory update/kill switch
+- WP08-04A PARTIAL: Android dev/prod 최소 build·contract와 emergency 전역 non-privacy mutation switch를 server-authoritative policy/audit/DB trigger 및 app-wide advisory UX로 로컬 구현
+- direct authenticated와 Edge-forwarded user mutation은 차단하되 읽기·offline cache·export/delete/legal/support/diagnostics는 유지
+- WP08-04B PARTIAL: household/chores/calendar/notifications/profile/billing exact mutation switch를 versioned audit·30개 explicit DB trigger·`KFR06` Edge mapping·strict Flutter six-feature snapshot/family guard·localized partial-read-only UX로 로컬 구현
+- hosted propagation, cohort/percentage/per-account targeting, N-1 signed binary, Play staged rollout/rollback, 실계정·다중기기·실기기는 NOT RUN
 
 ### WP08-05 Backup/recovery
 
@@ -4783,7 +4977,7 @@ errors:
 <!-- SOURCE: contracts/domain-events.yaml -->
 
 ```yaml
-version: "2026-07-21"
+version: "2026-08-08"
 delivery: at-least-once
 envelope:
   eventId: uuid
@@ -4805,6 +4999,39 @@ rules:
   - Events are immutable and may arrive late or out of order.
   - Payloads MUST NOT contain secrets, raw invite tokens, push tokens, receipts, or free-form user content unless explicitly approved.
   - Breaking payload changes require a new eventVersion and migration strategy.
+realtimeInvalidations:
+  calendar.sync:
+    source: public.calendar_sync_watermarks
+    domainEvent: false
+    delivery: lossy invalidation hint
+    exactPayload: [household_id, generation, changed_at]
+    forbiddenPayload:
+      - event content
+      - participant or actor identifiers
+      - command or correlation identifiers
+    consumerRule: authoritative full refetch on connect, newer generation, reconnect, and resume; discard retained content on authorization failure
+billingState:
+  normalizedIngest:
+    source: verified provider adapter
+    serverOnly: true
+    identityKey: [provider, environment, authUserId]
+    revenueCatCustomerRule: providerCustomerRef exactly equals authUserId
+    idempotencyKey: [provider, environment, providerEventId]
+    replayRule: identical request hash increments replay count without another transition
+    collisionRule: same event ID with different request hash is rejected
+    orderingClock: providerOccurredAt at customer scope
+    olderEventRule: record stale and do not regress materialized entitlement
+    equalTimeRule: quarantine a different event as ambiguous
+  materializedAuthority:
+    aggregate: household_entitlement
+    lifecycleStatuses: [none, trialing, active, grace, billing_issue, expired, revoked]
+    effectivePlans: [free, plus]
+    terminalRule: expiration or revoke changes effective plan to free without deleting family data
+    assignmentRule: one active customer per household and one active household per customer
+  privacyRule:
+    forbiddenDomainPayload: [providerCustomerRef, providerEventId, transactionRef, originalTransactionRef, receipt, providerSnapshot, payloadCiphertext]
+    allowedEntitlementPayload: [planCode, status, source, currentPeriodEnd, willRenew, version]
+  producerStatus: WP06-01 materialization implemented; billing outbox producers remain deferred
 events:
   household.created: {version: 1, aggregate: household}
   household.updated: {version: 1, aggregate: household}
@@ -4826,6 +5053,14 @@ events:
   chore.occurrence_completed: {version: 1, aggregate: chore_occurrence}
   chore.occurrence_reopened: {version: 1, aggregate: chore_occurrence}
   chore.occurrence_skipped: {version: 1, aggregate: chore_occurrence}
+  chore.occurrence_due_changed:
+    version: 1
+    aggregate: chore_occurrence
+    payload: choreOccurrenceDueChangedV1
+  chore.occurrence_assigned:
+    version: 1
+    aggregate: chore_occurrence
+    payload: choreOccurrenceAssignedV1
   calendar.series_created: {version: 1, aggregate: event_series}
   calendar.series_revised: {version: 1, aggregate: event_series}
   calendar.occurrence_overridden: {version: 1, aggregate: event_occurrence}
@@ -4841,6 +5076,17 @@ events:
   privacy.deletion_requested: {version: 1, aggregate: privacy_request}
   privacy.request_completed: {version: 1, aggregate: privacy_request}
   security.kill_switch_changed: {version: 1, aggregate: kill_switch}
+payloads:
+  choreOccurrenceDueChangedV1:
+    exactKeys: [dueLocalDate, dueAt, timezone, status]
+    dueLocalDate: ISO-8601 local date
+    dueAt: ISO-8601 UTC timestamp or null
+    timezone: IANA timezone
+    status: scheduled | completed | skipped | cancelled
+  choreOccurrenceAssignedV1:
+    exactKeys: [assigneeMemberId, status]
+    assigneeMemberId: same-household member UUID
+    status: scheduled | completed | skipped | cancelled
 ```
 
 
@@ -5110,26 +5356,72 @@ paths:
                       data:
                         $ref: '#/components/schemas/TodayPayload'
         '403': {$ref: '#/components/responses/ErrorResponse'}
-  /notification-endpoints:
+  /notification-endpoint:
     post:
       tags: [Notification]
       operationId: registerNotificationEndpoint
+      description: >-
+        WP05-03 native-push registration. The function authenticates the bearer
+        token with GoTrue, seals the raw provider token in Edge memory, and returns
+        metadata only. Query parameters and undeclared body properties are rejected.
+      servers:
+        - url: https://{projectRef}.supabase.co/functions/v1
+          variables:
+            projectRef:
+              default: example
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
+        - name: idempotency-key
+          in: header
+          required: true
+          schema: {$ref: '#/components/schemas/Uuid'}
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NotificationEndpointRequest'
+              $ref: '#/components/schemas/NotificationEndpointRegistrationRequest'
       responses:
         '200':
-          description: Endpoint registered or rotated
+          description: Endpoint registered, refreshed, rotated, or replayed
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
+                $ref: '#/components/schemas/NotificationEndpointRegistrationResponse'
+        '400': {$ref: '#/components/responses/ErrorResponse'}
+        '401': {$ref: '#/components/responses/ErrorResponse'}
+        '403': {$ref: '#/components/responses/ErrorResponse'}
+        '404': {$ref: '#/components/responses/ErrorResponse'}
         '409': {$ref: '#/components/responses/ErrorResponse'}
+        '503': {$ref: '#/components/responses/ErrorResponse'}
+    delete:
+      tags: [Notification]
+      operationId: revokeNotificationEndpoint
+      description: >-
+        Revokes a binding using its account-bound secret proof. A live bearer
+        token is not required, and the response never discloses endpoint existence.
+        Query parameters and undeclared body properties are rejected.
+      security: []
+      servers:
+        - url: https://{projectRef}.supabase.co/functions/v1
+          variables:
+            projectRef:
+              default: example
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationEndpointRevocationRequest'
+      responses:
+        '200':
+          description: Generic idempotent revocation acknowledgement
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationEndpointRevocationResponse'
+        '400': {$ref: '#/components/responses/ErrorResponse'}
+        '403': {$ref: '#/components/responses/ErrorResponse'}
+        '503': {$ref: '#/components/responses/ErrorResponse'}
   /billing/sync:
     post:
       tags: [Billing]
@@ -5481,20 +5773,124 @@ components:
         chores: {type: array, maxItems: 500, items: {$ref: '#/components/schemas/ChoreOccurrence'}}
         events: {type: array, maxItems: 500, items: {type: object, additionalProperties: true}}
         generatedAt: {type: string, format: date-time}
-    NotificationEndpointRequest:
+    NotificationEndpointRegistrationRequest:
       type: object
       additionalProperties: false
-      required: [channel, platform, installationId, tokenOrEndpoint, permissionState]
+      required:
+        - householdId
+        - installationId
+        - platform
+        - token
+        - revocationSecret
+        - permissionState
+        - timezone
+        - appVersion
+        - runtimeVersion
+        - expectedVersion
       properties:
-        channel: {type: string, enum: [nativePush, webPush]}
-        platform: {type: string, enum: [ios, android, web]}
-        installationId: {type: string, minLength: 16, maxLength: 200}
-        tokenOrEndpoint: {type: string, minLength: 16, maxLength: 4096}
-        permissionState: {type: string, enum: [granted, denied, prompt, unsupported]}
-        locale: {type: string}
+        householdId: {$ref: '#/components/schemas/Uuid'}
+        installationId: {$ref: '#/components/schemas/Uuid'}
+        platform: {type: string, enum: [ios, android]}
+        token: {type: string, minLength: 20, maxLength: 4096, pattern: '^[!-~]+$'}
+        revocationSecret:
+          type: string
+          minLength: 43
+          maxLength: 43
+          pattern: '^[A-Za-z0-9_-]{43}$'
+        permissionState: {type: string, const: granted}
+        locale:
+          type: string
+          pattern: '^[A-Za-z]{2,3}(?:[_-][A-Za-z0-9]{2,8})*$'
+        timezone: {type: string, minLength: 1, maxLength: 100}
+        appVersion: {type: string, minLength: 1, maxLength: 64}
+        runtimeVersion: {type: string, minLength: 1, maxLength: 64}
+        expectedVersion: {type: integer, minimum: 0}
+    NotificationEndpointRevocationRequest:
+      type: object
+      additionalProperties: false
+      required: [installationId, channel, registrationId, revocationSecret]
+      properties:
+        installationId: {$ref: '#/components/schemas/Uuid'}
+        channel: {type: string, const: native_push}
+        registrationId: {$ref: '#/components/schemas/Uuid'}
+        revocationSecret:
+          type: string
+          minLength: 43
+          maxLength: 43
+          pattern: '^[A-Za-z0-9_-]{43}$'
+    NotificationEndpointMetadata:
+      type: object
+      additionalProperties: false
+      required:
+        - endpointId
+        - householdId
+        - memberId
+        - installationId
+        - channel
+        - platform
+        - permissionState
+        - locale
+        - timezone
+        - appVersion
+        - runtimeVersion
+        - lastRegistrationId
+        - lastSeenAt
+        - revokedAt
+        - revocationReason
+        - version
+      properties:
+        endpointId: {$ref: '#/components/schemas/Uuid'}
+        householdId: {$ref: '#/components/schemas/Uuid'}
+        memberId: {$ref: '#/components/schemas/Uuid'}
+        installationId: {$ref: '#/components/schemas/Uuid'}
+        channel: {type: string, const: native_push}
+        platform: {type: string, enum: [ios, android]}
+        permissionState: {type: string, const: granted}
+        locale: {type: [string, 'null']}
         timezone: {type: string}
         appVersion: {type: string}
         runtimeVersion: {type: string}
+        lastRegistrationId: {$ref: '#/components/schemas/Uuid'}
+        lastSeenAt: {type: string, format: date-time}
+        revokedAt: {type: [string, 'null'], format: date-time}
+        revocationReason:
+          type: [string, 'null']
+          enum:
+            - client_revoked
+            - token_reassigned
+            - provider_unregistered
+            - provider_invalid_argument
+            - membership_removed
+            - permission_revoked
+            - rollback_disabled
+            - null
+        version: {type: integer, minimum: 1}
+    NotificationEndpointResponseMeta:
+      type: object
+      additionalProperties: false
+      required: [requestId, contractVersion]
+      properties:
+        requestId: {$ref: '#/components/schemas/Uuid'}
+        contractVersion: {type: string, const: '2026-08-08-wp05-03'}
+    NotificationEndpointRegistrationResponse:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data: {$ref: '#/components/schemas/NotificationEndpointMetadata'}
+        meta: {$ref: '#/components/schemas/NotificationEndpointResponseMeta'}
+    NotificationEndpointRevocationResponse:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          additionalProperties: false
+          required: [revoked]
+          properties:
+            revoked: {type: boolean, const: true}
+        meta: {$ref: '#/components/schemas/NotificationEndpointResponseMeta'}
     Entitlement:
       type: object
       required: [householdId, plan, status, features, verifiedAt, version]
@@ -5891,6 +6287,7 @@ create table public.event_series_revisions (
   created_by_user_id uuid references auth.users(id) on delete set null,
   created_at timestamptz not null default now(),
   unique (household_id, id),
+  unique (household_id, series_id, id),
   unique (series_id, revision_number),
   constraint event_revision_series_fk foreign key (household_id, series_id)
     references public.event_series(household_id, id) on delete cascade,
@@ -5935,6 +6332,7 @@ create table public.event_occurrences (
   updated_at timestamptz not null default now(),
   version bigint not null default 1 check (version > 0),
   unique (household_id, id),
+  unique (household_id, series_id, id),
   unique (household_id, occurrence_key),
   constraint event_occurrence_series_fk foreign key (household_id, series_id)
     references public.event_series(household_id, id) on delete cascade,
@@ -5955,16 +6353,29 @@ create index event_occurrences_instant_idx
 create table public.event_occurrence_exceptions (
   id uuid primary key default gen_random_uuid(),
   household_id uuid not null,
+  series_id uuid not null,
   occurrence_id uuid not null,
-  override_payload jsonb not null default '{}'::jsonb,
+  override_payload jsonb not null default '{}'::jsonb
+    check (override_payload = '{}'::jsonb),
+  exception_revision_id uuid,
   cancelled boolean not null default false,
   created_by_user_id uuid references auth.users(id) on delete set null,
+  updated_by_user_id uuid references auth.users(id) on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  version bigint not null default 1,
+  version bigint not null default 1 check (version > 0),
+  unique (household_id, id),
   unique (household_id, occurrence_id),
-  constraint event_exception_occurrence_fk foreign key (household_id, occurrence_id)
-    references public.event_occurrences(household_id, id) on delete cascade
+  constraint event_occurrence_exception_occurrence_fk
+    foreign key (household_id, series_id, occurrence_id)
+    references public.event_occurrences(household_id, series_id, id)
+    on delete cascade,
+  constraint event_occurrence_exception_revision_fk
+    foreign key (household_id, series_id, exception_revision_id)
+    references public.event_series_revisions(household_id, series_id, id),
+  constraint event_occurrence_exception_meaningful_ck check (
+    cancelled or exception_revision_id is not null
+  )
 );
 
 create table public.notification_endpoints (
@@ -6062,6 +6473,10 @@ create unique index background_jobs_dedupe_uq
 create index background_jobs_claim_idx
   on public.background_jobs(status, scheduled_at, lease_expires_at);
 
+-- Store MVP specialization is app_private.chore_notification_outbox plus
+-- app_private.notification_event_resolutions/notification_worker_transitions.
+-- Its exact lifecycle is contracts/notification-worker.yaml; this generic
+-- cross-domain table remains a later-phase reference and is not client-facing.
 create table public.outbox_events (
   event_id uuid primary key default gen_random_uuid(),
   event_type text not null,
@@ -6105,61 +6520,115 @@ create table public.idempotency_keys (
   unique (auth_user_id, operation, idempotency_key)
 );
 
+create table app_private.billing_runtime_config (
+  singleton boolean primary key default true check (singleton),
+  provider text not null default 'revenuecat' check (provider = 'revenuecat'),
+  accepted_environment text not null default 'disabled'
+    check (accepted_environment in ('disabled', 'sandbox', 'production')),
+  ingestion_enabled boolean not null default false,
+  updated_at timestamptz not null default now(),
+  version bigint not null default 1 check (version > 0),
+  check (not ingestion_enabled or accepted_environment <> 'disabled')
+);
+
 create table public.billing_customers (
   id uuid primary key default gen_random_uuid(),
-  auth_user_id uuid not null unique references auth.users(id) on delete cascade,
+  auth_user_id uuid not null references auth.users(id) on delete restrict,
   provider text not null check (provider in ('revenuecat', 'web')),
+  environment text not null check (environment in ('sandbox', 'production')),
   provider_customer_ref text not null,
-  provider_customer_ref_hash bytea not null,
+  provider_customer_ref_hash bytea not null check (octet_length(provider_customer_ref_hash) = 32),
   last_verified_at timestamptz,
+  provider_updated_at timestamptz,
+  last_receipt_id uuid,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  version bigint not null default 1,
-  unique (provider, provider_customer_ref_hash)
+  version bigint not null default 1 check (version > 0),
+  unique (id, auth_user_id),
+  unique (id, provider, environment),
+  unique (provider, environment, auth_user_id),
+  unique (provider, environment, provider_customer_ref_hash),
+  check (provider <> 'revenuecat' or provider_customer_ref = auth_user_id::text)
 );
 
 create table public.billing_webhook_receipts (
   id uuid primary key default gen_random_uuid(),
-  provider text not null,
+  provider text not null check (provider in ('revenuecat', 'web')),
+  environment text not null check (environment in ('sandbox', 'production')),
   provider_event_id text not null,
+  event_type text not null check (event_type in (
+    'initial_purchase', 'renewal', 'cancellation', 'uncancellation',
+    'grace', 'billing_issue', 'expiration', 'refund', 'revoke', 'reconciliation'
+  )),
+  request_hash bytea not null check (octet_length(request_hash) = 32),
   payload_version text,
   payload_ciphertext bytea,
+  provider_occurred_at timestamptz not null,
   received_at timestamptz not null default now(),
+  last_received_at timestamptz not null default now(),
   processed_at timestamptz,
-  processing_status text not null default 'received',
+  processing_status text not null default 'received'
+    check (processing_status in ('received', 'applied', 'stale', 'quarantined')),
   last_error_code text,
-  unique (provider, provider_event_id)
+  replay_count integer not null default 0,
+  billing_customer_id uuid,
+  billing_transaction_id uuid,
+  assignment_id uuid,
+  household_id uuid,
+  correlation_id uuid not null,
+  unique (provider, environment, provider_event_id)
 );
 
 create table public.billing_transactions (
   id uuid primary key default gen_random_uuid(),
-  billing_customer_id uuid not null references public.billing_customers(id) on delete cascade,
-  provider text not null,
+  billing_customer_id uuid not null,
+  provider text not null check (provider in ('revenuecat', 'web')),
+  environment text not null check (environment in ('sandbox', 'production')),
+  source text not null check (source in ('app_store', 'play_store', 'web', 'manual_support')),
   product_id text not null,
-  transaction_ref_hash bytea not null,
+  transaction_ref_hash bytea not null check (octet_length(transaction_ref_hash) = 32),
   original_transaction_ref_hash bytea,
-  status text not null,
+  status public.entitlement_status not null check (status <> 'none'),
   purchased_at timestamptz,
   current_period_start timestamptz,
   current_period_end timestamptz,
-  will_renew boolean,
-  provider_updated_at timestamptz,
+  will_renew boolean not null,
+  provider_updated_at timestamptz not null,
   verified_at timestamptz not null default now(),
+  last_receipt_id uuid not null references public.billing_webhook_receipts(id) on delete restrict,
   raw_snapshot_ciphertext bytea,
-  unique (provider, transaction_ref_hash)
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  version bigint not null default 1 check (version > 0),
+  unique (id, provider, environment),
+  unique (provider, environment, transaction_ref_hash),
+  foreign key (billing_customer_id, provider, environment)
+    references public.billing_customers(id, provider, environment) on delete restrict
 );
 
 create table public.billing_household_assignments (
   id uuid primary key default gen_random_uuid(),
-  billing_customer_id uuid not null references public.billing_customers(id) on delete cascade,
-  billing_owner_user_id uuid not null references auth.users(id) on delete cascade,
-  household_id uuid not null references public.households(id) on delete cascade,
+  billing_customer_id uuid not null,
+  billing_owner_user_id uuid not null,
+  household_id uuid not null references public.households(id) on delete restrict,
   status text not null check (status in ('active', 'ended', 'revoked')),
+  binding_state text not null default 'confirmed'
+    check (binding_state in ('provisional', 'confirmed')),
   assigned_at timestamptz not null default now(),
+  confirmed_at timestamptz default statement_timestamp(),
+  intent_expires_at timestamptz,
   ended_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  version bigint not null default 1
+  version bigint not null default 1 check (version > 0),
+  unique (id, household_id),
+  unique (id, household_id, billing_owner_user_id),
+  foreign key (billing_customer_id, billing_owner_user_id)
+    references public.billing_customers(id, auth_user_id) on delete restrict,
+  check (
+    (binding_state = 'confirmed' and confirmed_at is not null and intent_expires_at is null)
+    or (binding_state = 'provisional' and confirmed_at is null and intent_expires_at > assigned_at)
+  )
 );
 
 create unique index billing_assignment_customer_active_uq
@@ -6170,32 +6639,72 @@ create unique index billing_assignment_household_active_uq
   where status = 'active';
 
 create table public.plan_catalog (
-  plan_code text primary key,
-  version integer not null,
-  feature_limits jsonb not null,
+  plan_code text primary key check (plan_code in ('free', 'plus')),
+  feature_limits jsonb not null default '{}'::jsonb,
+  limits_finalized boolean not null default false,
   active boolean not null default true,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  version bigint not null default 1 check (version > 0)
 );
 
 create table public.household_entitlements (
   household_id uuid primary key references public.households(id) on delete cascade,
-  assignment_id uuid references public.billing_household_assignments(id) on delete set null,
-  billing_owner_user_id uuid references auth.users(id) on delete set null,
+  assignment_id uuid,
+  billing_owner_user_id uuid references auth.users(id) on delete restrict,
   plan_code text not null references public.plan_catalog(plan_code),
   status public.entitlement_status not null default 'none',
   source text not null check (source in ('app_store', 'play_store', 'web', 'manual_support', 'none')),
   product_id text,
   current_period_start timestamptz,
   current_period_end timestamptz,
-  will_renew boolean,
+  will_renew boolean not null default false,
   features jsonb not null default '{}'::jsonb,
   provider_updated_at timestamptz,
   verified_at timestamptz not null default now(),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  version bigint not null default 1
+  version bigint not null default 1 check (version > 0),
+  foreign key (assignment_id, household_id, billing_owner_user_id)
+    references public.billing_household_assignments(id, household_id, billing_owner_user_id)
+    on delete restrict,
+  check (
+    (status in ('trialing', 'active', 'grace') and plan_code = 'plus')
+    or (status in ('none', 'expired', 'revoked') and plan_code = 'free')
+    or status = 'billing_issue'
+  )
 );
+
+create table app_private.billing_entitlement_transitions (
+  id bigint generated always as identity primary key,
+  receipt_id uuid not null unique,
+  household_id uuid not null,
+  assignment_id uuid not null,
+  billing_transaction_id uuid not null,
+  event_type text not null,
+  previous_plan_code text not null,
+  next_plan_code text not null,
+  previous_status public.entitlement_status not null,
+  next_status public.entitlement_status not null,
+  provider_occurred_at timestamptz not null,
+  correlation_id uuid not null,
+  applied_at timestamptz not null default now()
+);
+
+create table app_private.billing_policy_events (
+  id bigint generated always as identity primary key,
+  policy_kind text not null check (policy_kind in ('runtime', 'plan')),
+  policy_key text not null,
+  previous_version bigint not null,
+  next_version bigint not null check (next_version = previous_version + 1),
+  correlation_id uuid not null,
+  changed_at timestamptz not null default now()
+);
+
+-- Service-only SECURITY DEFINER commands: configure_billing_runtime,
+-- configure_plan_feature_limits, apply_verified_billing_event.
+-- Authenticated active members may execute only get_household_entitlement(uuid),
+-- whose exact 12-field projection omits provider/customer/receipt/transaction data.
 
 create table public.privacy_requests (
   id uuid primary key default gen_random_uuid(),
@@ -6286,7 +6795,8 @@ begin
     'chore_series', 'chore_occurrences', 'event_series',
     'event_occurrences', 'event_occurrence_exceptions',
     'notification_endpoints', 'notification_deliveries', 'background_jobs',
-    'billing_customers', 'billing_household_assignments', 'household_entitlements'
+    'billing_customers', 'billing_transactions', 'billing_household_assignments',
+    'plan_catalog', 'household_entitlements'
   ]
   loop
     execute format(
@@ -6296,11 +6806,11 @@ begin
   end loop;
 end $$;
 
--- Baseline plan rows are additive. Product limits remain provisional until D-023 is accepted.
-insert into public.plan_catalog(plan_code, version, feature_limits)
+-- Baseline plan rows are additive. Product limits remain unfinalized until D-027 is accepted.
+insert into public.plan_catalog(plan_code, feature_limits, limits_finalized)
 values
-  ('free', 1, '{"provisional": true}'::jsonb),
-  ('plus', 1, '{"provisional": true}'::jsonb)
+  ('free', '{}'::jsonb, false),
+  ('plus', '{}'::jsonb, false)
 on conflict (plan_code) do nothing;
 ```
 
@@ -6518,9 +7028,18 @@ create policy event_occurrences_select_member on public.event_occurrences
 for select to authenticated
 using (app_private.is_active_household_member(household_id));
 
-create policy event_exceptions_select_member on public.event_occurrence_exceptions
+create policy event_occurrence_exceptions_select_member on public.event_occurrence_exceptions
 for select to authenticated
-using (app_private.is_active_household_member(household_id));
+using (
+  app_private.is_active_household_member(household_id)
+  and exists (
+    select 1
+    from public.event_series as series
+    where series.household_id = event_occurrence_exceptions.household_id
+      and series.id = event_occurrence_exceptions.series_id
+      and series.deleted_at is null
+  )
+);
 
 -- Notification endpoints and preferences are user-owned. Server workers use service role in a restricted environment.
 create policy notification_endpoints_select_self on public.notification_endpoints
@@ -6552,16 +7071,18 @@ using (
 );
 
 -- Internal queue/outbox/idempotency tables intentionally have no client policies.
+-- Billing receipts and normalized transactions also have no client policy or grant.
 
--- Billing users can read their customer and active household entitlement; all mutations are server-only.
+-- Billing users can read their own customer mapping and active-household projection;
+-- every mutation and policy/limit assertion remains server-only.
 create policy billing_customers_select_self on public.billing_customers
 for select to authenticated
-using (auth_user_id = auth.uid());
+using (auth_user_id = (select auth.uid()));
 
 create policy billing_assignments_select_member on public.billing_household_assignments
 for select to authenticated
 using (
-  billing_owner_user_id = auth.uid()
+  billing_owner_user_id = (select auth.uid())
   or app_private.is_active_household_member(household_id)
 );
 
@@ -6598,15 +7119,19 @@ create or replace view public.current_household_entitlement
 with (security_invoker = true)
 as
 select
-  he.household_id,
-  he.plan_code,
-  he.status,
-  he.features,
-  he.current_period_end,
-  he.will_renew,
-  he.verified_at,
-  he.version
-from public.household_entitlements he;
+  entitlement.household_id,
+  entitlement.plan_code,
+  entitlement.status,
+  entitlement.source,
+  case when catalog.limits_finalized then catalog.feature_limits else '{}'::jsonb end as feature_limits,
+  catalog.limits_finalized,
+  entitlement.current_period_end,
+  entitlement.will_renew,
+  entitlement.verified_at,
+  entitlement.version
+from public.household_entitlements as entitlement
+join public.plan_catalog as catalog on catalog.plan_code = entitlement.plan_code
+where catalog.active;
 
 grant select on public.current_household_entitlement to authenticated;
 
@@ -6629,10 +7154,16 @@ grant select on public.billing_customers, public.billing_household_assignments,
   public.household_entitlements, public.plan_catalog to authenticated;
 grant select on public.privacy_requests, public.data_exports, public.consent_records to authenticated;
 
+-- configure_billing_runtime, configure_plan_feature_limits and
+-- apply_verified_billing_event are SECURITY DEFINER, empty-search-path and
+-- service_role-only. get_household_entitlement(uuid) alone is executable by
+-- authenticated active members. Private billing audit/usage/capacity functions
+-- and receipt/transaction tables have no authenticated or service_role direct grant.
+
 -- No anon table grants. Public invite preview and privacy request entry use rate-limited Edge endpoints.
 
 comment on view public.current_household_entitlement is
-  'RLS-aware entitlement projection for authenticated household members.';
+  'RLS-aware entitlement projection without customer, transaction, receipt, or billing-owner identifiers.';
 ```
 
 
@@ -6666,14 +7197,22 @@ FEATURE_CONFIG_URL=
 # SERVER/CI ONLY — NEVER EMBED IN FLUTTER OR WEB BUNDLE
 SUPABASE_SERVICE_ROLE_KEY=
 SUPABASE_DB_URL=
-REVENUECAT_WEBHOOK_SECRET=
-REVENUECAT_SECRET_API_KEY=
+KINFLOW_REVENUECAT_WEBHOOK_AUTHORIZATION=
+KINFLOW_REVENUECAT_WEBHOOK_SIGNING_SECRET=
+KINFLOW_REVENUECAT_SECRET_API_KEY=
+KINFLOW_REVENUECAT_ENTITLEMENT_ID=
+KINFLOW_BILLING_RECONCILIATION_WORKER_SECRET=
+KINFLOW_BILLING_RECONCILIATION_BATCH_LIMIT=50
+KINFLOW_BILLING_RECONCILIATION_LEASE_SECONDS=120
+KINFLOW_BILLING_RECONCILIATION_STALE_SECONDS=3600
 FCM_SERVER_CREDENTIAL=
 APPLE_APP_STORE_API_PRIVATE_KEY=
 GOOGLE_PLAY_SERVICE_ACCOUNT_JSON=
 INVITE_TOKEN_HMAC_KEY=
-DATA_EXPORT_SIGNING_KEY=
 INTERNAL_JOB_AUTH_SECRET=
+KINFLOW_ALLOWED_ORIGINS=https://app.example.invalid
+KINFLOW_DATA_EXPORT_DOWNLOAD_URL=https://example.supabase.co/functions/v1/data-export-download
+KINFLOW_DATA_EXPORT_WORKER_SECRET=
 SENTRY_AUTH_TOKEN=
 ```
 
@@ -6692,7 +7231,7 @@ SPEC-003,Native-first adaptive client and Web/Desktop Gate,"D-002,D-003,D-004,D-
 SPEC-004,Database/RLS/API authority,"D-008,D-015,D-042,D-048",docs/09_*; docs/24_*; SQL/OpenAPI,02-08,pgTAP/RLS/contract/concurrency
 SPEC-005,Auth/session/invite; Managed Child P1,"D-010-D-016,D-040,D-049",docs/11_*; docs/25_*,02/07; P1,auth/link/security E2E; child E2E at P1 gate
 SPEC-006,Chores/calendar recurrence and time,"D-019,D-020,D-046",docs/07_*; docs/26_*,03-05,time matrix/materialization/property tests
-SPEC-007,Jobs/notifications/cache/offline,"D-017,D-018,D-021-D-023",docs/10_*; docs/26_*,05,job/push/cache actual device
+SPEC-007,Jobs/notifications/cache/offline,"D-017,D-018,D-021-D-023,D-064,D-067-D-069",docs/10_*; docs/26_*,05,job/push/cache/email provider actual device
 SPEC-008,Billing and household entitlement,D-024-D-028,docs/12_*; docs/27_*,06,sandbox/webhook/reconcile matrix
 SPEC-009,Privacy/delete/export; child safety P1,"D-011-D-014,D-035,D-040,D-041",docs/11_*; docs/17_*,07; P1,deletion/export/security/a11y; child safety at P1 gate
 SPEC-010,CI/CD/store release,"D-029-D-033,D-037,D-038,D-042",docs/15_*; docs/28_*,01/08/09,signed builds/provenance/rollout
@@ -6734,13 +7273,16 @@ T-CHORE-01,E2E,Create/assign/complete two devices,Mobile,G3,Consistent Today,03,
 T-CHORE-02,Concurrency,Duplicate complete/version conflict,All,G3,Idempotent/conflict UI,03,Automated,evidence/test/T-CHORE-02/,,NOT_RUN
 T-TIME-01,Domain,DST/month-end/leap/all-day matrix,All,G4,All fixtures pass,04,Automated,evidence/test/T-TIME-01/,,NOT_RUN
 T-CAL-01,E2E,One-time/recurring/single exception,Mobile,G4,Correct views/Today,04,Mixed,evidence/test/T-CAL-01/,,NOT_RUN
-T-JOB-01,Reliability,Worker lease/crash/retry/dead letter,Server,G5,No loss/duplicate side effect,05,Automated,evidence/test/T-JOB-01/,,NOT_RUN
+T-JOB-01,Reliability,Worker lease/crash/retry/dead letter,Server,G5,No loss/duplicate side effect,05,Automated,docs/evidence/phase-04/WP04_04C_EVIDENCE.md;docs/evidence/phase-05/WP05_01_EVIDENCE.md,Notification worker now passes skip-locked two-worker lease heartbeat crash retry cap dead-letter response replay manual replay pause and aggregate health locally; hosted scheduler and production alert drill remain,PARTIAL
 T-NOTIF-01,Integration,Inbox/dedupe/quiet hours,Server/Mobile,G5,Correct durable state,05,Automated,evidence/test/T-NOTIF-01/,,NOT_RUN
+T-CALENDAR-NOTIFICATION-SNOOZE,Integration,Bounded Calendar notification Snooze,Server/Android,P1 review,Caller-owned current Calendar inbox supports fixed 5 10 30 minute delay at most three times and no later than occurrence start plus one hour with optimistic same-command replay atomic original replacement and existing-worker delivery,05,Mixed,docs/evidence/phase-05/WP05_12_EVIDENCE.md,Local 47-case focused pgTAP plus 63-file 3147-test DB and 1358-test Flutter regressions strict domain DTO repository controller runtime guard fixed-choice UI and 200 percent text-scale pass; hosted Firebase real-account two-device timezone DST and physical-device timing remain,PARTIAL
+T-CALENDAR-MULTIPLE-REMINDERS,Integration,Per-user Calendar multiple reminders,Server/Android,P1 review,One primary plus zero-to-two sorted distinct fixed leads create independently deduped content-free sources while v1 preserves all v2 changes only primary v3 edits the full set and only future or unevaluated work reconciles,05,Mixed,docs/evidence/phase-05/WP05_13_EVIDENCE.md,Local 50-case focused pgTAP 30-case focused Flutter full DB 64 files/3197 tests full Flutter 1360 tests repository Gate and Android dev APK pass; hosted Firebase real-account two-device timezone DST and physical-device timing remain,PARTIAL
+T-NOTIF-EMAIL-FALLBACK,Integration,Generic verified-account notification email fallback,Server/Android,G5,Default-off category email is independent of inbox and push and sends one fixed locale message through a content-free at-most-once queue without persisting the address,05,Mixed,docs/evidence/phase-05/WP05_14_EVIDENCE.md,Local 68-case focused pgTAP 13-case Node sender contract 10-case focused Flutter full DB 65 files/3265 tests Node 154 tests Flutter 1361 tests plus one opt-in skip repository Gate and Android dev APK pass; hosted SendGrid sender domain mailbox real-account two-device and physical-device validation remain,PARTIAL
 T-PUSH-01,Device,Permission authorized/denied,iOS/Android,G5,Correct UX/fallback,05,Manual,evidence/test/T-PUSH-01/,,NOT_RUN
 T-PUSH-02,Device,Foreground push/local display,iOS/Android,G5,No duplicate; tap route,05,Manual,evidence/test/T-PUSH-02/,,NOT_RUN
 T-PUSH-03,Device,Background push,iOS/Android,G5,Delivery/tap/refetch,05,Manual,evidence/test/T-PUSH-03/,,NOT_RUN
 T-PUSH-04,Device,Terminated push,iOS/Android,G5,Bootstrap then safe route,05,Manual,evidence/test/T-PUSH-04/,,NOT_RUN
-T-PUSH-05,Integration,Token rotation/invalid cleanup,All,G5,Binding updated/revoked,05,Mixed,evidence/test/T-PUSH-05/,,NOT_RUN
+T-PUSH-05,Integration,Token rotation/invalid cleanup,All,G5,Binding updated/revoked,05,Mixed,docs/evidence/phase-05/WP05_03_EVIDENCE.md,DB/Edge/Flutter synthetic token rotation response-loss proof purge token reassignment member removal and stale-fingerprint invalidation pass locally; actual provider and device remain,PARTIAL
 T-PUSH-06,Security,Payload privacy/stale resource,All,G5,Minimal content/authz recheck,05,Mixed,evidence/test/T-PUSH-06/,,NOT_RUN
 T-CACHE-01,Security,Logout purge,Mobile/Web,G2/G7/G10,No previous family data,02/07/10,Mixed,evidence/test/T-CACHE-01/,,NOT_RUN
 T-CACHE-02,Security,Account switch purge,Mobile/Web,G2/G7/G10,No cross-account residue,02/07/10,Mixed,evidence/test/T-CACHE-02/,,NOT_RUN
@@ -6750,13 +7292,13 @@ T-SYNC-01,Reliability,Outbox TTL/auth binding,Mobile,G5 optional,Unsafe replay b
 T-SYNC-02,Reliability,Realtime reconnect/full refetch,All,G3-G5,Consistent state,03-05,Automated,evidence/test/T-SYNC-02/,,NOT_RUN
 T-BILL-01,Sandbox,App Store purchase/restore,iOS,G6,Server entitlement matches,06,Manual,evidence/test/T-BILL-01/,,NOT_RUN
 T-BILL-02,Sandbox,Play purchase/restore,Android,G6,Server entitlement matches,06,Manual,evidence/test/T-BILL-02/,,NOT_RUN
-T-BILL-03,Billing,Webhook duplicate/out-of-order,Server,G6,Idempotent final state,06,Automated,evidence/test/T-BILL-03/,,NOT_RUN
-T-BILL-04,Billing,Reinstall/account/household conflict,Mobile/Server,G6,No entitlement leakage/duplicate purchase,06,Mixed,evidence/test/T-BILL-04/,,NOT_RUN
-T-BILL-05,Billing,Expiry/refund/grace/billing issue,All,G6,Policy state correct,06,Mixed,evidence/test/T-BILL-05/,,NOT_RUN
+T-BILL-03,Billing,Webhook duplicate/out-of-order,Server,G6,Idempotent final state,06,Automated,docs/evidence/phase-06/WP06_01_EVIDENCE.md,,PARTIAL
+T-BILL-04,Billing,Reinstall/account/household conflict,Mobile/Server,G6,No entitlement leakage/duplicate purchase,06,Mixed,docs/evidence/phase-06/WP06_01_EVIDENCE.md;docs/evidence/phase-06/WP06_03A_EVIDENCE.md,Server assignment plus fake-port exact identity account/household switch logout stale-completion and conflict checks pass; reinstall/sandbox/device remain,PARTIAL
+T-BILL-05,Billing,Expiry/refund/grace/billing issue,All,G6,Policy state correct,06,Mixed,docs/evidence/phase-06/WP06_01_EVIDENCE.md,,PARTIAL
 T-PRIV-01,E2E,Account deletion,All,G7,Shared data policy/purge/status,07,Mixed,evidence/test/T-PRIV-01/,,NOT_RUN
 T-PRIV-02,E2E,Household delete/last owner,All,G7,Invariant and purge,07,Mixed,evidence/test/T-PRIV-02/,,NOT_RUN
 T-PRIV-03,Privacy,PII/log/child analytics,All,G7,Forbidden fields absent,07,Automated,evidence/test/T-PRIV-03/,,NOT_RUN
-T-PRIV-04,E2E,Data export/link expiry,All,G7,Authorized/short-lived,07,Mixed,evidence/test/T-PRIV-04/,,NOT_RUN
+T-PRIV-04,E2E,Data export/link expiry,All,G7,Authorized/short-lived,07,Mixed,docs/evidence/phase-07/WP07_02A_EVIDENCE.md,Local exact scope JSON/TXT one-time grant consume expiry revoke purge retry RLS and Flutter download flow pass; hosted browser residue multi-device and real account remain,PARTIAL
 T-A11Y-01,Accessibility,VoiceOver core journey,iOS,G7,Task success,07,Manual,evidence/test/T-A11Y-01/,,NOT_RUN
 T-A11Y-02,Accessibility,TalkBack core journey,Android,G7,Task success,07,Manual,evidence/test/T-A11Y-02/,,NOT_RUN
 T-A11Y-03,Accessibility,200% text/tablet/split,Mobile,G7,No blocker clipping,07,Mixed,evidence/test/T-A11Y-03/,,NOT_RUN
@@ -6764,7 +7306,7 @@ T-I18N-01,Localization,EN/KO/pseudo key/layout,All,G7,100% coverage/no overflow 
 T-PERF-01,Performance,Startup/Today profile,Mobile,G8,Budget pass or accepted risk,08,Mixed,evidence/test/T-PERF-01/,,NOT_RUN
 T-RECOV-01,Recovery,Backup restore/data integrity,Server,G8,RPO/RTO and checks pass,08,Manual,evidence/test/T-RECOV-01/,,NOT_RUN
 T-REL-01,Release,Previous build to RC upgrade,Mobile,G8,No auth/cache/data loss,08,Manual,evidence/test/T-REL-01/,,NOT_RUN
-T-REL-02,Release,Feature kill switch,All,G8,Risk feature disabled safely,08,Manual,evidence/test/T-REL-02/,,NOT_RUN
+T-REL-02,Release,Feature kill switch,All,G8,Risk feature disabled safely,08,Mixed,docs/evidence/phase-08/WP08_04A_EVIDENCE.md,Local server-authoritative Android global mutation switch blocks direct and Edge-forwarded user writes while reads privacy export delete support and diagnostics remain; hosted operator rollout rollback alert and device remain,PARTIAL
 T-REL-03,Release,Staged rollout pause,Stores,G9,Procedure demonstrated,09,Manual,evidence/test/T-REL-03/,,NOT_RUN
 T-WEB-01,Web,Core Playwright journey,Web,G10,Browser matrix pass,10,Automated,evidence/test/T-WEB-01/,,NOT_RUN
 T-WEB-02,Web Security,CSP/session/BFCache/account switch,Web,G10,No unsafe persistence,10,Mixed,evidence/test/T-WEB-02/,,NOT_RUN
@@ -6783,22 +7325,22 @@ T-DESK-01,Decision,Desktop plugin/demand PoC,Desktop,G11,"Explicit ADR, no impli
 Capability_ID,Capability,Domain_Interface,iOS_Provider,Android_Provider,Web_Provider,Fallback,Required_Gate,Primary_Test_IDs,Security_Privacy_Notes,Status,Evidence
 CAP-001,Authentication session,AuthSessionRepository,Supabase Auth + secure storage,Supabase Auth + secure storage,Supabase browser session,re-auth/read-only public path,G2/G10,T-AUTH-01;T-SEC-04,token redaction; identity switch purge,NOT_STARTED,
 CAP-002,Deep links,DeepLinkSource,Universal Links,Android App Links,HTTPS routes,copy safe link,G2/G10,T-LINK-01;T-LINK-02,exact allowlist; invite token scrub,NOT_STARTED,
-CAP-003,Push notifications,NotificationService,FCM/APNs,FCM,Deferred Web Push,in-app inbox/email,G5,T-PUSH-01..06,payload minimization; token cleanup,NOT_STARTED,
+CAP-003,Push notifications,NotificationEndpointLifecycle,FCM/APNs adapter deferred,FCM adapter deferred,Deferred Web Push,in-app inbox/email,G5,T-PUSH-01..06,payload minimization; encrypted token binding; proof cleanup,PARTIAL,docs/evidence/phase-05/WP05_03_EVIDENCE.md
 CAP-004,Local notification display,LocalNotificationService,flutter_local_notifications,flutter_local_notifications,Browser notification deferred,in-app banner,G5,T-PUSH-02;T-PUSH-03,foreground duplicate prevention,NOT_STARTED,
 CAP-005,In-app inbox,NotificationInboxRepository,Shared server API,Shared server API,Shared server API,none,G5/G10,T-NOTIF-01,RLS and content minimization,NOT_STARTED,
 CAP-006,Billing purchase,BillingService,RevenueCat App Store,RevenueCat Play,Unavailable in initial Beta,mobile purchase route,G6,T-BILL-01..12,server household entitlement,NOT_STARTED,
 CAP-007,Entitlement read,EntitlementRepository,Server snapshot,Server snapshot,Server snapshot,Free limits,G6/G10,T-BILL-08,never trust local SDK state,NOT_STARTED,
-CAP-008,Secure storage,SecureStorage,Keychain-backed,Keystore-backed,Browser strategy,memory + re-auth,G1,T-SEC-03,no secret in preferences,NOT_STARTED,
+CAP-008,Secure storage,SecureStorage,Keychain account-scoped,Keystore namespace-scoped,Browser strategy,memory + re-auth,G1,T-SEC-03,no secret in preferences; auth/notification namespace isolation,PARTIAL,docs/evidence/phase-05/WP05_03_EVIDENCE.md
 CAP-009,Parental gate,ParentalGate,Deferred,Deferred,Deferred,adult-only Store MVP,P1 child gate,T-CHILD-01..04,server allowlist remains authority,DEFERRED,
-CAP-010,Background execution,BackgroundScheduler,Best-effort,Best-effort,Foreground only baseline,server worker,G5,T-JOB-01,not source of notification truth,NOT_STARTED,
+CAP-010,Background execution,BackgroundScheduler,Best-effort,Best-effort,Foreground only baseline,server worker,G5,T-JOB-01,client background is not notification truth; hosted schedule deferred,PARTIAL,docs/evidence/phase-05/WP05_01_EVIDENCE.md
 CAP-011,Offline read cache,OfflineCache,Scoped cache,Scoped cache,Memory/minimal browser storage,stale + retry,G3/G4/G10,T-CACHE-01..04,user+household namespace/purge,NOT_STARTED,
 CAP-012,Safe offline mutation,MutationOutbox,Chore completion candidate,Chore completion candidate,Disabled initially,online-only,G5 optional,T-SYNC-01..05,auth/version/TTL/idempotency binding,PROVISIONAL,
 CAP-013,Realtime,RealtimeSubscription,Supabase Realtime,Supabase Realtime,Supabase Realtime,resume refetch,G3/G4,T-SYNC-06,RLS; reconnect full validation,NOT_STARTED,
 CAP-014,Analytics,AnalyticsSink,Approved mobile sink,Approved mobile sink,Approved web sink,first-party aggregate,G1/G7,T-PRIV-03,child mode disabled; no content,NOT_STARTED,
 CAP-015,Crash reporting,ErrorReporter,Sentry Flutter,Sentry Flutter,Sentry Flutter,redacted local logs,G1/G8,T-OBS-01,before-send PII scrub,NOT_STARTED,
 CAP-016,Share,ShareService,Native share,Native share,Web Share/clipboard,copy button,G2,T-LINK-03,safe URL; raw token lifecycle,NOT_STARTED,
-CAP-017,Export delivery,ExportDelivery,secure download/share,secure download/share,short-lived HTTPS download,support path,G7,T-PRIV-06,expiry; browser residue check,NOT_STARTED,
-CAP-018,Update,AppUpdatePolicy,App Store,Play Store,atomic web deploy,feature kill switch,G8/G9/G10,T-REL-01..04,minimum version and compatibility,NOT_STARTED,
+CAP-017,Export delivery,DataExportDownloadLauncher,platform browser/download handler,platform browser/download handler,short-lived HTTPS download,fail-closed unavailable launcher,G7,T-PRIV-04,hash-only one-time token; no app persistence; expiry/revoke; browser residue live check,PARTIAL,docs/evidence/phase-07/WP07_02A_EVIDENCE.md
+CAP-018,Update,AppRuntimePolicyRepository,Deferred App Store adapter,Server policy + fixed Play launcher,Deferred atomic deploy adapter,read-only reads and privacy routes,G8/G9/G10,T-REL-01..04,minimum build/contract; exact content-free policy; DB-authoritative direct and Edge-forwarded mutation enforcement,PARTIAL,docs/evidence/phase-08/WP08_04A_EVIDENCE.md
 CAP-019,Native calendar integration,CalendarIntegration,Deferred,Deferred,Unsupported,ICS/share future,Post-MVP,T-DEFER-01,no broad calendar permission,DEFERRED,
 CAP-020,Desktop native shell,DesktopCapability,N/A,N/A,N/A,Web Companion,Phase 10 demand review,T-DESK-01,no support promise before Gate,DEFERRED,
 ```
