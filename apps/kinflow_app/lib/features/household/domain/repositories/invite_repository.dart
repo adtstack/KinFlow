@@ -10,8 +10,16 @@ abstract interface class InviteRepository {
 
   Future<PreviewHouseholdInviteResult> previewInvite(InviteToken token);
 
+  Future<PreviewHouseholdInviteResult> previewInviteByShortCode(
+    InviteShortCode shortCode,
+  );
+
   Future<AcceptHouseholdInviteResult> acceptInvite(
     AcceptHouseholdInviteRequest request,
+  );
+
+  Future<AcceptHouseholdInviteResult> acceptInviteByShortCode(
+    AcceptHouseholdInviteByShortCodeRequest request,
   );
 
   Future<RevokeHouseholdInviteResult> revokeInvite(

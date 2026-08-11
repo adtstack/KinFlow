@@ -138,6 +138,8 @@ final class GoogleSupabaseRecentAuthenticationService
         RecentAuthenticationFailureKind.providerUnavailable,
       GoogleTokenExchangeFailureKind.temporarilyUnavailable =>
         RecentAuthenticationFailureKind.temporarilyUnavailable,
+      GoogleTokenExchangeFailureKind.identityConflict =>
+        RecentAuthenticationFailureKind.accountChanged,
       GoogleTokenExchangeFailureKind.invalidResponse =>
         RecentAuthenticationFailureKind.invalidProof,
       GoogleTokenExchangeFailureKind.unknown =>

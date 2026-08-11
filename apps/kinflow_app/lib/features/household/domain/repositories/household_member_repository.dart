@@ -1,3 +1,4 @@
+import 'package:kinflow_app/features/household/domain/entities/active_household.dart';
 import 'package:kinflow_app/features/household/domain/entities/household_member.dart';
 import 'package:kinflow_app/features/household/domain/entities/household_member_command.dart';
 import 'package:kinflow_app/features/household/domain/failures/household_member_failure.dart';
@@ -48,6 +49,12 @@ sealed class HouseholdMemberCommandResult {
 final class HouseholdMemberCommandCompleted
     extends HouseholdMemberCommandResult {
   const HouseholdMemberCommandCompleted();
+}
+
+final class HouseholdLeaveCompleted extends HouseholdMemberCommandResult {
+  const HouseholdLeaveCompleted(this.activeHousehold);
+
+  final ActiveHousehold? activeHousehold;
 }
 
 final class HouseholdMemberCommandFailed extends HouseholdMemberCommandResult {

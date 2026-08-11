@@ -51,6 +51,102 @@ void main() {
     );
   });
 
+  test('accepts Android/Test Store public keys and rejects secret keys', () {
+    final AppPublicConfiguration android = publicConfigurationFixture(
+      revenueCatAndroidPublicSdkKey: 'goog_12345678901',
+    );
+    final AppPublicConfiguration testStore = publicConfigurationFixture(
+      revenueCatAndroidPublicSdkKey: 'test_12345678901',
+    );
+
+    expect(android.revenueCatAndroidPublicSdkKey, 'goog_12345678901');
+    expect(testStore.revenueCatAndroidPublicSdkKey, 'test_12345678901');
+
+    final Map<String, String> productionTestStore = publicConfigurationValues(
+      environment: AppEnvironment.prod,
+      revenueCatAndroidPublicSdkKey: 'test_12345678901',
+    );
+    expect(
+      () => const AppPublicConfigurationLoader(
+        expectedEnvironment: AppEnvironment.prod,
+      ).load(productionTestStore),
+      throwsA(
+        isA<AppConfigurationException>().having(
+          (AppConfigurationException error) => error.issues.single.stableCode,
+          'stable issue',
+          'invalidFormat:REVENUECAT_ANDROID_PUBLIC_SDK_KEY',
+        ),
+      ),
+    );
+
+    final Map<String, String> secret = publicConfigurationValues(
+      revenueCatAndroidPublicSdkKey: 'sk_12345678901234567890',
+    );
+    expect(
+      () => const AppPublicConfigurationLoader(
+        expectedEnvironment: AppEnvironment.dev,
+      ).load(secret),
+      throwsA(
+        isA<AppConfigurationException>().having(
+          (AppConfigurationException error) => error.issues.single.stableCode,
+          'safe issue',
+          'serverSecretPresent:REVENUECAT_ANDROID_PUBLIC_SDK_KEY',
+        ),
+      ),
+    );
+
+    final Map<String, String> wrongPlatform = publicConfigurationValues(
+      revenueCatAndroidPublicSdkKey: 'appl_12345678901',
+    );
+    expect(
+      () => const AppPublicConfigurationLoader(
+        expectedEnvironment: AppEnvironment.dev,
+      ).load(wrongPlatform),
+      throwsA(
+        isA<AppConfigurationException>().having(
+          (AppConfigurationException error) => error.issues.single.stableCode,
+          'stable issue',
+          'invalidFormat:REVENUECAT_ANDROID_PUBLIC_SDK_KEY',
+        ),
+      ),
+    );
+  });
+
+  test('Firebase Android public options are optional but all-or-none', () {
+    final Map<String, String> firebaseValues = <String, String>{
+      AppPublicConfigurationKeys.firebaseAndroidApiKey:
+          'AIza${List<String>.filled(35, 'A').join()}',
+      AppPublicConfigurationKeys.firebaseAndroidAppId:
+          '1:123456789012:android:abcdef1234567890',
+      AppPublicConfigurationKeys.firebaseMessagingSenderId: '123456789012',
+      AppPublicConfigurationKeys.firebaseProjectId: 'kinflow-dev',
+    };
+    final AppPublicConfiguration configured = publicConfigurationFixture(
+      firebaseValues: firebaseValues,
+    );
+    expect(configured.firebaseAndroidOptions?.projectId, 'kinflow-dev');
+    expect(publicConfigurationFixture().firebaseAndroidOptions, isNull);
+
+    final Map<String, String> partial = publicConfigurationValues(
+      firebaseValues: <String, String>{
+        AppPublicConfigurationKeys.firebaseProjectId: 'kinflow-dev',
+      },
+    );
+    expect(
+      () => const AppPublicConfigurationLoader(
+        expectedEnvironment: AppEnvironment.dev,
+      ).load(partial),
+      throwsA(
+        isA<AppConfigurationException>().having(
+          (AppConfigurationException error) =>
+              error.issues.map((AppConfigurationIssue issue) => issue.key),
+          'missing Firebase keys',
+          contains(AppPublicConfigurationKeys.firebaseAndroidApiKey),
+        ),
+      ),
+    );
+  });
+
   test('rejects environment identity mismatch without exposing values', () {
     final Map<String, String> values = publicConfigurationValues()
       ..[AppPublicConfigurationKeys.appEnvironment] = 'prod'

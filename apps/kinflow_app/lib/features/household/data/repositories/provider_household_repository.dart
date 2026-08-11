@@ -4,6 +4,7 @@ import 'package:kinflow_app/features/household/domain/entities/first_household_r
 import 'package:kinflow_app/features/household/domain/failures/household_failure.dart';
 import 'package:kinflow_app/features/household/domain/repositories/household_repository.dart';
 import 'package:kinflow_app/features/household/domain/value_objects/household_identifiers.dart';
+import 'package:kinflow_app/features/offline/domain/read_cache_metadata.dart';
 
 final class ProviderHouseholdRepository implements HouseholdRepository {
   const ProviderHouseholdRepository(this._dataSource);
@@ -15,7 +16,8 @@ final class ProviderHouseholdRepository implements HouseholdRepository {
     final LoadActiveHouseholdDataResult result = await _dataSource
         .loadActiveHousehold();
     return switch (result) {
-      ActiveHouseholdDataFound(:final record) => _mapLoaded(record),
+      ActiveHouseholdDataFound(:final record, :final cacheMetadata) =>
+        _mapLoaded(record, cacheMetadata: cacheMetadata),
       ActiveHouseholdDataAbsent() => const NoActiveHousehold(),
       LoadActiveHouseholdDataFailed(:final kind) => LoadActiveHouseholdFailed(
         _mapFailure(kind),
@@ -43,13 +45,16 @@ final class ProviderHouseholdRepository implements HouseholdRepository {
     };
   }
 
-  LoadActiveHouseholdResult _mapLoaded(ActiveHouseholdRecord record) {
+  LoadActiveHouseholdResult _mapLoaded(
+    ActiveHouseholdRecord record, {
+    ReadCacheMetadata? cacheMetadata,
+  }) {
     final ActiveHousehold? household = _mapRecord(record);
     return household == null
         ? const LoadActiveHouseholdFailed(
             HouseholdFailure(HouseholdFailureKind.invalidPayload),
           )
-        : ActiveHouseholdLoaded(household);
+        : ActiveHouseholdLoaded(household, cacheMetadata: cacheMetadata);
   }
 
   CreateFirstHouseholdResult _mapCreated(ActiveHouseholdRecord record) {

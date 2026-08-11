@@ -32,7 +32,7 @@ final class InviteFlowController {
   InviteFlowState _state = const InviteFlowIdle();
   Future<void> _pending = Future<void>.value();
   final Set<Future<void>> _operations = <Future<void>>{};
-  int? _tokenFingerprint;
+  int? _credentialFingerprint;
   InviteCommandId? _acceptId;
   bool? _acceptSetActive;
   var _operationRevision = 0;
@@ -57,6 +57,20 @@ final class InviteFlowController {
     return captured;
   }
 
+  bool captureShortCode(String rawShortCode) {
+    if (_disposed) {
+      return false;
+    }
+    _advanceOperationRevision();
+    final bool captured = _pendingInviteStore.captureShortCode(rawShortCode);
+    if (!captured) {
+      _emit(const InviteFlowMissing());
+    } else {
+      _emit(const InviteFlowIdle());
+    }
+    return captured;
+  }
+
   Future<void> loadPreview() {
     if (_disposed || _busyRevision == _operationRevision) {
       return _pending;
@@ -66,22 +80,30 @@ final class InviteFlowController {
 
   Future<void> _loadPreview(int revision) async {
     final InviteToken? token = _pendingInviteStore.read();
-    if (token == null) {
+    final InviteShortCode? shortCode = _pendingInviteStore.readShortCode();
+    if (token == null && shortCode == null ||
+        token != null && shortCode != null) {
       if (_isCurrent(revision)) {
-        _tokenFingerprint = null;
+        _credentialFingerprint = null;
+        if (token != null && shortCode != null) {
+          _pendingInviteStore.clear();
+        }
         _emit(const InviteFlowMissing());
       }
       return;
     }
-    if (_tokenFingerprint != token.hashCode) {
-      _tokenFingerprint = token.hashCode;
+    final int fingerprint = Object.hash(token, shortCode);
+    if (_credentialFingerprint != fingerprint) {
+      _credentialFingerprint = fingerprint;
       _acceptId = null;
       _acceptSetActive = null;
     }
     _emit(const InviteFlowLoading());
     final PreviewHouseholdInviteResult result;
     try {
-      result = await _repository.previewInvite(token);
+      result = token != null
+          ? await _repository.previewInvite(token)
+          : await _repository.previewInviteByShortCode(shortCode!);
     } on Object {
       if (_isCurrent(revision)) {
         _emit(
@@ -99,7 +121,7 @@ final class InviteFlowController {
       case PreviewHouseholdInviteFailed(:final failure):
         if (_isTerminal(failure)) {
           _pendingInviteStore.clear();
-          _tokenFingerprint = null;
+          _credentialFingerprint = null;
         }
         _emit(InviteFlowFailed(failure));
     }
@@ -124,13 +146,16 @@ final class InviteFlowController {
     required bool setActiveHousehold,
   }) async {
     final InviteToken? token = _pendingInviteStore.read();
+    final InviteShortCode? shortCode = _pendingInviteStore.readShortCode();
     final InviteFlowState current = _state;
     final preview = switch (current) {
       InviteFlowPreviewReady(:final preview) => preview,
       InviteFlowFailed(:final preview?) => preview,
       _ => null,
     };
-    if (token == null || preview == null) {
+    if ((token == null && shortCode == null ||
+            token != null && shortCode != null) ||
+        preview == null) {
       if (_isCurrent(revision)) {
         _emit(const InviteFlowMissing());
       }
@@ -143,13 +168,21 @@ final class InviteFlowController {
     _emit(InviteFlowAccepting(preview));
     final AcceptHouseholdInviteResult result;
     try {
-      result = await _repository.acceptInvite(
-        AcceptHouseholdInviteRequest(
-          idempotencyKey: _acceptId!,
-          token: token,
-          setActiveHousehold: setActiveHousehold,
-        ),
-      );
+      result = token != null
+          ? await _repository.acceptInvite(
+              AcceptHouseholdInviteRequest(
+                idempotencyKey: _acceptId!,
+                token: token,
+                setActiveHousehold: setActiveHousehold,
+              ),
+            )
+          : await _repository.acceptInviteByShortCode(
+              AcceptHouseholdInviteByShortCodeRequest(
+                idempotencyKey: _acceptId!,
+                shortCode: shortCode!,
+                setActiveHousehold: setActiveHousehold,
+              ),
+            );
     } on Object {
       if (_isCurrent(revision)) {
         _emit(
@@ -167,12 +200,12 @@ final class InviteFlowController {
     switch (result) {
       case HouseholdInviteAccepted(:final acceptance):
         _pendingInviteStore.clear();
-        _tokenFingerprint = null;
+        _credentialFingerprint = null;
         _emit(InviteFlowAccepted(acceptance));
       case AcceptHouseholdInviteFailed(:final failure):
         if (_isTerminal(failure)) {
           _pendingInviteStore.clear();
-          _tokenFingerprint = null;
+          _credentialFingerprint = null;
         }
         _emit(InviteFlowFailed(failure, preview: preview));
     }
@@ -219,7 +252,7 @@ final class InviteFlowController {
     _operationRevision += 1;
     _busyRevision = null;
     _pending = Future<void>.value();
-    _tokenFingerprint = null;
+    _credentialFingerprint = null;
     _acceptId = null;
     _acceptSetActive = null;
   }

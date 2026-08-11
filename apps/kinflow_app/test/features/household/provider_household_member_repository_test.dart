@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kinflow_app/features/household/data/datasources/household_member_data_source.dart';
 import 'package:kinflow_app/features/household/data/dto/household_member_dto.dart';
 import 'package:kinflow_app/features/household/data/repositories/provider_household_member_repository.dart';
+import 'package:kinflow_app/features/household/domain/entities/active_household.dart';
 import 'package:kinflow_app/features/household/domain/entities/household_member.dart';
 import 'package:kinflow_app/features/household/domain/entities/household_member_command.dart';
 import 'package:kinflow_app/features/household/domain/failures/household_member_failure.dart';
@@ -180,10 +181,35 @@ void main() {
       final ProviderHouseholdMemberRepository repository =
           ProviderHouseholdMemberRepository(dataSource);
 
+      final HouseholdMemberCommandResult fallbackResult = await repository
+          .leaveHousehold(_leaveCommand());
+      expect(fallbackResult, isA<HouseholdLeaveCompleted>());
       expect(
-        await repository.leaveHousehold(_leaveCommand()),
-        isA<HouseholdMemberCommandCompleted>(),
+        (fallbackResult as HouseholdLeaveCompleted).activeHousehold,
+        ActiveHousehold(
+          householdId: householdIdFixture(
+            '22222222-2222-4222-8222-222222222223',
+          ),
+          memberId: householdMemberIdFixture(
+            '33333333-3333-4333-8333-333333333335',
+          ),
+        ),
       );
+
+      dataSource.leaveResult = const HouseholdMemberDataSucceeded(
+        LeaveHouseholdDto(
+          householdId: '22222222-2222-4222-8222-222222222222',
+          memberId: '33333333-3333-4333-8333-333333333333',
+          version: 2,
+          removedAt: '2026-07-30T00:00:00Z',
+          activeHouseholdId: null,
+          activeMemberId: null,
+        ),
+      );
+      final HouseholdMemberCommandResult noFallback = await repository
+          .leaveHousehold(_leaveCommand());
+      expect(noFallback, isA<HouseholdLeaveCompleted>());
+      expect((noFallback as HouseholdLeaveCompleted).activeHousehold, isNull);
 
       dataSource.leaveResult = const HouseholdMemberDataSucceeded(
         LeaveHouseholdDto(
@@ -199,6 +225,23 @@ void main() {
           .leaveHousehold(_leaveCommand());
       expect(
         (invalid as HouseholdMemberCommandFailed).failure.kind,
+        HouseholdMemberFailureKind.invalidPayload,
+      );
+
+      dataSource.leaveResult = const HouseholdMemberDataSucceeded(
+        LeaveHouseholdDto(
+          householdId: '22222222-2222-4222-8222-222222222222',
+          memberId: '33333333-3333-4333-8333-333333333333',
+          version: 2,
+          removedAt: '2026-07-30T00:00:00Z',
+          activeHouseholdId: 'not-a-uuid',
+          activeMemberId: '33333333-3333-4333-8333-333333333335',
+        ),
+      );
+      final HouseholdMemberCommandResult malformed = await repository
+          .leaveHousehold(_leaveCommand());
+      expect(
+        (malformed as HouseholdMemberCommandFailed).failure.kind,
         HouseholdMemberFailureKind.invalidPayload,
       );
     });
@@ -409,6 +452,7 @@ LeaveHouseholdCommand _leaveCommand() {
   return LeaveHouseholdCommand(
     idempotencyKey: FakeHouseholdCommandIdGenerator().generate(),
     householdId: householdIdFixture(),
+    memberId: householdMemberIdFixture(),
     expectedVersion: 1,
   );
 }

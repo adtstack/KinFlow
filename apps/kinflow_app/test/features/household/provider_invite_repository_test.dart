@@ -72,6 +72,48 @@ void main() {
       );
     });
 
+    test('maps only a complete one-time short-code companion', () async {
+      final ProviderInviteRepository repository = ProviderInviteRepository(
+        _FakeInviteDataSource(
+          createResult: InviteDataSucceeded<CreatedInviteRecord>(
+            CreatedInviteRecord(
+              dto: _inviteDto(),
+              rawToken: inviteTokenValue,
+              rawShortCode: inviteShortCodeValue,
+              shortCodeExpiresAt: '2030-01-02T00:00:00Z',
+            ),
+          ),
+        ),
+      );
+      final ProviderInviteRepository partial = ProviderInviteRepository(
+        _FakeInviteDataSource(
+          createResult: InviteDataSucceeded<CreatedInviteRecord>(
+            CreatedInviteRecord(
+              dto: _inviteDto(),
+              rawToken: inviteTokenValue,
+              rawShortCode: inviteShortCodeValue,
+            ),
+          ),
+        ),
+      );
+
+      final HouseholdInvite invite =
+          (await repository.createInvite(_createRequest())
+                  as HouseholdInviteCreated)
+              .invite;
+
+      expect(invite.rawShortCode?.formatted, inviteShortCodeValue);
+      expect(invite.shortCodeExpiresAt, DateTime.utc(2030, 1, 2));
+      expect(invite.toString(), isNot(contains(inviteShortCodeValue)));
+      expect(
+        (await partial.createInvite(_createRequest())
+                as CreateHouseholdInviteFailed)
+            .failure
+            .kind,
+        InviteFailureKind.invalidPayload,
+      );
+    });
+
     test('maps minimal preview and rejects provider field drift', () async {
       final ProviderInviteRepository repository = ProviderInviteRepository(
         _FakeInviteDataSource(
@@ -148,6 +190,60 @@ void main() {
       expect(revoked.inviteId, inviteIdFixture());
     });
 
+    test(
+      'selects short-code provider operations without a link token',
+      () async {
+        final _FakeInviteDataSource dataSource = _FakeInviteDataSource(
+          previewResult: const InviteDataSucceeded<InvitePreviewDto>(
+            InvitePreviewDto(
+              valid: true,
+              householdDisplayName: 'Kim Home',
+              inviterDisplayName: 'Alex',
+              role: 'member',
+              expiresAt: '2030-01-02T00:00:00Z',
+            ),
+          ),
+          acceptResult: const InviteDataSucceeded<InviteMemberDto>(
+            InviteMemberDto(
+              id: '66666666-6666-4666-8666-666666666666',
+              householdId: '55555555-5555-4555-8555-555555555555',
+              displayName: 'Taylor',
+              role: 'member',
+              activeHouseholdSet: true,
+            ),
+          ),
+        );
+        final ProviderInviteRepository repository = ProviderInviteRepository(
+          dataSource,
+        );
+        final InviteShortCode shortCode = InviteShortCode.tryParse(
+          inviteShortCodeValue,
+        )!;
+
+        expect(
+          await repository.previewInviteByShortCode(shortCode),
+          isA<HouseholdInvitePreviewed>(),
+        );
+        expect(
+          await repository.acceptInviteByShortCode(
+            AcceptHouseholdInviteByShortCodeRequest(
+              idempotencyKey: inviteCommandIdFixture(
+                'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+              ),
+              shortCode: shortCode,
+              setActiveHousehold: true,
+            ),
+          ),
+          isA<HouseholdInviteAccepted>(),
+        );
+
+        expect(dataSource.lastPreviewShortCode, '2345ABCD');
+        expect(dataSource.lastPreviewToken, isNull);
+        expect(dataSource.lastAcceptShortCode, '2345ABCD');
+        expect(dataSource.lastAcceptToken, isNull);
+      },
+    );
+
     test('maps every data failure to a stable domain failure', () async {
       const Map<InviteDataFailureKind, InviteFailureKind>
       cases = <InviteDataFailureKind, InviteFailureKind>{
@@ -166,6 +262,10 @@ void main() {
         InviteDataFailureKind.rateLimited: InviteFailureKind.rateLimited,
         InviteDataFailureKind.profileUnavailable:
             InviteFailureKind.profileUnavailable,
+        InviteDataFailureKind.featurePolicyUnavailable:
+            InviteFailureKind.featurePolicyUnavailable,
+        InviteDataFailureKind.featureLimitReached:
+            InviteFailureKind.featureLimitReached,
         InviteDataFailureKind.temporarilyUnavailable:
             InviteFailureKind.temporarilyUnavailable,
         InviteDataFailureKind.invalidPayload: InviteFailureKind.invalidPayload,
@@ -210,6 +310,10 @@ final class _FakeInviteDataSource implements InviteDataSource {
   String? lastTargetEmail;
   String? lastRole;
   int? lastExpiresInHours;
+  String? lastPreviewToken;
+  String? lastPreviewShortCode;
+  String? lastAcceptToken;
+  String? lastAcceptShortCode;
 
   @override
   Future<InviteDataResult<CreatedInviteRecord>> createInvite({
@@ -228,14 +332,38 @@ final class _FakeInviteDataSource implements InviteDataSource {
   @override
   Future<InviteDataResult<InvitePreviewDto>> previewInvite({
     required String token,
-  }) async => previewResult;
+  }) async {
+    lastPreviewToken = token;
+    return previewResult;
+  }
+
+  @override
+  Future<InviteDataResult<InvitePreviewDto>> previewInviteByShortCode({
+    required String shortCode,
+  }) async {
+    lastPreviewShortCode = shortCode;
+    return previewResult;
+  }
 
   @override
   Future<InviteDataResult<InviteMemberDto>> acceptInvite({
     required String idempotencyKey,
     required String token,
     required bool setActiveHousehold,
-  }) async => acceptResult;
+  }) async {
+    lastAcceptToken = token;
+    return acceptResult;
+  }
+
+  @override
+  Future<InviteDataResult<InviteMemberDto>> acceptInviteByShortCode({
+    required String idempotencyKey,
+    required String shortCode,
+    required bool setActiveHousehold,
+  }) async {
+    lastAcceptShortCode = shortCode;
+    return acceptResult;
+  }
 
   @override
   Future<InviteDataResult<RevokedInviteDto>> revokeInvite({

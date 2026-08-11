@@ -29,6 +29,8 @@ void main() {
         'expiresAt',
         'status',
         'rawToken',
+        'shortCode',
+        'shortCodeExpiresAt',
       };
       final Map<String, Object?> valid = <String, Object?>{
         'id': 'id',
@@ -37,6 +39,8 @@ void main() {
         'expiresAt': 'date',
         'status': 'active',
         'rawToken': 'redacted-in-test',
+        'shortCode': 'redacted-in-test',
+        'shortCodeExpiresAt': 'date',
       };
 
       expect(hasExactCreatedInviteKeys(valid, allowed), isTrue);
@@ -52,6 +56,23 @@ void main() {
           ...valid,
           'extra': true,
         }, allowed),
+        isFalse,
+      );
+    });
+
+    test('requires all one-time credentials together or omits all', () {
+      final Map<String, Object?> created = <String, Object?>{
+        'rawToken': 'redacted-link-token',
+        'shortCode': 'redacted-short-code',
+        'shortCodeExpiresAt': '2030-01-02T00:00:00Z',
+      };
+
+      expect(hasCompleteOneTimeInviteCredentials(created), isTrue);
+      expect(hasCompleteOneTimeInviteCredentials(<String, Object?>{}), isTrue);
+      expect(
+        hasCompleteOneTimeInviteCredentials(
+          <String, Object?>{...created}..remove('shortCodeExpiresAt'),
+        ),
         isFalse,
       );
     });
@@ -72,6 +93,9 @@ void main() {
             'INVITE_EMAIL_MISMATCH': InviteDataFailureKind.emailMismatch,
             'RATE_LIMITED': InviteDataFailureKind.rateLimited,
             'PROFILE_UNAVAILABLE': InviteDataFailureKind.profileUnavailable,
+            'FEATURE_POLICY_UNAVAILABLE':
+                InviteDataFailureKind.featurePolicyUnavailable,
+            'FEATURE_LIMIT_REACHED': InviteDataFailureKind.featureLimitReached,
             'TEMPORARILY_UNAVAILABLE':
                 InviteDataFailureKind.temporarilyUnavailable,
           };

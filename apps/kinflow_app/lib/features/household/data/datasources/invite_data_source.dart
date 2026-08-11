@@ -12,19 +12,31 @@ enum InviteDataFailureKind {
   emailMismatch,
   rateLimited,
   profileUnavailable,
+  featurePolicyUnavailable,
+  featureLimitReached,
   temporarilyUnavailable,
   invalidPayload,
   unknown,
 }
 
 final class CreatedInviteRecord {
-  const CreatedInviteRecord({required this.dto, this.rawToken});
+  const CreatedInviteRecord({
+    required this.dto,
+    this.rawToken,
+    this.rawShortCode,
+    this.shortCodeExpiresAt,
+  });
 
   final InviteDto dto;
   final String? rawToken;
+  final String? rawShortCode;
+  final String? shortCodeExpiresAt;
 
   @override
-  String toString() => 'CreatedInviteRecord(dto: $dto, rawToken: redacted)';
+  String toString() {
+    return 'CreatedInviteRecord(dto: $dto, rawToken: redacted, '
+        'rawShortCode: redacted)';
+  }
 }
 
 abstract interface class InviteDataSource {
@@ -40,9 +52,19 @@ abstract interface class InviteDataSource {
     required String token,
   });
 
+  Future<InviteDataResult<InvitePreviewDto>> previewInviteByShortCode({
+    required String shortCode,
+  });
+
   Future<InviteDataResult<InviteMemberDto>> acceptInvite({
     required String idempotencyKey,
     required String token,
+    required bool setActiveHousehold,
+  });
+
+  Future<InviteDataResult<InviteMemberDto>> acceptInviteByShortCode({
+    required String idempotencyKey,
+    required String shortCode,
     required bool setActiveHousehold,
   });
 

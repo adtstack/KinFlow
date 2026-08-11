@@ -34,3 +34,9 @@ final class HouseholdMembersLoadFailed extends HouseholdMembersState {
 final class HouseholdMembersLeft extends HouseholdMembersState {
   const HouseholdMembersLeft();
 }
+
+final class HouseholdMembersDepartureFailed extends HouseholdMembersState {
+  const HouseholdMembersDepartureFailed(this.failure);
+
+  final HouseholdMemberFailure failure;
+}

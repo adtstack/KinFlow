@@ -1,9 +1,16 @@
 import 'package:kinflow_app/infrastructure/google/google_identity_gateway.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+const Set<String> _googleIdentityConflictCodes = <String>{
+  'email_exists',
+  'identity_already_exists',
+  'user_already_exists',
+};
+
 enum GoogleTokenExchangeFailureKind {
   providerUnavailable,
   temporarilyUnavailable,
+  identityConflict,
   invalidResponse,
   unknown,
 }
@@ -67,9 +74,9 @@ final class SupabaseGoogleTokenExchange implements GoogleTokenExchange {
       return const GoogleTokenExchangeFailed(
         GoogleTokenExchangeFailureKind.temporarilyUnavailable,
       );
-    } on AuthException {
-      return const GoogleTokenExchangeFailed(
-        GoogleTokenExchangeFailureKind.providerUnavailable,
+    } on AuthException catch (error) {
+      return GoogleTokenExchangeFailed(
+        _googleTokenExchangeFailureForAuthException(error),
       );
     } on Object {
       return const GoogleTokenExchangeFailed(
@@ -77,4 +84,12 @@ final class SupabaseGoogleTokenExchange implements GoogleTokenExchange {
       );
     }
   }
+}
+
+GoogleTokenExchangeFailureKind _googleTokenExchangeFailureForAuthException(
+  AuthException error,
+) {
+  return _googleIdentityConflictCodes.contains(error.code)
+      ? GoogleTokenExchangeFailureKind.identityConflict
+      : GoogleTokenExchangeFailureKind.providerUnavailable;
 }

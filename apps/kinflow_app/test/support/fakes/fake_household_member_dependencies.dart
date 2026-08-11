@@ -1,4 +1,6 @@
 import 'package:kinflow_app/features/auth/domain/services/recent_authentication_service.dart';
+import 'package:kinflow_app/features/household/application/ports/active_household_departure_committer.dart';
+import 'package:kinflow_app/features/household/domain/entities/active_household.dart';
 import 'package:kinflow_app/features/household/domain/entities/household_member.dart';
 import 'package:kinflow_app/features/household/domain/entities/household_member_command.dart';
 import 'package:kinflow_app/features/household/domain/repositories/household_member_repository.dart';
@@ -109,7 +111,9 @@ final class FakeHouseholdMemberRepository implements HouseholdMemberRepository {
     if (callback != null) {
       return callback(command);
     }
-    return _next(_leaveResults);
+    return _leaveResults.isEmpty
+        ? const HouseholdLeaveCompleted(null)
+        : _leaveResults.removeAt(0);
   }
 
   @override
@@ -130,6 +134,22 @@ final class FakeHouseholdMemberRepository implements HouseholdMemberRepository {
     return results.isEmpty
         ? const HouseholdMemberCommandCompleted()
         : results.removeAt(0);
+  }
+}
+
+final class FakeActiveHouseholdDepartureCommitter
+    implements ActiveHouseholdDepartureCommitter {
+  FakeActiveHouseholdDepartureCommitter({this.result = true, this.callback});
+
+  final bool result;
+  final Future<bool> Function(ActiveHousehold? nextHousehold)? callback;
+  final List<ActiveHousehold?> nextHouseholds = <ActiveHousehold?>[];
+
+  @override
+  Future<bool> commitHouseholdDeparture(ActiveHousehold? nextHousehold) async {
+    nextHouseholds.add(nextHousehold);
+    final callback = this.callback;
+    return callback == null ? result : callback(nextHousehold);
   }
 }
 

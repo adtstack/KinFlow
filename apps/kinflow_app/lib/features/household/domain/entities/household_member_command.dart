@@ -38,11 +38,13 @@ final class LeaveHouseholdCommand {
   const LeaveHouseholdCommand({
     required this.idempotencyKey,
     required this.householdId,
+    required this.memberId,
     required this.expectedVersion,
   });
 
   final HouseholdCommandId idempotencyKey;
   final HouseholdId householdId;
+  final HouseholdMemberId memberId;
   final int expectedVersion;
 }
 

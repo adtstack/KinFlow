@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:kinflow_app/features/auth/domain/services/recent_authentication_service.dart';
 import 'package:kinflow_app/features/household/application/household_members_state.dart';
+import 'package:kinflow_app/features/household/application/ports/active_household_departure_committer.dart';
 import 'package:kinflow_app/features/household/domain/entities/household_member.dart';
 import 'package:kinflow_app/features/household/domain/entities/household_member_command.dart';
 import 'package:kinflow_app/features/household/domain/failures/household_member_failure.dart';
@@ -14,11 +15,13 @@ final class HouseholdMembersController {
     this._repository,
     this._idGenerator,
     this._recentAuthenticationService,
+    this._departureCommitter,
   );
 
   final HouseholdMemberRepository _repository;
   final HouseholdCommandIdGenerator _idGenerator;
   final RecentAuthenticationService _recentAuthenticationService;
+  final ActiveHouseholdDepartureCommitter _departureCommitter;
   final StreamController<HouseholdMembersState> _states =
       StreamController<HouseholdMembersState>.broadcast(sync: true);
 
@@ -120,19 +123,41 @@ final class HouseholdMembersController {
         return;
       }
       final String fingerprint =
-          'leave|${roster.householdId.value}|${actor.version}';
+          'leave|${roster.householdId.value}|${actor.id.value}|'
+          '${actor.version}';
       final HouseholdMemberCommandResult result = await _repository
           .leaveHousehold(
             LeaveHouseholdCommand(
               idempotencyKey: _commandId(fingerprint),
               householdId: roster.householdId,
+              memberId: actor.id,
               expectedVersion: actor.version,
             ),
           );
       switch (result) {
+        case HouseholdLeaveCompleted(:final activeHousehold):
+          _clearRetry();
+          final bool committed;
+          try {
+            committed = await _departureCommitter.commitHouseholdDeparture(
+              activeHousehold,
+            );
+          } on Object {
+            _emitDepartureFailure();
+            return;
+          }
+          if (!committed) {
+            _emitDepartureFailure();
+            return;
+          }
+          _emit(const HouseholdMembersLeft());
         case HouseholdMemberCommandCompleted():
           _clearRetry();
-          _emit(const HouseholdMembersLeft());
+          _emit(
+            const HouseholdMembersDepartureFailed(
+              HouseholdMemberFailure(HouseholdMemberFailureKind.invalidPayload),
+            ),
+          );
         case HouseholdMemberCommandFailed(:final failure):
           _emit(HouseholdMembersReady(roster, failure: failure));
       }
@@ -227,6 +252,16 @@ final class HouseholdMembersController {
       case HouseholdMemberCommandCompleted():
         _clearRetry();
         await _load(roster.householdId, initial: false, fallback: roster);
+      case HouseholdLeaveCompleted():
+        _clearRetry();
+        _emit(
+          HouseholdMembersReady(
+            roster,
+            failure: const HouseholdMemberFailure(
+              HouseholdMemberFailureKind.invalidPayload,
+            ),
+          ),
+        );
       case HouseholdMemberCommandFailed(:final failure):
         _emit(HouseholdMembersReady(roster, failure: failure));
     }
@@ -292,6 +327,16 @@ final class HouseholdMembersController {
     HouseholdMemberFailureKind kind,
   ) {
     _emit(HouseholdMembersReady(roster, failure: HouseholdMemberFailure(kind)));
+  }
+
+  void _emitDepartureFailure() {
+    _emit(
+      const HouseholdMembersDepartureFailed(
+        HouseholdMemberFailure(
+          HouseholdMemberFailureKind.localStateUnavailable,
+        ),
+      ),
+    );
   }
 
   Future<void> dispose() async {

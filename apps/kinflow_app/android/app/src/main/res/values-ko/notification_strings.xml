@@ -1,0 +1,6 @@
+<resources>
+    <string name="notification_push_title">KinFlow 알림</string>
+    <string name="notification_push_body">최근 가족 업데이트를 확인하려면 KinFlow를 열어 주세요.</string>
+    <string name="notification_channel_name">가족 리마인더</string>
+    <string name="notification_channel_description">가족의 비공개 세부정보를 포함하지 않는 일반 가구 알림</string>
+</resources>

@@ -22,6 +22,9 @@ Phase 01 WP01-06 Observability/config foundation. Flutter SDK 3.44.7/Dart 3.12.2
 - allowlisted structured JSON log, redaction, sink failure isolation
 - PII capture를 기본 차단한 optional Sentry error reporting adapter
 - config validator와 high-confidence repository secret scanner
+- Today/Upcoming 반복 집안일의 전체 시리즈 변경과 server-owned 선택 회차 기준 수정·취소
+- Calendar 반복 일정의 한 회차 예외·전체 시리즈 변경·server-owned 선택 회차 기준 수정/취소 및 Today cache reconciliation
+- Web Companion dev/prod release build, path URL, email OTP 우선 로그인과 명시적 Web capability fallback
 
 ## Environments
 
@@ -43,7 +46,11 @@ dart run tool/validate_public_config.dart
 dart run tool/scan_secrets.dart
 flutter build apk --debug --flavor dev --target lib/main_dev.dart --dart-define-from-file=config/dev.example.json
 flutter build apk --debug --flavor prod --target lib/main_prod.dart --dart-define-from-file=config/prod.example.json
+../../scripts/ci/web-build.sh dev
+../../scripts/ci/web-build.sh prod
 ```
+
+Web Companion은 현재 PWA manifest와 Flutter service worker를 만들지 않고 persistent API cache, Web Push, Store purchase와 client background execution을 활성화하지 않는다. generic static host는 path URL direct refresh를 자동 지원하지 않으므로 production hosting의 SPA rewrite, HTTPS/CSP와 OAuth callback은 별도 Web Gate에서 검증한다.
 
 전체 테스트에서 connectivity test는 local URL/key가 없으면 skip된다. 저장소 루트의 `npm run supabase:flutter-health`는 실행 중인 local stack의 공개 URL/publishable key를 주입해 그 테스트를 실제 실행한다.
 
