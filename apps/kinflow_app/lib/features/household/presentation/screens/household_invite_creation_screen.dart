@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kinflow_app/app/config/app_public_configuration.dart';
@@ -13,9 +12,12 @@ import 'package:kinflow_app/app/theme/app_tokens.dart';
 import 'package:kinflow_app/features/auth/application/auth_lifecycle_state.dart';
 import 'package:kinflow_app/features/auth/presentation/providers/auth_providers.dart';
 import 'package:kinflow_app/features/household/application/invite_creation_state.dart';
+import 'package:kinflow_app/features/household/application/invite_sharing_state.dart';
 import 'package:kinflow_app/features/household/domain/entities/household_invite.dart';
 import 'package:kinflow_app/features/household/domain/failures/invite_failure.dart';
 import 'package:kinflow_app/features/household/domain/value_objects/household_identifiers.dart';
+import 'package:kinflow_app/features/household/domain/value_objects/household_invite_link.dart';
+import 'package:kinflow_app/features/household/domain/value_objects/invite_identifiers.dart';
 import 'package:kinflow_app/features/household/presentation/invite_failure_message.dart';
 import 'package:kinflow_app/features/household/presentation/providers/household_providers.dart';
 import 'package:kinflow_app/l10n/app_localizations.dart';
@@ -50,12 +52,13 @@ class _HouseholdInviteCreationScreenState
       key: const Key('invite.create.screen'),
       title: localizations.inviteCreateTitle,
       actions: <Widget>[
-        IconButton(
-          key: const Key('invite.create.close'),
-          onPressed: () => context.go(AppRoutes.today),
-          tooltip: localizations.goHomeAction,
-          icon: const Icon(Icons.close),
-        ),
+        if (!context.canPop())
+          IconButton(
+            key: const Key('invite.create.close'),
+            onPressed: () => context.go(AppRoutes.today),
+            tooltip: localizations.goHomeAction,
+            icon: const Icon(Icons.close),
+          ),
       ],
       body: ScrollableStatusLayout(
         maxWidth: AppLayoutTokens.dialogContentMaxWidth,
@@ -190,13 +193,18 @@ class _InviteLinkResult extends ConsumerWidget {
     final AppPublicConfiguration configuration = ref.watch(
       appPublicConfigurationProvider,
     );
-    final String? link = invite.rawToken == null
+    final HouseholdInviteLink? inviteLink = invite.rawToken == null
         ? null
-        : Uri(
-            scheme: 'https',
+        : HouseholdInviteLink.tryCreate(
             host: configuration.authRedirectHost,
-            pathSegments: <String>['invite', invite.rawToken!.value],
-          ).toString();
+            token: invite.rawToken!,
+          );
+    final String? link = inviteLink?.value;
+    final InviteShortCode? inviteShortCode = invite.rawShortCode;
+    final String? shortCode = inviteShortCode?.formatted;
+    final InviteSharingState sharingState = ref.watch(inviteSharingProvider);
+    final bool sharingBusy = sharingState is InviteSharingInProgress;
+    final String? sharingMessage = _sharingMessage(localizations, sharingState);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -217,6 +225,51 @@ class _InviteLinkResult extends ConsumerWidget {
               : localizations.inviteLinkBody,
           textAlign: TextAlign.center,
         ),
+        if (shortCode != null && invite.shortCodeExpiresAt != null) ...<Widget>[
+          const SizedBox(height: AppSpacing.lg),
+          Text(
+            localizations.inviteCodeHeading,
+            style: Theme.of(context).textTheme.titleMedium,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(localizations.inviteCodeBody, textAlign: TextAlign.center),
+          const SizedBox(height: AppSpacing.md),
+          SelectableText(
+            shortCode,
+            key: const Key('invite.create.code'),
+            style: Theme.of(context).textTheme.headlineMedium,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            localizations.inviteExpiryLabel(
+              _expiryLabel(context, invite.shortCodeExpiresAt!),
+            ),
+            key: const Key('invite.create.codeExpiry'),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          OutlinedButton.icon(
+            key: const Key('invite.create.copyCode'),
+            onPressed: isRevoking || sharingBusy
+                ? null
+                : () => unawaited(
+                    ref
+                        .read(inviteSharingProvider.notifier)
+                        .copyShortCode(inviteShortCode!),
+                  ),
+            icon:
+                sharingState is InviteSharingInProgress &&
+                    sharingState.action == InviteSharingAction.copyShortCode
+                ? const SizedBox.square(
+                    dimension: AppSpacing.md,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.copy),
+            label: Text(localizations.inviteCodeCopyAction),
+          ),
+        ],
         if (link != null) ...<Widget>[
           const SizedBox(height: AppSpacing.lg),
           SelectableText(
@@ -226,18 +279,66 @@ class _InviteLinkResult extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           FilledButton.icon(
+            key: const Key('invite.create.share'),
+            onPressed: isRevoking || sharingBusy
+                ? null
+                : () => unawaited(
+                    ref
+                        .read(inviteSharingProvider.notifier)
+                        .share(
+                          inviteLink!,
+                          chooserTitle: localizations.inviteShareChooserTitle,
+                        ),
+                  ),
+            icon:
+                sharingState is InviteSharingInProgress &&
+                    sharingState.action == InviteSharingAction.shareLink
+                ? const SizedBox.square(
+                    dimension: AppSpacing.md,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.share),
+            label: Text(localizations.inviteShareAction),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          OutlinedButton.icon(
             key: const Key('invite.create.copy'),
-            onPressed: () async {
-              await Clipboard.setData(ClipboardData(text: link));
-              if (!context.mounted) {
-                return;
-              }
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(localizations.inviteCopiedBody)),
-              );
-            },
-            icon: const Icon(Icons.copy),
+            onPressed: isRevoking || sharingBusy
+                ? null
+                : () => unawaited(
+                    ref
+                        .read(inviteSharingProvider.notifier)
+                        .copyLink(inviteLink!),
+                  ),
+            icon:
+                sharingState is InviteSharingInProgress &&
+                    sharingState.action == InviteSharingAction.copyLink
+                ? const SizedBox.square(
+                    dimension: AppSpacing.md,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.copy),
             label: Text(localizations.inviteCopyAction),
+          ),
+        ],
+        if (link != null || shortCode != null) ...<Widget>[
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            localizations.inviteClipboardNotice,
+            key: const Key('invite.create.clipboardNotice'),
+            style: Theme.of(context).textTheme.bodySmall,
+            textAlign: TextAlign.center,
+          ),
+        ],
+        if (sharingMessage != null) ...<Widget>[
+          const SizedBox(height: AppSpacing.md),
+          Semantics(
+            liveRegion: true,
+            child: Text(
+              sharingMessage,
+              key: const Key('invite.create.actionStatus'),
+              textAlign: TextAlign.center,
+            ),
           ),
         ],
         if (failure != null) ...<Widget>[
@@ -254,7 +355,7 @@ class _InviteLinkResult extends ConsumerWidget {
         const SizedBox(height: AppSpacing.md),
         OutlinedButton.icon(
           key: const Key('invite.create.revoke'),
-          onPressed: isRevoking
+          onPressed: isRevoking || sharingBusy
               ? null
               : () => unawaited(
                   ref.read(inviteCreationProvider.notifier).revoke(),
@@ -273,5 +374,43 @@ class _InviteLinkResult extends ConsumerWidget {
         ),
       ],
     );
+  }
+
+  String _expiryLabel(BuildContext context, DateTime expiresAt) {
+    final MaterialLocalizations material = MaterialLocalizations.of(context);
+    final DateTime local = expiresAt.toLocal();
+    final String date = material.formatFullDate(local);
+    final String time = material.formatTimeOfDay(
+      TimeOfDay.fromDateTime(local),
+      alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context),
+    );
+    return '$date, $time';
+  }
+
+  String? _sharingMessage(
+    AppLocalizations localizations,
+    InviteSharingState state,
+  ) {
+    return switch (state) {
+      InviteSharingIdle() => null,
+      InviteSharingInProgress(:final action) => switch (action) {
+        InviteSharingAction.shareLink => localizations.inviteShareOpeningBody,
+        InviteSharingAction.copyLink ||
+        InviteSharingAction.copyShortCode => localizations.inviteCopyingBody,
+      },
+      InviteSharingCompleted(:final outcome) => switch (outcome) {
+        InviteSharingOutcome.shareSheetOpened =>
+          localizations.inviteShareOpenedBody,
+        InviteSharingOutcome.shareUnavailable =>
+          localizations.inviteShareUnavailableBody,
+        InviteSharingOutcome.shareFailed => localizations.inviteShareFailedBody,
+        InviteSharingOutcome.linkCopied => localizations.inviteCopiedBody,
+        InviteSharingOutcome.shortCodeCopied =>
+          localizations.inviteCodeCopiedBody,
+        InviteSharingOutcome.linkCopyFailed ||
+        InviteSharingOutcome.shortCodeCopyFailed =>
+          localizations.inviteCopyFailedBody,
+      },
+    };
   }
 }

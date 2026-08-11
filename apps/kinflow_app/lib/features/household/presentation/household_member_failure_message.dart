@@ -20,6 +20,8 @@ String householdMemberFailureMessage(
       localizations.membersAccountChangedError,
     HouseholdMemberFailureKind.versionConflict =>
       localizations.membersVersionConflictError,
+    HouseholdMemberFailureKind.localStateUnavailable =>
+      localizations.householdSwitchLocalStateError,
     _ => localizations.membersGenericError,
   };
 }

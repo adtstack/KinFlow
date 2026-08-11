@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kinflow_app/app/presentation/widgets/app_modal_route.dart';
 import 'package:kinflow_app/app/presentation/widgets/responsive_scaffold.dart';
 import 'package:kinflow_app/app/presentation/widgets/scrollable_status_layout.dart';
+import 'package:kinflow_app/app/router/app_primary_destination.dart';
 import 'package:kinflow_app/app/router/app_router.dart';
 import 'package:kinflow_app/app/theme/app_tokens.dart';
 import 'package:kinflow_app/features/auth/presentation/providers/auth_providers.dart';
@@ -13,6 +15,7 @@ import 'package:kinflow_app/features/household/domain/entities/household_member.
 import 'package:kinflow_app/features/household/domain/value_objects/household_identifiers.dart';
 import 'package:kinflow_app/features/household/presentation/household_member_failure_message.dart';
 import 'package:kinflow_app/features/household/presentation/providers/household_providers.dart';
+import 'package:kinflow_app/features/notifications/presentation/widgets/notification_app_shell_action.dart';
 import 'package:kinflow_app/l10n/app_localizations.dart';
 
 enum _MemberAction { promote, demote, transferOwner, remove }
@@ -56,6 +59,10 @@ class _HouseholdMembersScreenState
   Widget build(BuildContext context) {
     final AppLocalizations localizations = AppLocalizations.of(context);
     final HouseholdMembersState state = ref.watch(householdMembersProvider);
+    final bool canInvite =
+        state is HouseholdMembersReady &&
+        (state.roster.currentMember.role == HouseholdMemberRole.owner ||
+            state.roster.currentMember.role == HouseholdMemberRole.admin);
     ref.listen<HouseholdMembersState>(householdMembersProvider, (
       HouseholdMembersState? previous,
       HouseholdMembersState next,
@@ -70,14 +77,22 @@ class _HouseholdMembersScreenState
 
     return AppResponsiveScaffold(
       key: const Key('members.screen'),
+      selectedPrimaryDestination: AppPrimaryDestination.family,
+      onPrimaryDestinationSelected: (AppPrimaryDestination destination) =>
+          context.go(AppRoutes.primaryLocation(destination)),
       title: localizations.membersTitle,
       actions: <Widget>[
-        IconButton(
-          key: const Key('members.close'),
-          onPressed: () => context.go(AppRoutes.today),
-          tooltip: localizations.goHomeAction,
-          icon: const Icon(Icons.close),
+        const NotificationAppShellAction(
+          buttonKey: Key('members.notifications'),
         ),
+        if (canInvite)
+          IconButton(
+            key: const Key('members.invite'),
+            onPressed: () =>
+                unawaited(context.push<void>(AppRoutes.inviteCreate)),
+            tooltip: localizations.inviteCreateAction,
+            icon: const Icon(Icons.person_add_alt_1_outlined),
+          ),
       ],
       body: _body(localizations, state),
     );
@@ -122,6 +137,20 @@ class _HouseholdMembersScreenState
               },
               icon: const Icon(Icons.refresh),
               label: Text(localizations.retryAction),
+            ),
+          ],
+        ),
+      ),
+      HouseholdMembersDepartureFailed(:final failure) => ScrollableStatusLayout(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            const Icon(Icons.lock_outline, size: AppIconSize.status),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              householdMemberFailureMessage(localizations, failure),
+              key: const Key('members.departureError'),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -382,34 +411,52 @@ class _HouseholdMembersScreenState
     required bool destructive,
   }) async {
     final AppLocalizations localizations = AppLocalizations.of(context);
-    return await showDialog<bool>(
+    return await showAppDialog<bool>(
           context: context,
           builder: (BuildContext context) => AlertDialog(
-            title: Text(title),
-            content: Text(body),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: Text(localizations.memberCancelAction),
-              ),
-              FilledButton(
-                style: destructive
-                    ? FilledButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.error,
-                        foregroundColor: Theme.of(context).colorScheme.onError,
-                      )
-                    : null,
-                onPressed: () => Navigator.of(context).pop(true),
-                child: Text(localizations.memberConfirmAction),
-              ),
-            ],
+            scrollable: true,
+            title: Text(title, key: const Key('members.confirm.title')),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Text(body),
+                const SizedBox(height: AppSpacing.lg),
+                OverflowBar(
+                  alignment: MainAxisAlignment.end,
+                  overflowAlignment: OverflowBarAlignment.end,
+                  spacing: AppSpacing.sm,
+                  overflowSpacing: AppSpacing.sm,
+                  children: <Widget>[
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: Text(localizations.memberCancelAction),
+                    ),
+                    FilledButton(
+                      key: const Key('members.confirm.action'),
+                      style: destructive
+                          ? FilledButton.styleFrom(
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.error,
+                              foregroundColor: Theme.of(
+                                context,
+                              ).colorScheme.onError,
+                            )
+                          : null,
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: Text(localizations.memberConfirmAction),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ) ??
         false;
   }
 
   Future<void> _finishLeaving() async {
-    await ref.read(authLifecycleProvider.notifier).refresh();
     if (mounted) {
       context.go(AppRoutes.home);
     }

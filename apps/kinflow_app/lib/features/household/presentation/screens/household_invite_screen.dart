@@ -11,6 +11,7 @@ import 'package:kinflow_app/features/auth/presentation/providers/auth_providers.
 import 'package:kinflow_app/features/household/application/invite_flow_state.dart';
 import 'package:kinflow_app/features/household/domain/entities/household_invite.dart';
 import 'package:kinflow_app/features/household/domain/failures/invite_failure.dart';
+import 'package:kinflow_app/features/household/domain/value_objects/invite_identifiers.dart';
 import 'package:kinflow_app/features/household/presentation/invite_failure_message.dart';
 import 'package:kinflow_app/features/household/presentation/providers/household_providers.dart';
 import 'package:kinflow_app/l10n/app_localizations.dart';
@@ -24,9 +25,17 @@ class HouseholdInviteScreen extends ConsumerStatefulWidget {
 }
 
 class _HouseholdInviteScreenState extends ConsumerState<HouseholdInviteScreen> {
+  final GlobalKey<FormState> _shortCodeFormKey = GlobalKey<FormState>();
+  final TextEditingController _shortCodeController = TextEditingController();
   var _started = false;
   var _switchConfirmed = false;
   var _completingAcceptance = false;
+
+  @override
+  void dispose() {
+    _shortCodeController.dispose();
+    super.dispose();
+  }
 
   @override
   void didChangeDependencies() {
@@ -70,18 +79,69 @@ class _HouseholdInviteScreenState extends ConsumerState<HouseholdInviteScreen> {
     return Scaffold(
       key: const Key('invite.open.screen'),
       appBar: AppBar(
+        leading: BackButton(
+          key: const Key('invite.open.back'),
+          onPressed: () => _leaveInvite(context),
+        ),
         title: Semantics(
           header: true,
           child: Text(localizations.inviteOpenTitle),
         ),
       ),
       body: SafeArea(
-        child: ScrollableStatusLayout(
-          maxWidth: AppLayoutTokens.dialogContentMaxWidth,
-          child: _content(context, localizations, inviteState, authState),
-        ),
+        child: _inviteBody(context, localizations, inviteState, authState),
       ),
     );
+  }
+
+  Widget _inviteBody(
+    BuildContext context,
+    AppLocalizations localizations,
+    InviteFlowState inviteState,
+    AuthLifecycleState authState,
+  ) {
+    final Widget content = _content(
+      context,
+      localizations,
+      inviteState,
+      authState,
+    );
+    if (inviteState is InviteFlowMissing && authState is! AuthBootstrapping) {
+      return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          final AppWindowSizeClass sizeClass = AppBreakpoints.sizeClassFor(
+            constraints.maxWidth,
+          );
+          final double padding = sizeClass == AppWindowSizeClass.compact
+              ? AppSpacing.lg
+              : AppSpacing.xl;
+          return SingleChildScrollView(
+            key: const Key('invite.code.scroll'),
+            padding: EdgeInsets.all(padding),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: AppLayoutTokens.dialogContentMaxWidth,
+                ),
+                child: content,
+              ),
+            ),
+          );
+        },
+      );
+    }
+    return ScrollableStatusLayout(
+      maxWidth: AppLayoutTokens.dialogContentMaxWidth,
+      child: content,
+    );
+  }
+
+  void _leaveInvite(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+    context.go(AppRoutes.signIn);
   }
 
   Widget _content(
@@ -96,7 +156,12 @@ class _HouseholdInviteScreenState extends ConsumerState<HouseholdInviteScreen> {
       return _LoadingInvite(localizations: localizations);
     }
     if (inviteState is InviteFlowMissing) {
-      return _MissingInvite(localizations: localizations);
+      return _InviteCodeEntry(
+        formKey: _shortCodeFormKey,
+        controller: _shortCodeController,
+        localizations: localizations,
+        onSubmit: _submitShortCode,
+      );
     }
     if (inviteState is InviteFlowAccepted) {
       return Semantics(
@@ -253,6 +318,17 @@ class _HouseholdInviteScreenState extends ConsumerState<HouseholdInviteScreen> {
     }
   }
 
+  void _submitShortCode() {
+    if (!(_shortCodeFormKey.currentState?.validate() ?? false)) {
+      return;
+    }
+    FocusScope.of(context).unfocus();
+    final InviteFlowNotifier notifier = ref.read(inviteFlowProvider.notifier);
+    if (notifier.captureShortCode(_shortCodeController.text)) {
+      unawaited(notifier.loadPreview());
+    }
+  }
+
   bool _isTerminal(InviteFailure failure) {
     return switch (failure.kind) {
       InviteFailureKind.invalid ||
@@ -301,27 +377,71 @@ class _LoadingInvite extends StatelessWidget {
   }
 }
 
-class _MissingInvite extends StatelessWidget {
-  const _MissingInvite({required this.localizations});
+class _InviteCodeEntry extends StatelessWidget {
+  const _InviteCodeEntry({
+    required this.formKey,
+    required this.controller,
+    required this.localizations,
+    required this.onSubmit,
+  });
 
+  final GlobalKey<FormState> formKey;
+  final TextEditingController controller;
   final AppLocalizations localizations;
+  final VoidCallback onSubmit;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      key: const Key('invite.missing'),
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        const Icon(Icons.link_off, size: AppIconSize.status),
-        const SizedBox(height: AppSpacing.md),
-        Text(
-          localizations.inviteMissingTitle,
-          style: Theme.of(context).textTheme.headlineSmall,
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        Text(localizations.inviteMissingBody, textAlign: TextAlign.center),
-      ],
+    return Form(
+      key: formKey,
+      child: Column(
+        key: const Key('invite.missing'),
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: Container(
+              key: const Key('invite.code.icon'),
+              width: AppTouchTarget.minimum,
+              height: AppTouchTarget.minimum,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                borderRadius: AppRadii.medium,
+              ),
+              child: const Icon(Icons.key_outlined),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Text(localizations.inviteCodeEntryBody),
+          const SizedBox(height: AppSpacing.md),
+          TextFormField(
+            key: const Key('invite.code.input'),
+            controller: controller,
+            autocorrect: false,
+            enableSuggestions: false,
+            textCapitalization: TextCapitalization.characters,
+            textInputAction: TextInputAction.done,
+            decoration: InputDecoration(
+              labelText: localizations.inviteCodeLabel,
+              hintText: localizations.inviteCodeHint,
+            ),
+            validator: (String? value) =>
+                InviteShortCode.tryParse(value ?? '') == null
+                ? localizations.inviteCodeValidation
+                : null,
+            onFieldSubmitted: (_) => onSubmit(),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          FilledButton.icon(
+            key: const Key('invite.code.submit'),
+            style: FilledButton.styleFrom(minimumSize: const Size(0, 48)),
+            onPressed: onSubmit,
+            icon: const Icon(Icons.arrow_forward),
+            label: Text(localizations.inviteCodeSubmitAction),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -353,6 +473,13 @@ class _PreviewFailure extends ConsumerWidget {
             onPressed: () =>
                 unawaited(ref.read(inviteFlowProvider.notifier).loadPreview()),
             child: Text(localizations.retryAction),
+          ),
+        ] else ...<Widget>[
+          const SizedBox(height: AppSpacing.md),
+          OutlinedButton(
+            key: const Key('invite.code.another'),
+            onPressed: () => ref.read(inviteFlowProvider.notifier).clear(),
+            child: Text(localizations.inviteAnotherCodeAction),
           ),
         ],
       ],

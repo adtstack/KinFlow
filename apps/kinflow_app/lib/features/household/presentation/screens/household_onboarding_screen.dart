@@ -2,6 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:kinflow_app/app/providers/timezone_catalog_dependencies.dart';
+import 'package:kinflow_app/app/presentation/widgets/timezone_picker_sheet.dart';
+import 'package:kinflow_app/app/router/app_router.dart';
 import 'package:kinflow_app/app/theme/app_tokens.dart';
 import 'package:kinflow_app/features/auth/presentation/providers/auth_providers.dart';
 import 'package:kinflow_app/features/household/application/first_household_onboarding_state.dart';
@@ -24,17 +28,20 @@ class _HouseholdOnboardingScreenState
       TextEditingController();
   final TextEditingController _householdNameController =
       TextEditingController();
-  final TextEditingController _timezoneController = TextEditingController(
-    text: 'Asia/Seoul',
-  );
+  final TextEditingController _timezoneController = TextEditingController();
   String? _localeCode;
+  bool _defaultsInitialized = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _localeCode ??= _supportedLocale(
-      Localizations.localeOf(context).languageCode,
-    );
+    if (_defaultsInitialized) {
+      return;
+    }
+    final String languageCode = Localizations.localeOf(context).languageCode;
+    _localeCode = _supportedLocale(languageCode);
+    _timezoneController.text = _defaultTimezone(languageCode);
+    _defaultsInitialized = true;
   }
 
   @override
@@ -134,50 +141,70 @@ class _HouseholdOnboardingScreenState
                             localizations.householdNameValidation,
                           ),
                         ),
-                        const SizedBox(height: AppSpacing.sm),
-                        DropdownButtonFormField<String>(
-                          key: const Key('household.locale'),
-                          initialValue: _localeCode,
-                          decoration: InputDecoration(
-                            labelText: localizations.householdLocaleLabel,
-                          ),
-                          items: const <DropdownMenuItem<String>>[
-                            DropdownMenuItem<String>(
-                              value: 'ko',
-                              child: Text('한국어'),
-                            ),
-                            DropdownMenuItem<String>(
-                              value: 'en',
-                              child: Text('English'),
-                            ),
-                          ],
-                          onChanged: submitting
-                              ? null
-                              : (String? value) {
-                                  setState(() => _localeCode = value);
-                                },
-                        ),
                         const SizedBox(height: AppSpacing.lg),
-                        TextFormField(
-                          key: const Key('household.timezone'),
-                          controller: _timezoneController,
-                          enabled: !submitting,
-                          maxLength: 100,
-                          textInputAction: TextInputAction.done,
-                          autocorrect: false,
-                          decoration: InputDecoration(
-                            labelText: localizations.householdTimezoneLabel,
-                            helperText: localizations.householdTimezoneHint,
+                        Card.outlined(
+                          child: ExpansionTile(
+                            key: const Key('household.additionalSettings'),
+                            enabled: !submitting,
+                            maintainState: true,
+                            leading: const Icon(Icons.tune_outlined),
+                            title: Text(
+                              localizations.householdAdditionalSettingsTitle,
+                            ),
+                            subtitle: Text(
+                              localizations.householdAdditionalSettingsBody,
+                            ),
+                            childrenPadding: const EdgeInsets.fromLTRB(
+                              AppSpacing.md,
+                              0,
+                              AppSpacing.md,
+                              AppSpacing.md,
+                            ),
+                            children: <Widget>[
+                              DropdownButtonFormField<String>(
+                                key: const Key('household.locale'),
+                                initialValue: _localeCode,
+                                decoration: InputDecoration(
+                                  labelText: localizations.householdLocaleLabel,
+                                ),
+                                items: const <DropdownMenuItem<String>>[
+                                  DropdownMenuItem<String>(
+                                    value: 'ko',
+                                    child: Text('한국어'),
+                                  ),
+                                  DropdownMenuItem<String>(
+                                    value: 'en',
+                                    child: Text('English'),
+                                  ),
+                                ],
+                                onChanged: submitting
+                                    ? null
+                                    : (String? value) {
+                                        setState(() => _localeCode = value);
+                                      },
+                              ),
+                              const SizedBox(height: AppSpacing.lg),
+                              TimezoneSelectionFormField(
+                                fieldKey: const Key('household.timezone'),
+                                controller: _timezoneController,
+                                repository: ref.read(
+                                  timezoneCatalogRepositoryProvider,
+                                ),
+                                pickerTitle:
+                                    localizations.householdTimezonePickerTitle,
+                                labelText: localizations.householdTimezoneLabel,
+                                helperText: localizations.householdTimezoneHint,
+                                enabled: !submitting,
+                                validator: (String? value) {
+                                  final String normalized = value?.trim() ?? '';
+                                  return normalized.isEmpty
+                                      ? localizations
+                                            .householdTimezoneValidation
+                                      : null;
+                                },
+                              ),
+                            ],
                           ),
-                          validator: (String? value) {
-                            final String normalized = value?.trim() ?? '';
-                            return normalized.isEmpty
-                                ? localizations.householdTimezoneValidation
-                                : null;
-                          },
-                          onFieldSubmitted: submitting
-                              ? null
-                              : (_) => unawaited(_submit()),
                         ),
                         if (failure != null) ...<Widget>[
                           const SizedBox(height: AppSpacing.md),
@@ -215,6 +242,17 @@ class _HouseholdOnboardingScreenState
                                 )
                               : Text(localizations.householdCreateAction),
                         ),
+                        const SizedBox(height: AppSpacing.sm),
+                        OutlinedButton.icon(
+                          key: const Key('household.inviteCode'),
+                          onPressed: submitting
+                              ? null
+                              : () async {
+                                  await context.push<void>(AppRoutes.invite);
+                                },
+                          icon: const Icon(Icons.password_outlined),
+                          label: Text(localizations.inviteEnterCodeAction),
+                        ),
                       ],
                     ),
                   ),
@@ -250,6 +288,12 @@ class _HouseholdOnboardingScreenState
       await ref
           .read(authLifecycleProvider.notifier)
           .markActiveHousehold(state.household);
+      if (!mounted) {
+        return;
+      }
+      if (ref.read(authLifecycleProvider).activeHousehold == state.household) {
+        context.go(AppRoutes.today);
+      }
     }
   }
 
@@ -265,6 +309,10 @@ class _HouseholdOnboardingScreenState
 
   String _supportedLocale(String languageCode) {
     return languageCode == 'ko' ? 'ko' : 'en';
+  }
+
+  String _defaultTimezone(String languageCode) {
+    return languageCode == 'ko' ? 'Asia/Seoul' : 'UTC';
   }
 
   String _failureMessage(
