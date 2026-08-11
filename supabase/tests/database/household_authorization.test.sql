@@ -65,7 +65,7 @@ select ok(
 select policies_are(
   'public',
   'user_active_households',
-  array['active_household_select_self', 'active_household_update_self'],
+  array['active_household_select_self'],
   'active household policies remain exact'
 );
 
@@ -421,13 +421,13 @@ select is(
 );
 select throws_ok(
   $$
-    update public.user_active_households
-    set household_id = '20000000-0000-4000-8000-000000000101',
-        member_id = '30000000-0000-4000-8000-000000000101'
-    where auth_user_id = '00000000-0000-4000-8000-000000000201'
+    select * from public.switch_active_household(
+      '20000000-0000-4000-8000-000000000101',
+      1
+    )
   $$,
-  '42501',
-  'new row violates row-level security policy for table "user_active_households"',
+  'KFH06',
+  'household selection target unavailable',
   'other-household actor cannot inject a foreign active member'
 );
 
@@ -590,18 +590,15 @@ select is(
   1::bigint,
   'removed member retains access only to its own profile'
 );
-select results_eq(
+select throws_ok(
   $$
-    with updated as (
-      update public.user_active_households
-      set household_id = user_active_households.household_id
-      where auth_user_id = '00000000-0000-4000-8000-000000000102'
-      returning 1
+    select * from public.switch_active_household(
+      '20000000-0000-4000-8000-000000000101',
+      1
     )
-    select count(*)
-    from updated
   $$,
-  $$ values (0::bigint) $$,
+  'KFH06',
+  'household selection target unavailable',
   'removed member cannot mutate a stale active-household row'
 );
 

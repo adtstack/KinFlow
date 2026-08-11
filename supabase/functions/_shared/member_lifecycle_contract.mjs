@@ -1,4 +1,9 @@
-export const memberLifecycleContractVersion = "2026-07-29";
+import {
+  runtimePolicyClientHeadersFor,
+  runtimePolicyCorsAllowHeaders,
+} from "./runtime_policy_headers.mjs";
+
+export const memberLifecycleContractVersion = "2026-08-09-wp08-04b";
 
 const maximumBodyBytes = 8 * 1024;
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -6,6 +11,9 @@ const recentAuthenticationWindowSeconds = 10 * 60;
 
 const errorCatalog = Object.freeze({
   AUTH_REQUIRED: [401, false, "errors.authRequired"],
+  CLIENT_FEATURE_DISABLED: [503, true, "errors.clientFeatureDisabled"],
+  CLIENT_MUTATIONS_DISABLED: [503, true, "errors.clientMutationsDisabled"],
+  CLIENT_UPDATE_REQUIRED: [426, false, "errors.clientUpdateRequired"],
   IDEMPOTENCY_KEY_REQUIRED: [400, false, "errors.idempotencyKeyRequired"],
   IDEMPOTENCY_KEY_REUSED: [409, false, "errors.idempotencyKeyReused"],
   INTERNAL_ERROR: [500, true, "errors.internal"],
@@ -15,6 +23,7 @@ const errorCatalog = Object.freeze({
   PERMISSION_DENIED: [403, false, "errors.permissionDenied"],
   RECENT_AUTH_REQUIRED: [403, false, "errors.recentAuthRequired"],
   ROLE_NOT_ALLOWED: [403, false, "errors.roleNotAllowed"],
+  RUNTIME_POLICY_UNAVAILABLE: [503, true, "errors.runtimePolicyUnavailable"],
   TEMPORARILY_UNAVAILABLE: [503, true, "errors.temporarilyUnavailable"],
   VALIDATION_FAILED: [400, false, "errors.validationFailed"],
   VERSION_CONFLICT: [409, false, "errors.versionConflict"],
@@ -29,6 +38,10 @@ const sqlStateErrors = Object.freeze({
   KFM06: "VERSION_CONFLICT",
   KFM07: "ROLE_NOT_ALLOWED",
   KFM08: "OWNER_TRANSFER_REQUIRED",
+  KFR01: "CLIENT_UPDATE_REQUIRED",
+  KFR02: "CLIENT_MUTATIONS_DISABLED",
+  KFR03: "RUNTIME_POLICY_UNAVAILABLE",
+  KFR06: "CLIENT_FEATURE_DISABLED",
 });
 
 export class MemberLifecycleRpcError extends Error {
@@ -71,6 +84,7 @@ export function createMemberLifecycleHandler({
     }
 
     try {
+      const runtimePolicyHeaders = runtimePolicyClientHeadersFor(request);
       const authorization = request.headers.get("authorization") ?? "";
       const identity = await authenticate(authorization);
       if (identity === null || !uuidPattern.test(identity.userId)) {
@@ -100,7 +114,11 @@ export function createMemberLifecycleHandler({
         }
       }
 
-      const data = await executeOperation(context, invokeRpc);
+      const data = await executeOperation(
+        context,
+        invokeRpc,
+        runtimePolicyHeaders,
+      );
       return Response.json(
         {
           data,
@@ -207,7 +225,7 @@ function validatedContext(body, userId, idempotencyKey) {
   };
 }
 
-async function executeOperation(context, invokeRpc) {
+async function executeOperation(context, invokeRpc, runtimePolicyHeaders) {
   if (context.operation === "changeRole") {
     const row = singleRow(await invokeRpc("change_household_member_role", {
       p_authenticated_user_id: context.userId,
@@ -216,7 +234,7 @@ async function executeOperation(context, invokeRpc) {
       p_idempotency_key: context.idempotencyKey,
       p_new_role: context.role,
       p_target_member_id: context.memberId,
-    }));
+    }, runtimePolicyHeaders));
     return {
       householdId: requiredUuid(row.household_id),
       memberId: requiredUuid(row.member_id),
@@ -232,7 +250,7 @@ async function executeOperation(context, invokeRpc) {
       p_household_id: context.householdId,
       p_idempotency_key: context.idempotencyKey,
       p_target_member_id: context.memberId,
-    }));
+    }, runtimePolicyHeaders));
     return memberRemovalData(row);
   }
 
@@ -242,7 +260,7 @@ async function executeOperation(context, invokeRpc) {
       p_expected_version: context.expectedVersion,
       p_household_id: context.householdId,
       p_idempotency_key: context.idempotencyKey,
-    }));
+    }, runtimePolicyHeaders));
     return {
       ...memberRemovalData(row),
       activeHouseholdId: optionalUuid(row.active_household_id),
@@ -256,7 +274,7 @@ async function executeOperation(context, invokeRpc) {
     p_household_id: context.householdId,
     p_idempotency_key: context.idempotencyKey,
     p_new_owner_member_id: context.newOwnerMemberId,
-  }));
+  }, runtimePolicyHeaders));
   return {
     householdId: requiredUuid(row.household_id),
     ownerMemberId: requiredUuid(row.owner_member_id),
@@ -284,7 +302,7 @@ function errorResponse(code, requestId, headers) {
 function responseHeaders(requestId, origin, allowedOrigins) {
   const headers = new Headers({
     "access-control-allow-headers":
-      "authorization, content-type, idempotency-key, x-kinflow-recent-auth, x-request-id",
+      `authorization, content-type, idempotency-key, x-kinflow-recent-auth, x-request-id, ${runtimePolicyCorsAllowHeaders}`,
     "access-control-allow-methods": "POST, OPTIONS",
     "cache-control": "no-store",
     "content-type": "application/json; charset=utf-8",

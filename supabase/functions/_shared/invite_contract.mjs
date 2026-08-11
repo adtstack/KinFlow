@@ -1,14 +1,25 @@
-export const inviteContractVersion = "2026-07-21";
+import {
+  runtimePolicyClientHeadersFor,
+  runtimePolicyCorsAllowHeaders,
+} from "./runtime_policy_headers.mjs";
+
+export const inviteContractVersion = "2026-08-09-wp08-04b";
 
 const maximumBodyBytes = 8 * 1024;
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const tokenPattern = /^[A-Za-z0-9_-]{20,512}$/;
+const shortCodePattern = /^[23456789ABCDEFGHJKMNPQRSTVWXYZ]{8}$/;
 const idempotencyPattern = /^[^\u0000-\u001f\u007f]{16,200}$/;
 const emailPattern = /^[^\s@]+@[^\s@]+$/;
 
 const errorCatalog = Object.freeze({
   AUTH_REQUIRED: [401, false, "errors.authRequired"],
   CAPABILITY_UNSUPPORTED: [501, false, "errors.capabilityUnsupported"],
+  CLIENT_FEATURE_DISABLED: [503, true, "errors.clientFeatureDisabled"],
+  CLIENT_MUTATIONS_DISABLED: [503, true, "errors.clientMutationsDisabled"],
+  CLIENT_UPDATE_REQUIRED: [426, false, "errors.clientUpdateRequired"],
+  FEATURE_LIMIT_REACHED: [409, false, "errors.featureLimitReached"],
+  FEATURE_POLICY_UNAVAILABLE: [503, true, "errors.featurePolicyUnavailable"],
   IDEMPOTENCY_KEY_REQUIRED: [400, false, "errors.idempotencyKeyRequired"],
   IDEMPOTENCY_KEY_REUSED: [409, false, "errors.idempotencyKeyReused"],
   INTERNAL_ERROR: [500, true, "errors.internal"],
@@ -21,6 +32,7 @@ const errorCatalog = Object.freeze({
   PERMISSION_DENIED: [403, false, "errors.permissionDenied"],
   PROFILE_UNAVAILABLE: [409, true, "errors.profileUnavailable"],
   RATE_LIMITED: [429, true, "errors.rateLimited"],
+  RUNTIME_POLICY_UNAVAILABLE: [503, true, "errors.runtimePolicyUnavailable"],
   TEMPORARILY_UNAVAILABLE: [503, true, "errors.temporarilyUnavailable"],
   VALIDATION_FAILED: [400, false, "errors.validationFailed"],
 });
@@ -36,6 +48,13 @@ const sqlStateErrors = Object.freeze({
   KFI09: "INVITE_ALREADY_USED",
   KFI10: "INVITE_EMAIL_MISMATCH",
   KFI11: "PROFILE_UNAVAILABLE",
+  KFB10: "FEATURE_POLICY_UNAVAILABLE",
+  KFB11: "FEATURE_POLICY_UNAVAILABLE",
+  KFB12: "FEATURE_LIMIT_REACHED",
+  KFR01: "CLIENT_UPDATE_REQUIRED",
+  KFR02: "CLIENT_MUTATIONS_DISABLED",
+  KFR03: "RUNTIME_POLICY_UNAVAILABLE",
+  KFR06: "CLIENT_FEATURE_DISABLED",
 });
 
 export class InviteRpcError extends Error {
@@ -51,6 +70,7 @@ export function createInviteHandler({
   allowedOrigins,
   authenticate,
   invokeRpc,
+  randomShortCode,
   randomToken,
   sha256Hex,
 }) {
@@ -83,6 +103,7 @@ export function createInviteHandler({
     }
 
     try {
+      const runtimePolicyHeaders = runtimePolicyClientHeadersFor(request);
       const context = await validatedContext({
         operation,
         request,
@@ -99,6 +120,7 @@ export function createInviteHandler({
         request,
         context,
         invokeRpc,
+        runtimePolicyHeaders,
         sha256Hex,
       });
       if (!allowed) {
@@ -109,7 +131,9 @@ export function createInviteHandler({
         operation,
         context,
         invokeRpc,
+        randomShortCode,
         randomToken,
+        runtimePolicyHeaders,
         sha256Hex,
       });
       return Response.json(
@@ -132,15 +156,25 @@ async function validatedContext({operation, request, body, authenticate, sha256H
   const invalid = {errorCode: "VALIDATION_FAILED"};
   const keys = Object.keys(body).sort();
   if (operation === "preview") {
-    if (keys.length !== 1 || keys[0] !== "token" || !validToken(body.token)) {
-      if (typeof body.shortCode === "string") {
-        return {errorCode: "CAPABILITY_UNSUPPORTED"};
-      }
+    const hasToken = Object.hasOwn(body, "token");
+    const hasShortCode = Object.hasOwn(body, "shortCode");
+    if (keys.length !== 1 || hasToken === hasShortCode) {
       return invalid;
     }
+    if (hasToken) {
+      if (!validToken(body.token)) return invalid;
+      return {
+        credentialKind: "token",
+        errorCode: null,
+        tokenHash: await sha256Hex(body.token),
+      };
+    }
+    const shortCode = normalizeShortCode(body.shortCode);
+    if (shortCode === null) return invalid;
     return {
+      credentialKind: "shortCode",
       errorCode: null,
-      tokenHash: await sha256Hex(body.token),
+      shortCodeHash: await sha256Hex(shortCode),
     };
   }
 
@@ -187,20 +221,25 @@ async function validatedContext({operation, request, body, authenticate, sha256H
   }
 
   if (operation === "accept") {
-    if (typeof body.shortCode === "string" && body.token === undefined) {
-      return {errorCode: "CAPABILITY_UNSUPPORTED"};
-    }
-    if (!sameKeys(keys, ["setActiveHousehold", "token"], ["token"]) ||
-      !validToken(body.token) ||
+    const hasToken = Object.hasOwn(body, "token");
+    const hasShortCode = Object.hasOwn(body, "shortCode");
+    if (!sameKeys(keys, ["setActiveHousehold", "shortCode", "token"], []) ||
+      hasToken === hasShortCode ||
       (body.setActiveHousehold !== undefined &&
         typeof body.setActiveHousehold !== "boolean")) {
       return invalid;
     }
+    if (hasToken && !validToken(body.token)) return invalid;
+    const shortCode = hasShortCode ? normalizeShortCode(body.shortCode) : null;
+    if (hasShortCode && shortCode === null) return invalid;
     return {
+      credentialKind: hasToken ? "token" : "shortCode",
       errorCode: null,
       idempotencyKey,
       setActiveHousehold: body.setActiveHousehold ?? true,
-      tokenHash: await sha256Hex(body.token),
+      ...(hasToken
+        ? {tokenHash: await sha256Hex(body.token)}
+        : {shortCodeHash: await sha256Hex(shortCode)}),
       userId: identity.userId.toLowerCase(),
     };
   }
@@ -219,34 +258,61 @@ async function validatedContext({operation, request, body, authenticate, sha256H
   };
 }
 
-async function consumeRateLimit({operation, request, context, invokeRpc, sha256Hex}) {
+async function consumeRateLimit({
+  operation,
+  request,
+  context,
+  invokeRpc,
+  runtimePolicyHeaders,
+  sha256Hex,
+}) {
+  const shortCodeOperation = ["preview", "accept"].includes(operation) &&
+    context.credentialKind === "shortCode";
+  const scope = shortCodeOperation ? `${operation}_short_code` : operation;
   const rateMaterial = operation === "preview"
-    ? `preview\n${clientAddress(request)}`
+    ? `${scope}\n${clientAddress(request)}`
+    : operation === "accept" && shortCodeOperation
+    ? `${scope}\n${context.userId}`
     : operation === "accept"
-    ? `accept\n${context.userId}\n${context.tokenHash}`
-    : `${operation}\n${context.userId}\n${context.householdId}`;
+    ? `${scope}\n${context.userId}\n${context.tokenHash}`
+    : `${scope}\n${context.userId}\n${context.householdId}`;
   const payload = await invokeRpc("consume_invite_rate_limit", {
-    p_scope: operation,
+    p_scope: scope,
     p_key_hash_hex: await sha256Hex(rateMaterial),
-  });
+  }, runtimePolicyHeaders);
   return payload === true;
 }
 
-async function executeOperation({operation, context, invokeRpc, randomToken, sha256Hex}) {
+async function executeOperation({
+  operation,
+  context,
+  invokeRpc,
+  randomShortCode,
+  randomToken,
+  runtimePolicyHeaders,
+  sha256Hex,
+}) {
   if (operation === "create") {
     const rawToken = randomToken();
+    const rawShortCode = randomShortCode();
+    const normalizedShortCode = normalizeShortCode(rawShortCode);
     if (!validToken(rawToken)) {
       throw new TypeError("Token generator contract violated");
     }
-    const payload = await invokeRpc("create_household_invite", {
+    if (normalizedShortCode === null) {
+      throw new TypeError("Short-code generator contract violated");
+    }
+    const payload = await invokeRpc("create_household_invite_with_short_code", {
       p_authenticated_user_id: context.userId,
       p_expires_in_hours: context.expiresInHours,
       p_household_id: context.householdId,
       p_idempotency_key: context.idempotencyKey,
       p_role: context.role,
+      p_short_code_expires_in_hours: 24,
+      p_short_code_hash_hex: await sha256Hex(normalizedShortCode),
       p_target_email: context.targetEmail,
       p_token_hash_hex: await sha256Hex(rawToken),
-    });
+    }, runtimePolicyHeaders);
     const row = singleRow(payload);
     const data = {
       id: requiredUuid(row.invite_id),
@@ -257,14 +323,22 @@ async function executeOperation({operation, context, invokeRpc, randomToken, sha
     };
     if (row.created === true) {
       data.rawToken = rawToken;
+      data.shortCode = formatShortCode(normalizedShortCode);
+      data.shortCodeExpiresAt = requiredTimestamp(row.short_code_expires_at);
     }
     return data;
   }
 
   if (operation === "preview") {
-    const row = singleRow(await invokeRpc("preview_household_invite", {
-      p_token_hash_hex: context.tokenHash,
-    }));
+    const row = singleRow(await invokeRpc(
+      context.credentialKind === "shortCode"
+        ? "preview_household_invite_short_code"
+        : "preview_household_invite",
+      context.credentialKind === "shortCode"
+        ? {p_short_code_hash_hex: context.shortCodeHash}
+        : {p_token_hash_hex: context.tokenHash},
+      runtimePolicyHeaders,
+    ));
     if (row.valid !== true) {
       throw new TypeError("Invalid preview result");
     }
@@ -278,12 +352,20 @@ async function executeOperation({operation, context, invokeRpc, randomToken, sha
   }
 
   if (operation === "accept") {
-    const row = singleRow(await invokeRpc("accept_household_invite", {
-      p_authenticated_user_id: context.userId,
-      p_idempotency_key: context.idempotencyKey,
-      p_set_active_household: context.setActiveHousehold,
-      p_token_hash_hex: context.tokenHash,
-    }));
+    const row = singleRow(await invokeRpc(
+      context.credentialKind === "shortCode"
+        ? "accept_household_invite_short_code"
+        : "accept_household_invite",
+      {
+        p_authenticated_user_id: context.userId,
+        p_idempotency_key: context.idempotencyKey,
+        p_set_active_household: context.setActiveHousehold,
+        ...(context.credentialKind === "shortCode"
+          ? {p_short_code_hash_hex: context.shortCodeHash}
+          : {p_token_hash_hex: context.tokenHash}),
+      },
+      runtimePolicyHeaders,
+    ));
     return {
       id: requiredUuid(row.member_id),
       householdId: requiredUuid(row.household_id),
@@ -298,7 +380,7 @@ async function executeOperation({operation, context, invokeRpc, randomToken, sha
     p_household_id: context.householdId,
     p_idempotency_key: context.idempotencyKey,
     p_invite_id: context.inviteId,
-  }));
+  }, runtimePolicyHeaders));
   return {
     id: requiredUuid(row.invite_id),
     householdId: requiredUuid(row.household_id),
@@ -316,7 +398,8 @@ function errorResponse(code, requestId, headers) {
 
 function responseHeaders(requestId, origin, allowedOrigins) {
   const headers = new Headers({
-    "access-control-allow-headers": "authorization, content-type, idempotency-key, x-request-id",
+    "access-control-allow-headers":
+      `authorization, content-type, idempotency-key, x-request-id, ${runtimePolicyCorsAllowHeaders}`,
     "access-control-allow-methods": "POST, OPTIONS",
     "cache-control": "no-store",
     "content-type": "application/json; charset=utf-8",
@@ -416,6 +499,20 @@ function validToken(value) {
   return typeof value === "string" && tokenPattern.test(value);
 }
 
+function normalizeShortCode(value) {
+  if (typeof value !== "string" || value.length < 8 || value.length > 16) {
+    return null;
+  }
+  const normalized = value.trim().toUpperCase()
+    .replaceAll(" ", "")
+    .replaceAll("-", "");
+  return shortCodePattern.test(normalized) ? normalized : null;
+}
+
+function formatShortCode(value) {
+  return `${value.slice(0, 4)}-${value.slice(4)}`;
+}
+
 function isPlainObject(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
@@ -425,8 +522,9 @@ function isJsonContentType(value) {
 }
 
 function clientAddress(request) {
-  const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
   const connecting = request.headers.get("cf-connecting-ip")?.trim();
-  const candidate = forwarded || connecting || "unknown";
+  const real = request.headers.get("x-real-ip")?.trim();
+  const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  const candidate = connecting || real || forwarded || "unknown";
   return candidate.slice(0, 128);
 }

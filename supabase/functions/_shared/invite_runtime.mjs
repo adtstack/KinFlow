@@ -2,6 +2,7 @@ import {
   createInviteHandler,
   InviteRpcError,
 } from "./invite_contract.mjs";
+import {runtimePolicyServiceHeaders} from "./runtime_policy_headers.mjs";
 
 export function serveInviteOperation(operation) {
   const supabaseUrl = requiredEnvironment("SUPABASE_URL").replace(/\/$/, "");
@@ -20,12 +21,14 @@ export function serveInviteOperation(operation) {
       authorization,
       supabaseUrl,
     }),
-    invokeRpc: (name, parameters) => invokeRpc({
+    invokeRpc: (name, parameters, runtimePolicyHeaders) => invokeRpc({
       name,
       parameters,
+      runtimePolicyHeaders,
       serviceRoleKey,
       supabaseUrl,
     }),
+    randomShortCode: generateInviteShortCode,
     randomToken: generateInviteToken,
     sha256Hex,
   });
@@ -52,7 +55,13 @@ async function authenticate({apiKey, authorization, supabaseUrl}) {
   return typeof payload?.id === "string" ? {userId: payload.id} : null;
 }
 
-async function invokeRpc({name, parameters, serviceRoleKey, supabaseUrl}) {
+async function invokeRpc({
+  name,
+  parameters,
+  runtimePolicyHeaders,
+  serviceRoleKey,
+  supabaseUrl,
+}) {
   let response;
   try {
     response = await fetch(`${supabaseUrl}/rest/v1/rpc/${encodeURIComponent(name)}`, {
@@ -61,6 +70,7 @@ async function invokeRpc({name, parameters, serviceRoleKey, supabaseUrl}) {
         apikey: serviceRoleKey,
         authorization: `Bearer ${serviceRoleKey}`,
         "content-type": "application/json",
+        ...runtimePolicyServiceHeaders(runtimePolicyHeaders),
       },
       body: JSON.stringify(parameters),
       signal: AbortSignal.timeout(8000),
@@ -91,6 +101,23 @@ function generateInviteToken() {
     binary += String.fromCharCode(value);
   }
   return btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/, "");
+}
+
+export function generateInviteShortCode(
+  fillRandom = (bytes) => crypto.getRandomValues(bytes),
+) {
+  const alphabet = "23456789ABCDEFGHJKMNPQRSTVWXYZ";
+  let normalized = "";
+  while (normalized.length < 8) {
+    const bytes = new Uint8Array(16);
+    fillRandom(bytes);
+    for (const value of bytes) {
+      if (value >= 240) continue;
+      normalized += alphabet[value % alphabet.length];
+      if (normalized.length === 8) break;
+    }
+  }
+  return `${normalized.slice(0, 4)}-${normalized.slice(4)}`;
 }
 
 async function sha256Hex(value) {
