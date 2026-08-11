@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="kinflow_launcher_background">#3568DC</color>
+    <color name="kinflow_mark_mint">#8BE0C6</color>
+    <color name="kinflow_mark_white">#FFFFFF</color>
+    <color name="kinflow_mark_peach">#FFB8A8</color>
+    <color name="kinflow_splash_background">#FCFDFF</color>
+    <color name="kinflow_window_background">#FCFDFF</color>
+</resources>

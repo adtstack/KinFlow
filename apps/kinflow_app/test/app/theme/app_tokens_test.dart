@@ -33,6 +33,115 @@ void main() {
     }
   });
 
+  test('theme roles preserve the bright KinFlow family identity', () {
+    final ColorScheme light = AppTheme.light.colorScheme;
+    final ColorScheme dark = AppTheme.dark.colorScheme;
+
+    expect(light.primary, AppBrandColors.familyBlue);
+    expect(light.primaryContainer, AppBrandColors.familyBlueSoft);
+    expect(light.secondary, AppBrandColors.mintStrong);
+    expect(light.tertiary, AppBrandColors.coralStrong);
+    expect(light.surface, AppBrandColors.canvas);
+    expect(light.onSurface, AppBrandColors.ink);
+
+    expect(dark.primary, AppBrandColors.darkPrimary);
+    expect(dark.primaryContainer, AppBrandColors.darkPrimaryContainer);
+    expect(dark.secondary, AppBrandColors.darkMint);
+    expect(dark.tertiary, AppBrandColors.darkCoral);
+    expect(dark.surface, AppBrandColors.darkCanvas);
+    expect(dark.onSurface, AppBrandColors.darkInk);
+  });
+
+  test('content-bearing color pairs meet WCAG AA contrast', () {
+    for (final ThemeData theme in <ThemeData>[AppTheme.light, AppTheme.dark]) {
+      final ColorScheme scheme = theme.colorScheme;
+      final List<(Color, Color)> pairs = <(Color, Color)>[
+        (scheme.onPrimary, scheme.primary),
+        (scheme.onPrimaryContainer, scheme.primaryContainer),
+        (scheme.onSecondary, scheme.secondary),
+        (scheme.onSecondaryContainer, scheme.secondaryContainer),
+        (scheme.onTertiary, scheme.tertiary),
+        (scheme.onTertiaryContainer, scheme.tertiaryContainer),
+        (scheme.onError, scheme.error),
+        (scheme.onErrorContainer, scheme.errorContainer),
+        (scheme.onSurface, scheme.surface),
+        (scheme.onSurfaceVariant, scheme.surface),
+        (scheme.onInverseSurface, scheme.inverseSurface),
+        (scheme.inversePrimary, scheme.inverseSurface),
+      ];
+
+      for (final (Color foreground, Color background) in pairs) {
+        expect(
+          _contrastRatio(foreground, background),
+          greaterThanOrEqualTo(4.5),
+          reason: '$foreground on $background',
+        );
+      }
+    }
+  });
+
+  test('surface hierarchy preserves text and control boundary contrast', () {
+    for (final ThemeData theme in <ThemeData>[AppTheme.light, AppTheme.dark]) {
+      final ColorScheme scheme = theme.colorScheme;
+      final List<Color> surfaces = <Color>[
+        scheme.surface,
+        scheme.surfaceDim,
+        scheme.surfaceBright,
+        scheme.surfaceContainerLowest,
+        scheme.surfaceContainerLow,
+        scheme.surfaceContainer,
+        scheme.surfaceContainerHigh,
+        scheme.surfaceContainerHighest,
+      ];
+
+      for (final Color surface in surfaces) {
+        expect(
+          _contrastRatio(scheme.onSurface, surface),
+          greaterThanOrEqualTo(4.5),
+          reason: 'onSurface $surface',
+        );
+        expect(
+          _contrastRatio(scheme.onSurfaceVariant, surface),
+          greaterThanOrEqualTo(4.5),
+          reason: 'onSurfaceVariant $surface',
+        );
+        expect(
+          _contrastRatio(scheme.outline, surface),
+          greaterThanOrEqualTo(3),
+          reason: 'outline $surface',
+        );
+      }
+
+      expect(
+        _contrastRatio(scheme.primary, scheme.surfaceContainerLow),
+        greaterThanOrEqualTo(3),
+        reason: 'focused control boundary',
+      );
+      expect(
+        _contrastRatio(scheme.error, scheme.surfaceContainerLow),
+        greaterThanOrEqualTo(3),
+        reason: 'error control boundary',
+      );
+    }
+  });
+
+  test('interactive component themes retain 48dp minimum targets', () {
+    for (final ThemeData theme in <ThemeData>[AppTheme.light, AppTheme.dark]) {
+      final List<ButtonStyle?> styles = <ButtonStyle?>[
+        theme.filledButtonTheme.style,
+        theme.outlinedButtonTheme.style,
+        theme.textButtonTheme.style,
+        theme.iconButtonTheme.style,
+      ];
+
+      for (final ButtonStyle? style in styles) {
+        final Size? minimumSize = style?.minimumSize?.resolve(<WidgetState>{});
+        expect(minimumSize?.width, AppTouchTarget.minimum);
+        expect(minimumSize?.height, AppTouchTarget.minimum);
+      }
+    }
+  });
+
   testWidgets('motion token respects reduced-motion platform setting', (
     WidgetTester tester,
   ) async {
