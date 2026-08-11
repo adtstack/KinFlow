@@ -1,0 +1,16 @@
+---
+interface Props {
+  href: string;
+  labelKo: string;
+  labelEn: string;
+  id?: string;
+}
+
+const { href, labelKo, labelEn, id } = Astro.props;
+---
+
+<a class="button button-primary" href={href} id={id}>
+  <span lang="ko">{labelKo}</span>
+  <span aria-hidden="true"> / </span>
+  <span lang="en">{labelEn}</span>
+</a>

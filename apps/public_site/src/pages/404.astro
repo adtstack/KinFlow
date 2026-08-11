@@ -1,0 +1,23 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="페이지를 찾을 수 없습니다 / Page not found — KinFlow"
+  description="요청한 KinFlow 공개 페이지를 찾을 수 없습니다."
+  path="/404.html"
+  current="home"
+>
+  <header class="page-hero">
+    <p class="eyebrow">404 · Not found</p>
+    <h1>길을 다시 찾을게요.</h1>
+    <p class="lede" lang="ko">요청한 페이지가 없거나 주소가 변경되었습니다. 아래 공개 경로에서 계속할 수 있습니다.</p>
+    <p class="lede" lang="en">The page does not exist or its address changed. Continue through one of the public paths below.</p>
+  </header>
+  <nav class="card-grid" aria-label="복구 링크 / Recovery links">
+    <a class="card" href="/">홈 / Home</a>
+    <a class="card" href="/privacy">개인정보 / Privacy</a>
+    <a class="card" href="/support">지원 / Support</a>
+    <a class="card" href="/delete-account">계정 삭제 / Delete account</a>
+  </nav>
+</BaseLayout>

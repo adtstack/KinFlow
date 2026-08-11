@@ -1,0 +1,86 @@
+---
+import EmailAction from '../components/EmailAction.astro';
+import PageHero from '../components/PageHero.astro';
+import { siteConfig } from '../config/site-config.mjs';
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="KinFlow 지원 / Support"
+  description="개인정보를 자동 첨부하지 않는 KinFlow 공개 이메일 지원 경로와 안전한 문의 지침입니다."
+  path="/support"
+  current="support"
+>
+  <PageHero
+    eyebrow="Support · 지원"
+    title="필요한 내용만, 안전하게."
+    summary="이 페이지는 계정·가구·기기 정보를 자동으로 읽거나 보내지 않습니다. 아래 action을 선택할 때만 사용자의 email 앱이 열립니다."
+  />
+
+  <section class="request-panel" aria-labelledby="support-action-heading">
+    <p class="section-label">Direct support · 직접 지원</p>
+    <h2 id="support-action-heading">지원 이메일 작성</h2>
+    <p lang="ko">수신 주소는 <strong>{siteConfig.supportEmail}</strong>입니다. 제목만 미리 입력되며 본문과 개인정보는 자동 첨부되지 않습니다.</p>
+    <p lang="en">The recipient is <strong>{siteConfig.supportEmail}</strong>. Only a fixed subject is prepared; no body or personal context is attached.</p>
+    <EmailAction
+      href={siteConfig.supportMailto}
+      labelKo="이메일 앱에서 지원 요청"
+      labelEn="Email KinFlow support"
+      id="support-email-action"
+    />
+  </section>
+
+  <div class="document-stack">
+    <article id="ko" class="document-section" lang="ko" aria-labelledby="support-ko-heading">
+      <p class="section-label">한국어</p>
+      <h2 id="support-ko-heading">안전하게 도움을 요청하는 방법</h2>
+      <div class="two-column">
+        <div>
+          <h3>보내도 되는 정보</h3>
+          <ul class="plain-list">
+            <li>로그인, 초대, 집안일, 일정, 알림, 결제 중 어느 기능인지</li>
+            <li>문제가 발생한 대략적인 UTC 또는 현지 시각</li>
+            <li>문제를 재현한 화면과 일반적인 단계</li>
+            <li>앱에서 직접 생성한 PII-safe diagnostic incident ID</li>
+          </ul>
+        </div>
+        <div>
+          <h3>보내면 안 되는 정보</h3>
+          <ul class="plain-list">
+            <li>비밀번호, Google 인증 code, JWT, 초대 token</li>
+            <li>push token, 결제 receipt 전문 또는 Store credential</li>
+            <li>가족 이름, 집안일 제목, 일정 설명이나 다른 구성원의 개인정보</li>
+            <li>필요성이 확인되지 않은 화면 전체 캡처나 데이터 export 파일</li>
+          </ul>
+        </div>
+      </div>
+      <p>계정 삭제 요청은 일반 지원과 분리된 <a href="/delete-account">계정 삭제 페이지</a>를 사용하세요. 긴급한 보안·개인정보 문제라면 제목에 문제 유형만 적고 민감한 증거는 답변으로 안전한 전달 방법을 안내받은 뒤 보내세요.</p>
+    </article>
+
+    <article id="en" class="document-section" lang="en" aria-labelledby="support-en-heading">
+      <p class="section-label">English</p>
+      <h2 id="support-en-heading">How to ask for help safely</h2>
+      <div class="two-column">
+        <div>
+          <h3>Safe details to include</h3>
+          <ul class="plain-list">
+            <li>The feature area: sign-in, invite, chore, calendar, notification, or billing</li>
+            <li>The approximate local or UTC time of the problem</li>
+            <li>The screen and general steps that reproduced it</li>
+            <li>A PII-safe diagnostic incident ID that you explicitly generated in the app</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Never include</h3>
+          <ul class="plain-list">
+            <li>Passwords, Google authorization codes, JWTs, or invitation tokens</li>
+            <li>Push tokens, full purchase receipts, or Store credentials</li>
+            <li>Family names, chore titles, calendar descriptions, or another member’s personal data</li>
+            <li>Full-screen captures or export files unless support first confirms they are necessary</li>
+          </ul>
+        </div>
+      </div>
+      <p>Use the separate <a href="/delete-account">account deletion page</a> for deletion requests. For an urgent security or privacy concern, put only the issue category in the subject and wait for a safe evidence-transfer method before sharing sensitive material.</p>
+    </article>
+  </div>
+</BaseLayout>

@@ -1,0 +1,93 @@
+---
+import EmailAction from './EmailAction.astro';
+import PageHero from './PageHero.astro';
+import { siteConfig } from '../config/site-config.mjs';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+interface Props {
+  path: '/delete-account' | '/privacy-request';
+}
+
+const { path } = Astro.props;
+---
+
+<BaseLayout
+  title="KinFlow 계정 삭제 요청 / Delete Account"
+  description="앱을 다시 설치하지 않고 KinFlow 계정과 관련 개인 데이터 삭제 요청을 시작합니다."
+  path={path}
+  current="delete"
+>
+  <PageHero
+    eyebrow="Account deletion · 계정 삭제"
+    title="앱 없이도 삭제를 요청하세요."
+    summary="KinFlow 앱을 사용할 수 없거나 이미 삭제했어도 공개 이메일 경로에서 계정과 관련 개인 데이터 삭제 요청을 시작할 수 있습니다."
+  />
+
+  <section class="request-panel" aria-labelledby="deletion-action-heading">
+    <p class="section-label">Web request path · 웹 요청 경로</p>
+    <h2 id="deletion-action-heading">계정 삭제 요청 시작</h2>
+    <p lang="ko">수신 주소는 <strong>{siteConfig.supportEmail}</strong>입니다. 고정 제목만 미리 입력되며 계정 email, 본문, 가구 정보 또는 token은 URL에 포함되지 않습니다.</p>
+    <p lang="en">The recipient is <strong>{siteConfig.supportEmail}</strong>. Only a fixed subject is prepared. No account email, body, household data, or token is placed in the URL.</p>
+    <EmailAction
+      href={siteConfig.deletionMailto}
+      labelKo="이메일로 계정 삭제 요청"
+      labelEn="Request account deletion by email"
+      id="account-deletion-email-action"
+    />
+    <p><small lang="ko">메일 앱이 없으면 위 주소를 복사해 사용 중인 이메일 서비스에서 새 메시지를 작성할 수 있습니다.</small></p>
+    <p><small lang="en">If no mail app opens, copy the address above into a new message in your email service.</small></p>
+  </section>
+
+  <div class="callout callout-warning">
+    <p lang="ko"><strong>구독 안내:</strong> KinFlow 계정 삭제는 Google Play 구독을 자동으로 취소하지 않습니다. Google Play 구독 관리에서 별도로 상태를 확인하세요.</p>
+    <p lang="en"><strong>Subscription notice:</strong> Deleting a KinFlow account does not automatically cancel a Google Play subscription. Review it separately in Google Play subscription management.</p>
+  </div>
+
+  <div class="document-stack">
+    <article id="ko" class="document-section" lang="ko" aria-labelledby="delete-ko-heading">
+      <p class="section-label">한국어</p>
+      <h2 id="delete-ko-heading">웹에서 삭제를 요청하는 절차</h2>
+      <ol class="steps">
+        <li><strong>요청을 보냅니다.</strong> 가능하면 KinFlow Google 로그인에 사용한 이메일 계정에서 보내고, 계정 삭제 요청임을 적으세요. 비밀번호, token, receipt 또는 가족 콘텐츠를 보내지 마세요.</li>
+        <li><strong>소유권을 확인합니다.</strong> 다른 사람이 대신 삭제하지 못하도록 지원 담당자가 계정 소유권과 현재 요청 상태를 확인합니다. 확인 전에는 삭제 queue를 시작하지 않습니다.</li>
+        <li><strong>차단 조건을 해결합니다.</strong> 마지막 Owner라면 소유권을 이전하거나 가구 삭제 절차를 선택해야 합니다. 활성 Store 구독은 별도로 관리해야 합니다.</li>
+        <li><strong>보호된 삭제 절차로 전환합니다.</strong> 확인된 요청은 앱 내 요청과 같은 server-authoritative 상태·취소·처리 경계로 접수됩니다. 기본 취소 창은 처리 전 24시간입니다.</li>
+      </ol>
+
+      <h3>삭제되는 것과 보존될 수 있는 것</h3>
+      <ul class="plain-list">
+        <li>프로필 identity, 개인 가구 membership, 개인 알림 설정·inbox와 기기 endpoint 연결은 삭제 또는 비가역 tombstone 처리됩니다.</li>
+        <li>다른 구성원이 의존하는 공동 집안일·일정 이력은 가구 데이터로 보존되고 삭제 사용자의 identity는 제거될 수 있습니다.</li>
+        <li>가구 전체 삭제는 별도의 current Owner 확인과 cooling-off 절차를 사용합니다.</li>
+        <li>보안, 사기 방지, 정산, 감사 또는 법적 의무에 필요한 제한된 기록은 승인된 보존 정책에 따라 남을 수 있습니다.</li>
+      </ul>
+
+      <h3>앱을 사용할 수 있는 경우</h3>
+      <p>KinFlow의 <strong>설정 → 계정 삭제</strong>에서 preflight, 최근 인증, 상태 추적과 취소를 한 흐름으로 사용할 수 있습니다. 웹 요청 경로는 앱 설치를 요구하지 않는 대안입니다.</p>
+      <p>개인 데이터 사본이 먼저 필요하면 삭제를 요청하기 전에 앱의 데이터 export를 완료하세요. 일반 문의는 <a href="/support">지원 페이지</a>를 이용할 수 있습니다.</p>
+    </article>
+
+    <article id="en" class="document-section" lang="en" aria-labelledby="delete-en-heading">
+      <p class="section-label">English</p>
+      <h2 id="delete-en-heading">Requesting deletion on the web</h2>
+      <ol class="steps">
+        <li><strong>Send the request.</strong> When possible, email from the account used for KinFlow Google sign-in and state that you are requesting account deletion. Never send a password, token, receipt, or family content.</li>
+        <li><strong>Verify ownership.</strong> Support verifies account ownership and current request state so another person cannot delete your account. The deletion queue does not start before verification.</li>
+        <li><strong>Resolve blockers.</strong> A last Owner must transfer ownership or choose the household deletion process. An active Store subscription must be managed separately.</li>
+        <li><strong>Enter the protected deletion flow.</strong> A verified request moves into the same server-authoritative status, cancellation, and processing boundaries as an in-app request. The default cancellation window is 24 hours before processing.</li>
+      </ol>
+
+      <h3>What is deleted and what may remain</h3>
+      <ul class="plain-list">
+        <li>Profile identity, personal household memberships, personal notification preferences and inbox, and device endpoint linkage are deleted or irreversibly tombstoned.</li>
+        <li>Shared chore and calendar history other members rely on may remain as household data while the deleted user’s identity is removed.</li>
+        <li>Whole-household deletion uses a separate current-Owner confirmation and cooling-off process.</li>
+        <li>Limited records required for security, fraud prevention, billing, audit, or legal obligations may remain under the approved retention policy.</li>
+      </ul>
+
+      <h3>If you can use the app</h3>
+      <p>Open <strong>Settings → Account deletion</strong> in KinFlow for preflight, recent authentication, status tracking, and cancellation in one flow. The web path is an alternative that does not require the app to be installed.</p>
+      <p>If you need a personal data copy, complete the in-app data export before requesting deletion. Visit <a href="/support">support</a> for other questions.</p>
+    </article>
+  </div>
+</BaseLayout>
