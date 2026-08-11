@@ -2,6 +2,7 @@ import 'package:kinflow_app/features/auth/domain/entities/auth_session.dart';
 import 'package:kinflow_app/features/auth/domain/failures/auth_failure.dart';
 import 'package:kinflow_app/features/household/domain/entities/active_household.dart';
 import 'package:kinflow_app/features/household/domain/failures/household_failure.dart';
+import 'package:kinflow_app/features/offline/domain/read_cache_metadata.dart';
 
 sealed class AuthLifecycleState {
   const AuthLifecycleState();
@@ -19,6 +20,13 @@ sealed class AuthLifecycleState {
   ActiveHousehold? get activeHousehold => switch (this) {
     AuthAuthenticatedActiveHousehold(:final household) => household,
     AuthRefreshing(:final activeHousehold) => activeHousehold,
+    _ => null,
+  };
+
+  ReadCacheMetadata? get activeHouseholdCacheMetadata => switch (this) {
+    AuthAuthenticatedActiveHousehold(:final cacheMetadata) => cacheMetadata,
+    AuthRefreshing(:final activeHouseholdCacheMetadata) =>
+      activeHouseholdCacheMetadata,
     _ => null,
   };
 
@@ -83,22 +91,34 @@ final class AuthAuthenticatedNoHousehold extends AuthLifecycleState {
 }
 
 final class AuthAuthenticatedActiveHousehold extends AuthLifecycleState {
-  const AuthAuthenticatedActiveHousehold(this.session, this.household);
+  const AuthAuthenticatedActiveHousehold(
+    this.session,
+    this.household, {
+    this.cacheMetadata,
+  });
 
   @override
   final AuthSession session;
 
   final ActiveHousehold household;
+  final ReadCacheMetadata? cacheMetadata;
 }
 
 final class AuthRefreshing extends AuthLifecycleState {
-  const AuthRefreshing(this.session, {this.activeHousehold});
+  const AuthRefreshing(
+    this.session, {
+    this.activeHousehold,
+    this.activeHouseholdCacheMetadata,
+  });
 
   @override
   final AuthSession session;
 
   @override
   final ActiveHousehold? activeHousehold;
+
+  @override
+  final ReadCacheMetadata? activeHouseholdCacheMetadata;
 }
 
 final class AuthLocked extends AuthLifecycleState {

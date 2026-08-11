@@ -35,6 +35,40 @@ void main() {
   });
 
   test(
+    'normalizes an ephemeral short code and uses code-specific preview and accept',
+    () async {
+      final FakeInviteRepository repository = FakeInviteRepository();
+      final EphemeralPendingInviteStore store = EphemeralPendingInviteStore();
+      final InviteFlowController controller = InviteFlowController(
+        repository: repository,
+        idGenerator: FakeInviteCommandIdGenerator(),
+        pendingInviteStore: store,
+      );
+      addTearDown(controller.dispose);
+
+      expect(controller.captureShortCode(' 2345 abcd '), isTrue);
+      expect(store.read(), isNull);
+      expect(store.readShortCode()?.value, '2345ABCD');
+      await controller.loadPreview();
+
+      expect(controller.state, isA<InviteFlowPreviewReady>());
+      expect(repository.previewTokens, isEmpty);
+      expect(repository.previewShortCodes.single.value, '2345ABCD');
+
+      await controller.accept(setActiveHousehold: true);
+
+      expect(controller.state, isA<InviteFlowAccepted>());
+      expect(repository.acceptRequests, isEmpty);
+      expect(repository.acceptShortCodeRequests, hasLength(1));
+      expect(
+        repository.acceptShortCodeRequests.single.shortCode.value,
+        '2345ABCD',
+      );
+      expect(store.readShortCode(), isNull);
+    },
+  );
+
+  test(
     'transient accept retry reuses one command ID then clears token',
     () async {
       final FakeInviteRepository repository = FakeInviteRepository(
@@ -145,6 +179,23 @@ void main() {
     expect(store.read(), isNull);
   });
 
+  test('token and short-code captures replace each other in memory', () async {
+    final EphemeralPendingInviteStore store = EphemeralPendingInviteStore();
+
+    expect(store.capture(inviteTokenValue), isTrue);
+    expect(store.captureShortCode(inviteShortCodeValue), isTrue);
+    expect(store.read(), isNull);
+    expect(store.readShortCode()?.formatted, inviteShortCodeValue);
+
+    expect(store.capture(inviteTokenValue), isTrue);
+    expect(store.read()?.value, inviteTokenValue);
+    expect(store.readShortCode(), isNull);
+
+    expect(store.captureShortCode('ambiguous-I'), isFalse);
+    expect(store.read(), isNull);
+    expect(store.readShortCode(), isNull);
+  });
+
   test(
     'coalesces preview requests while the network call is pending',
     () async {
@@ -251,10 +302,11 @@ void main() {
 
   test('account-bound purge removes pending invitation authority', () async {
     final EphemeralPendingInviteStore store = EphemeralPendingInviteStore();
-    expect(store.capture(inviteTokenValue), isTrue);
+    expect(store.captureShortCode(inviteShortCodeValue), isTrue);
 
     await store.purgeSensitiveLocalState();
 
     expect(store.read(), isNull);
+    expect(store.readShortCode(), isNull);
   });
 }

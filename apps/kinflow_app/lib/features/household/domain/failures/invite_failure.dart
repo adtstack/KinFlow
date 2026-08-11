@@ -10,6 +10,8 @@ enum InviteFailureKind {
   emailMismatch,
   rateLimited,
   profileUnavailable,
+  featurePolicyUnavailable,
+  featureLimitReached,
   temporarilyUnavailable,
   invalidPayload,
   internal,

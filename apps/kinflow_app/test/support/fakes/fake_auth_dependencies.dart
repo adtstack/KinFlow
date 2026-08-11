@@ -9,6 +9,7 @@ import 'package:kinflow_app/features/auth/domain/value_objects/auth_user_id.dart
 final class FakeAuthSessionRepository implements AuthSessionRepository {
   FakeAuthSessionRepository({
     this.restoreCallback,
+    this.refreshCallback,
     this.restoreResult = const AuthSessionAbsent(),
     List<AuthSessionResult> refreshResults = const <AuthSessionResult>[],
     List<AuthSignOutResult> signOutResults = const <AuthSignOutResult>[],
@@ -16,6 +17,7 @@ final class FakeAuthSessionRepository implements AuthSessionRepository {
        _signOutResults = List<AuthSignOutResult>.of(signOutResults);
 
   final Future<AuthSessionResult> Function()? restoreCallback;
+  final Future<AuthSessionResult> Function()? refreshCallback;
   final AuthSessionResult restoreResult;
   final List<AuthSessionResult> _refreshResults;
   final List<AuthSignOutResult> _signOutResults;
@@ -39,6 +41,10 @@ final class FakeAuthSessionRepository implements AuthSessionRepository {
   @override
   Future<AuthSessionResult> refreshSession() async {
     refreshCount += 1;
+    final Future<AuthSessionResult> Function()? callback = refreshCallback;
+    if (callback != null) {
+      return callback();
+    }
     if (_refreshResults.isEmpty) {
       return const AuthSessionAbsent();
     }

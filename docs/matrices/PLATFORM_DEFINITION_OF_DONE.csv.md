@@ -54,14 +54,14 @@ PDOD-042,Android Tablet,Tier1,Localization,"EN/KO/pseudo, locale/timezone format
 PDOD-043,Android Tablet,Tier1,Performance,startup/Today/jank/payload budget,Automated where possible,Required before platform Gate,NOT_STARTED
 PDOD-044,Android Tablet,Tier1,Reliability,resume/reconnect/update/version compatibility,Automated where possible,Required before platform Gate,NOT_STARTED
 PDOD-045,Web Companion,Tier2,Shell/Auth,"launch, callback, restore, logout/account isolation",Automated where possible,Required before platform Gate,NOT_STARTED
-PDOD-046,Web Companion,Tier2,Household,"adult create, invite, join, roles",Automated where possible,Required before platform Gate,NOT_STARTED
+PDOD-046,Web Companion,Tier2,Household,"adult create, invite, join, roles",Automated where possible,Required before platform Gate,PARTIAL
 PDOD-047,Web Companion,Tier2,Chores/Today,"create, assign, repeat, complete, stale/conflict states",Automated where possible,Required before platform Gate,NOT_STARTED
 PDOD-048,Web Companion,Tier2,Calendar,timed/all-day/repeat/exception/timezone,Automated where possible,Required before platform Gate,NOT_STARTED
 PDOD-049,Web Companion,Tier2,Notifications,inbox and email/mobile fallback; Web Push not initial blocker,Automated where possible,Required before platform Gate,NOT_STARTED
 PDOD-050,Web Companion,Tier2,Billing,server entitlement read; paid web purchase separately gated,Automated where possible,Required before platform Gate,NOT_STARTED
 PDOD-051,Web Companion,Tier2,Privacy,delete/export/cache purge/support path,Automated where possible,Required before platform Gate,NOT_STARTED
-PDOD-052,Web Companion,Tier2,Accessibility,"screen reader, large text/zoom, focus/touch/keyboard",Automated where possible,Required before platform Gate,NOT_STARTED
+PDOD-052,Web Companion,Tier2,Accessibility,"screen reader, large text/zoom, focus/touch/keyboard",Automated where possible,Required before platform Gate,PARTIAL
 PDOD-053,Web Companion,Tier2,Localization,"EN/KO/pseudo, locale/timezone formatting",Automated where possible,Required before platform Gate,NOT_STARTED
 PDOD-054,Web Companion,Tier2,Performance,startup/Today/jank/payload budget,Automated where possible,Required before platform Gate,NOT_STARTED
-PDOD-055,Web Companion,Tier2,Reliability,resume/reconnect/update/version compatibility,Automated where possible,Required before platform Gate,NOT_STARTED
+PDOD-055,Web Companion,Tier2,Reliability,resume/reconnect/update/version compatibility,Automated where possible,Required before platform Gate,PARTIAL
 ```

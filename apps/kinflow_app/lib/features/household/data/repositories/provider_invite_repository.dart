@@ -46,6 +46,19 @@ final class ProviderInviteRepository implements InviteRepository {
   }
 
   @override
+  Future<PreviewHouseholdInviteResult> previewInviteByShortCode(
+    InviteShortCode shortCode,
+  ) async {
+    final InviteDataResult<InvitePreviewDto> result = await _dataSource
+        .previewInviteByShortCode(shortCode: shortCode.value);
+    return switch (result) {
+      InviteDataSucceeded<InvitePreviewDto>(:final value) => _mapPreview(value),
+      InviteDataFailed<InvitePreviewDto>(:final kind) =>
+        PreviewHouseholdInviteFailed(_mapFailure(kind)),
+    };
+  }
+
+  @override
   Future<AcceptHouseholdInviteResult> acceptInvite(
     AcceptHouseholdInviteRequest request,
   ) async {
@@ -53,6 +66,23 @@ final class ProviderInviteRepository implements InviteRepository {
         .acceptInvite(
           idempotencyKey: request.idempotencyKey.value,
           token: request.token.value,
+          setActiveHousehold: request.setActiveHousehold,
+        );
+    return switch (result) {
+      InviteDataSucceeded<InviteMemberDto>(:final value) => _mapAccepted(value),
+      InviteDataFailed<InviteMemberDto>(:final kind) =>
+        AcceptHouseholdInviteFailed(_mapFailure(kind)),
+    };
+  }
+
+  @override
+  Future<AcceptHouseholdInviteResult> acceptInviteByShortCode(
+    AcceptHouseholdInviteByShortCodeRequest request,
+  ) async {
+    final InviteDataResult<InviteMemberDto> result = await _dataSource
+        .acceptInviteByShortCode(
+          idempotencyKey: request.idempotencyKey.value,
+          shortCode: request.shortCode.value,
           setActiveHousehold: request.setActiveHousehold,
         );
     return switch (result) {
@@ -89,12 +119,26 @@ final class ProviderInviteRepository implements InviteRepository {
     final InviteToken? token = record.rawToken == null
         ? null
         : InviteToken.tryParse(record.rawToken!);
+    final InviteShortCode? shortCode = record.rawShortCode == null
+        ? null
+        : InviteShortCode.tryParse(record.rawShortCode!);
+    final DateTime? shortCodeExpiresAt = record.shortCodeExpiresAt == null
+        ? null
+        : DateTime.tryParse(record.shortCodeExpiresAt!)?.toUtc();
+    final bool hasCompleteShortCode =
+        record.rawShortCode != null && record.shortCodeExpiresAt != null;
+    final bool hasAnyShortCode =
+        record.rawShortCode != null || record.shortCodeExpiresAt != null;
     if (id == null ||
         householdId == null ||
         role == null ||
         status == null ||
         expiresAt == null ||
-        record.rawToken != null && token == null) {
+        record.rawToken != null && token == null ||
+        hasAnyShortCode && !hasCompleteShortCode ||
+        record.rawShortCode != null && shortCode == null ||
+        record.shortCodeExpiresAt != null && shortCodeExpiresAt == null ||
+        shortCodeExpiresAt != null && shortCodeExpiresAt.isAfter(expiresAt)) {
       return const CreateHouseholdInviteFailed(
         InviteFailure(InviteFailureKind.invalidPayload),
       );
@@ -107,6 +151,8 @@ final class ProviderInviteRepository implements InviteRepository {
         expiresAt: expiresAt,
         status: status,
         rawToken: token,
+        rawShortCode: shortCode,
+        shortCodeExpiresAt: shortCodeExpiresAt,
       ),
     );
   }
@@ -205,6 +251,10 @@ final class ProviderInviteRepository implements InviteRepository {
       InviteDataFailureKind.rateLimited => InviteFailureKind.rateLimited,
       InviteDataFailureKind.profileUnavailable =>
         InviteFailureKind.profileUnavailable,
+      InviteDataFailureKind.featurePolicyUnavailable =>
+        InviteFailureKind.featurePolicyUnavailable,
+      InviteDataFailureKind.featureLimitReached =>
+        InviteFailureKind.featureLimitReached,
       InviteDataFailureKind.temporarilyUnavailable =>
         InviteFailureKind.temporarilyUnavailable,
       InviteDataFailureKind.invalidPayload => InviteFailureKind.invalidPayload,

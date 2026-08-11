@@ -15,7 +15,10 @@ void main() {
   testWidgets('bootstrap validates valid and invalid config before app start', (
     WidgetTester tester,
   ) async {
-    final _FakeObservabilityRunner observability = _FakeObservabilityRunner();
+    final List<String> startupOrder = <String>[];
+    final _FakeObservabilityRunner observability = _FakeObservabilityRunner(
+      onRun: () => startupOrder.add('observability'),
+    );
 
     await bootstrap(
       AppEnvironment.dev,
@@ -23,12 +26,17 @@ void main() {
       initializer: _successfulInitialization,
       observabilityRunner: observability,
       authDependenciesFactory: _loadUnavailableAuthDependencies,
+      notificationPushBackgroundPreparer:
+          (AppPublicConfiguration configuration) {
+            startupOrder.add('push_background');
+          },
     );
     await tester.pumpAndSettle();
 
     expect(observability.runCount, 1);
     expect(observability.configuration?.environment, AppEnvironment.dev);
     expect(observability.logger, isA<StructuredAppLogger>());
+    expect(startupOrder, <String>['push_background', 'observability']);
     expect(find.byKey(const Key('auth.signIn')), findsOneWidget);
     expect(find.byKey(const Key('foundation.home')), findsNothing);
 
@@ -127,6 +135,9 @@ void main() {
 }
 
 final class _FakeObservabilityRunner implements AppObservabilityRunner {
+  _FakeObservabilityRunner({this.onRun});
+
+  final void Function()? onRun;
   AppPublicConfiguration? configuration;
   AppLogger? logger;
   var runCount = 0;
@@ -137,6 +148,7 @@ final class _FakeObservabilityRunner implements AppObservabilityRunner {
     required AppPublicConfiguration configuration,
     required AppLogger logger,
   }) async {
+    onRun?.call();
     runCount += 1;
     this.configuration = configuration;
     this.logger = logger;

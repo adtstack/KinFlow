@@ -1,0 +1,99 @@
+---
+import PageHero from '../components/PageHero.astro';
+import { siteConfig } from '../config/site-config.mjs';
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="KinFlow 개인정보 안내 / Privacy Notice"
+  description="KinFlow가 처리하는 데이터, 이용 목적, 서비스 제공자, 보존·삭제와 사용자 권리를 설명합니다."
+  path="/privacy"
+  current="privacy"
+>
+  <PageHero
+    eyebrow="Privacy notice · 개인정보 안내"
+    title="가족의 내용은 가족 안에."
+    summary="KinFlow가 어떤 데이터를 왜 처리하고, 무엇을 공유하지 않으며, 사용자가 어떻게 내보내기와 삭제를 요청할 수 있는지 설명합니다."
+  />
+
+  <div class="policy-meta" aria-label="문서 정보 / Document information">
+    <span><strong>Status</strong>: {siteConfig.policyStatus}</span>
+    <span><strong>Version</strong>: {siteConfig.policyVersion}</span>
+    <span><strong>Date</strong>: <time datetime={siteConfig.publishedOn}>{siteConfig.publishedOn}</time></span>
+  </div>
+
+  {!siteConfig.production && (
+    <div class="callout callout-warning">
+      <p lang="ko"><strong>법률 검토 경계:</strong> 실제 구현의 데이터 흐름을 기준으로 작성한 초안입니다. 국가별 보존 기간, 운영자 연락처와 법적 근거는 production 게시 전 승인되어야 합니다.</p>
+      <p lang="en"><strong>Legal review boundary:</strong> This draft follows the implemented data flows. Jurisdiction-specific retention, operator contacts, and legal bases require approval before production publication.</p>
+    </div>
+  )}
+
+  <div class="document-stack">
+    <article id="ko" class="document-section" lang="ko" aria-labelledby="privacy-ko-heading">
+      <p class="section-label">한국어</p>
+      <h2 id="privacy-ko-heading">KinFlow 개인정보 처리 안내{!siteConfig.production && ' 초안'}</h2>
+
+      <h3>1. 처리하는 데이터</h3>
+      <ul class="plain-list">
+        <li><strong>계정:</strong> Supabase 사용자 식별자와 Google 로그인에 필요한 공급자 identity 정보</li>
+        <li><strong>프로필·환경설정:</strong> 표시 이름, 내장 avatar preset, 언어, 개인 시간대와 활성 가구 선택</li>
+        <li><strong>공동 가구:</strong> 구성원 역할·표시 정보, 초대 상태, 집안일, 완료 이력, 일정과 참여 정보</li>
+        <li><strong>알림·기기:</strong> 알림 설정, content-free inbox metadata, 암호화된 Android push endpoint와 최소 기기 환경 정보</li>
+        <li><strong>구독:</strong> Google Play/RevenueCat 구매자 연결, 상품·거래·권한 상태와 가구 혜택 판정에 필요한 기록</li>
+        <li><strong>운영·보안:</strong> PII를 허용하지 않는 구조화 오류·queue 상태·감사 기록과 사용자가 명시적으로 만든 진단 incident ID</li>
+      </ul>
+
+      <h3>2. 이용 목적</h3>
+      <p>인증과 계정 복구, 가구 권한 적용, 집안일·일정 동기화, 알림 전달, 구독 혜택 판정, 중복·충돌 방지, 보안 사고 대응과 사용자의 내보내기·삭제 요청 처리를 위해 최소 범위로 사용합니다.</p>
+
+      <h3>3. 서비스 제공자</h3>
+      <p>현재 구현은 Supabase(인증·데이터베이스·비공개 파일), Google(로그인·Play 결제), Firebase Cloud Messaging(Android push), RevenueCat(구독 상태), 그리고 운영 설정이 활성화된 경우 Sentry(PII allowlist가 적용된 오류 추적)를 사용합니다. 가족 콘텐츠를 광고 목적으로 판매하지 않으며 이 공개 사이트에는 analytics나 tracker가 없습니다.</p>
+
+      <h3>4. 공유와 접근</h3>
+      <p>가구 콘텐츠는 활성 가구 구성원과 역할 기반으로 공유됩니다. 서버는 요청마다 사용자, 활성 membership과 권한을 다시 확인합니다. 결제·push·auth 공급자에는 해당 기능에 필요한 최소 데이터만 전달하며 raw token, receipt와 가족 콘텐츠를 진단 보고서나 공개 사이트에 넣지 않습니다.</p>
+
+      <h3>5. 보존, 내보내기와 삭제</h3>
+      <p>앱에서 개인 데이터와 Owner 가구 데이터를 JSON/TXT로 요청할 수 있으며 다운로드는 짧게 만료되고 한 번만 사용할 수 있습니다. 계정 삭제는 개인 identity를 제거하거나 tombstone 처리하지만 다른 구성원이 의존하는 공동 이력은 보존·비식별될 수 있습니다. 가구 전체 삭제는 별도의 Owner 절차입니다. 보안, 사기 방지, 정산, 감사와 법적 보관 예외의 최종 기간은 법률 승인 후 이 문서에 명시합니다.</p>
+
+      <h3>6. 선택과 권리</h3>
+      <p>프로필·언어·시간대를 변경하고, 알림 채널을 끄고, 데이터를 내보내거나 계정 삭제를 요청할 수 있습니다. 앱을 사용할 수 없다면 <a href="/delete-account">공개 삭제 경로</a>에서 요청을 시작하세요. 기타 문의는 <a href="/support">지원 페이지</a>를 이용하세요.</p>
+
+      <h3>7. 아동과 국제 범위</h3>
+      <p>현재 Store MVP는 성인 대상이며 Managed Child mode를 제공하지 않습니다. 최초 공개 시장은 대한민국입니다. 다른 시장이나 아동 기능을 추가하기 전에 별도 법률·제품·보안 검토를 수행합니다.</p>
+    </article>
+
+    <article id="en" class="document-section" lang="en" aria-labelledby="privacy-en-heading">
+      <p class="section-label">English</p>
+      <h2 id="privacy-en-heading">{!siteConfig.production && 'Draft '}KinFlow Privacy Notice</h2>
+
+      <h3>1. Data we process</h3>
+      <ul class="plain-list">
+        <li><strong>Account:</strong> a Supabase user identifier and provider identity information required for Google sign-in</li>
+        <li><strong>Profile and preferences:</strong> display name, bundled avatar preset, language, personal timezone, and active household selection</li>
+        <li><strong>Shared household:</strong> member roles and display information, invitation state, chores, completion history, calendar events, and participation</li>
+        <li><strong>Notifications and device:</strong> preferences, content-free inbox metadata, an encrypted Android push endpoint, and minimal runtime metadata</li>
+        <li><strong>Subscription:</strong> Google Play/RevenueCat purchaser linkage, product, transaction, entitlement state, and records required to determine household benefits</li>
+        <li><strong>Operations and security:</strong> PII-denying structured errors, aggregate queue health, audit records, and a diagnostic incident ID only when you explicitly create one</li>
+      </ul>
+
+      <h3>2. Why we use data</h3>
+      <p>We use the minimum necessary data to authenticate and recover accounts, enforce household permissions, synchronize chores and calendars, deliver notifications, determine subscription benefits, prevent duplicate or conflicting operations, respond to security incidents, and fulfill export or deletion requests.</p>
+
+      <h3>3. Service providers</h3>
+      <p>The current implementation uses Supabase for authentication, database, and private files; Google for sign-in and Play billing; Firebase Cloud Messaging for Android push; RevenueCat for subscription state; and, only when operationally enabled, Sentry with a PII allowlist for error tracking. We do not sell family content for advertising, and this public site has no analytics or trackers.</p>
+
+      <h3>4. Sharing and access</h3>
+      <p>Household content is shared with active household members according to their roles. The server rechecks the user, active membership, and permission for each protected request. Auth, billing, and push providers receive only what their function requires. Raw tokens, receipts, and family content are excluded from public pages and diagnostic reports.</p>
+
+      <h3>5. Retention, export, and deletion</h3>
+      <p>You can request personal and Owner household exports in JSON and text; download access is short-lived and one-time. Account deletion removes or tombstones personal identity, while shared history other members rely on may be preserved and de-identified. Whole-household deletion is a separate Owner process. Final periods for security, fraud prevention, billing, audit, and legal retention exceptions will be stated after legal approval.</p>
+
+      <h3>6. Your controls</h3>
+      <p>You can change profile, language, and timezone settings; disable notification channels; export data; and request account deletion. If the app is unavailable, start through the <a href="/delete-account">public deletion path</a>. Use <a href="/support">support</a> for other questions.</p>
+
+      <h3>7. Children and geographic scope</h3>
+      <p>The current Store MVP is for adults and does not provide Managed Child mode. The initial public market is South Korea. Child features or new markets require separate legal, product, and security review before launch.</p>
+    </article>
+  </div>
+</BaseLayout>

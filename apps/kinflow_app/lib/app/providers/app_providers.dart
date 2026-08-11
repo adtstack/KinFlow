@@ -22,6 +22,24 @@ final appInitializerProvider = Provider<AppInitializer>((ref) {
   return _initializeAppDependencies;
 });
 
-final appLocaleProvider = Provider<Locale?>((ref) => null);
+final appLocaleControllerProvider =
+    NotifierProvider<AppLocaleController, Locale?>(AppLocaleController.new);
+
+final appLocaleProvider = Provider<Locale?>((ref) {
+  return ref.watch(appLocaleControllerProvider);
+});
+
+final class AppLocaleController extends Notifier<Locale?> {
+  @override
+  Locale? build() => null;
+
+  void applyLanguageCode(String? languageCode) {
+    state = switch (languageCode) {
+      'en' => const Locale('en'),
+      'ko' => const Locale('ko'),
+      _ => null,
+    };
+  }
+}
 
 Future<void> _initializeAppDependencies() async {}

@@ -20,8 +20,18 @@ final class UnavailableInviteRepository implements InviteRepository {
       const PreviewHouseholdInviteFailed(_failure);
 
   @override
+  Future<PreviewHouseholdInviteResult> previewInviteByShortCode(
+    InviteShortCode shortCode,
+  ) async => const PreviewHouseholdInviteFailed(_failure);
+
+  @override
   Future<AcceptHouseholdInviteResult> acceptInvite(
     AcceptHouseholdInviteRequest request,
+  ) async => const AcceptHouseholdInviteFailed(_failure);
+
+  @override
+  Future<AcceptHouseholdInviteResult> acceptInviteByShortCode(
+    AcceptHouseholdInviteByShortCodeRequest request,
   ) async => const AcceptHouseholdInviteFailed(_failure);
 
   @override

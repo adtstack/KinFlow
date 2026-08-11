@@ -100,13 +100,13 @@ MVP는 완전한 offline-first가 아니다.
 Domain event/outbox
   → notification rule evaluator
   → notification job (dedupe key)
-  → recipient preference/quiet hours
+  → recipient preference/lead time/quiet hours
   → inbox row 생성
   → platform delivery attempt
   → provider receipt 처리
 ```
 
-in-app inbox 생성이 push provider 성공에 의존하지 않는다.
+in-app inbox 생성이 push 또는 email provider 성공에 의존하지 않는다. category별 email fallback은 기본 OFF이고 inbox·push와 독립적으로 선택된다. confirmed Auth address는 service-only claim에서 provider 호출 직전에만 사용하며 queue·audit·log에는 저장하지 않는다.
 
 ## 8. 모바일 알림 구현
 
@@ -116,10 +116,19 @@ in-app inbox 생성이 push provider 성공에 의존하지 않는다.
 - notification payload에는 최소 식별자만 포함하고 민감한 가족 내용을 넣지 않는다.
 - tap 시 deep link route를 서버 권한 재검증 후 연다.
 - local notification은 사용자 기기 편의이며 server due job의 권위를 대체하지 않는다.
+- Calendar Snooze는 현재 caller-owned inbox item에 대한 versioned/idempotent server command다. 원본 inbox와 pending push를 원자적으로 supersede하고 새 content-free source event를 기존 server worker에 넣으며 client local alarm을 schedule authority로 사용하지 않는다.
+- 허용값은 5·10·30분, 연속 최대 3회, occurrence base start 후 1시간 이내다. v1 inbox read는 유지하고 v2만 현재 허용 가능한 bounded metadata를 추가한다.
+- Calendar preference는 기본 알림 1개와 추가 최대 2개의 distinct fixed lead를 가진다. v1은 전체 집합을 보존하고 v2는 기본만 바꾸며, exact 14-key v3만 전체 집합을 편집한다.
+- 각 선택 시간은 동일한 exact content-free source payload와 private lead identity로 기존 server worker를 독립 통과한다. 설정 시점에 이미 지난 시간은 소급 발송하지 않는다.
+- configured email fallback은 family content·resource ID·deep link가 없는 fixed generic EN/KO text를 한 명의 confirmed account address로만 보낸다. provider SDK, HTML, attachment와 custom argument는 사용하지 않는다.
+- email worker는 exact empty POST와 dedicated Bearer만 허용하고 aggregate count만 반환한다. durable submission marker를 provider I/O 전에 기록하며, marker 이후 결과가 불명확하면 terminal ambiguity로 격리해 자동 재발송하지 않는다.
 
 ## 9. Quiet hours와 시간대
 
 - household reminder 기준과 사용자 quiet hours를 분리한다.
+- Calendar는 source에 timed start 또는 all-day household-local 09:00 base instant를 보존하고, exact 수신자의 고정 lead를 뺀 뒤 quiet hours를 적용한다.
+- Calendar의 기본 및 추가 각 lead에서 quiet hours를 독립 적용한다. preference 변경은 아직 평가되지 않은 개인 reminder만 생성·재스케줄하고 제거된 source는 latest-state에서 stale 처리하며 이미 inbox 또는 terminal push 평가된 이력은 동결한다.
+- email은 동일한 recipient-local quiet-hours 결과와 source schedule 뒤 최대 1시간 usefulness window를 재사용한다. window를 넘긴 claim 또는 retry는 provider 제출 없이 만료한다.
 - 일정 원래 timezone과 수신자 timezone을 구분한다.
 - DST 전환 시 중복/누락이 없도록 occurrence instant를 사용한다.
 - 발송 지연이 허용 범위를 넘으면 inbox에는 남기고 stale push를 생략할 수 있다.
@@ -142,6 +151,7 @@ in-app inbox 생성이 push provider 성공에 의존하지 않는다.
 - 네트워크·5xx·provider transient만 exponential backoff + jitter
 - 4xx validation/authz는 자동 재시도하지 않는다.
 - mutation retry에는 idempotency key 필수
+- email provider는 completed HTTP 중 `429/500/502/503/504`만 `1m/5m/30m/2h`로 제한 재시도한다. `202`는 provider accepted submission이며, 그 밖의 completed response와 marker 이후 network ambiguity는 terminal이다.
 - background retry 횟수와 TTL을 제한한다.
 - 사용자 행동을 무한 spinner로 가리지 않는다.
 

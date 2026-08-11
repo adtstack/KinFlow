@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>KinFlow sign-in code</title>
+  </head>
+  <body>
+    <main>
+      <h1>KinFlow sign-in code</h1>
+      <p>Enter this six-digit code in KinFlow. It expires in 10 minutes.</p>
+      <p><strong>{{ .Token }}</strong></p>
+      <p>If you did not request this code, you can ignore this email.</p>
+      <hr>
+      <h1 lang="ko">KinFlow 로그인 코드</h1>
+      <p lang="ko">아래 여섯 자리 코드를 KinFlow에 입력해 주세요. 코드는 10분 후 만료됩니다.</p>
+      <p lang="ko"><strong>{{ .Token }}</strong></p>
+      <p lang="ko">직접 요청하지 않았다면 이 이메일을 무시해 주세요.</p>
+    </main>
+  </body>
+</html>

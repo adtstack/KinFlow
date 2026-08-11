@@ -6,6 +6,7 @@ import {
   InviteRpcError,
   inviteContractVersion,
 } from "../functions/_shared/invite_contract.mjs";
+import {generateInviteShortCode} from "../functions/_shared/invite_runtime.mjs";
 
 const userId = "00000000-0000-4000-8000-000000000101";
 const householdId = "20000000-0000-4000-8000-000000000101";
@@ -13,19 +14,28 @@ const inviteId = "50000000-0000-4000-8000-000000000101";
 const memberId = "30000000-0000-4000-8000-000000000102";
 const requestId = "70000000-0000-4000-8000-000000000101";
 const rawToken = "A".repeat(43);
+const rawShortCode = "ABCD-EFGH";
+const runtimePolicyHeaders = Object.freeze({
+  "x-kinflow-client-version": "0.1.0-dev+10",
+  "x-kinflow-client-build": "10",
+  "x-kinflow-contract-version": "2026-08-09",
+  "x-kinflow-platform": "android",
+  "x-kinflow-environment": "dev",
+});
 
 describe("invite Edge contract", () => {
   test("create returns a raw token once and sends only its hash to the DB", async () => {
     const calls = [];
     const handler = handlerFor("create", {
-      invokeRpc: async (name, parameters) => {
-        calls.push({name, parameters});
+      invokeRpc: async (name, parameters, compatibilityHeaders) => {
+        calls.push({name, parameters, compatibilityHeaders});
         if (name === "consume_invite_rate_limit") return true;
         return [{
           invite_id: inviteId,
           household_id: householdId,
           role: "member",
           expires_at: "2026-08-04T00:00:00Z",
+          short_code_expires_at: "2026-07-29T00:00:00Z",
           status: "active",
           created: true,
         }];
@@ -37,7 +47,7 @@ describe("invite Edge contract", () => {
       role: "member",
       targetEmail: " ADULT-B@LOCAL.KINFLOW.INVALID ",
       expiresInHours: 168,
-    }, {authenticated: true, idempotent: true}));
+    }, {authenticated: true, idempotent: true, runtimePolicy: true}));
 
     assert.equal(response.status, 201);
     assert.equal(response.headers.get("cache-control"), "no-store");
@@ -51,14 +61,21 @@ describe("invite Edge contract", () => {
         expiresAt: "2026-08-04T00:00:00Z",
         status: "active",
         rawToken,
+        shortCode: rawShortCode,
+        shortCodeExpiresAt: "2026-07-29T00:00:00Z",
       },
       meta: {requestId, contractVersion: inviteContractVersion},
     });
     assert.equal(calls[0].name, "consume_invite_rate_limit");
-    assert.equal(calls[1].name, "create_household_invite");
+    assert.equal(calls[1].name, "create_household_invite_with_short_code");
+    assert.deepEqual(calls[0].compatibilityHeaders, runtimePolicyHeaders);
+    assert.deepEqual(calls[1].compatibilityHeaders, runtimePolicyHeaders);
     assert.equal(calls[1].parameters.p_target_email, "adult-b@local.kinflow.invalid");
     assert.match(calls[1].parameters.p_token_hash_hex, /^[0-9a-f]{64}$/);
+    assert.match(calls[1].parameters.p_short_code_hash_hex, /^[0-9a-f]{64}$/);
+    assert.equal(calls[1].parameters.p_short_code_expires_in_hours, 24);
     assert.equal(JSON.stringify(calls).includes(rawToken), false);
+    assert.equal(JSON.stringify(calls).includes(rawShortCode), false);
   });
 
   test("idempotent create retry omits a new raw token", async () => {
@@ -81,6 +98,8 @@ describe("invite Edge contract", () => {
     const payload = await response.json();
     assert.equal(response.status, 201);
     assert.equal(Object.hasOwn(payload.data, "rawToken"), false);
+    assert.equal(Object.hasOwn(payload.data, "shortCode"), false);
+    assert.equal(Object.hasOwn(payload.data, "shortCodeExpiresAt"), false);
   });
 
   test("public preview returns only minimal display data", async () => {
@@ -215,6 +234,13 @@ describe("invite Edge contract", () => {
     ["KFI09", "INVITE_ALREADY_USED", 409],
     ["KFI10", "INVITE_EMAIL_MISMATCH", 403],
     ["KFI11", "PROFILE_UNAVAILABLE", 409],
+    ["KFB10", "FEATURE_POLICY_UNAVAILABLE", 503],
+    ["KFB11", "FEATURE_POLICY_UNAVAILABLE", 503],
+    ["KFB12", "FEATURE_LIMIT_REACHED", 409],
+    ["KFR01", "CLIENT_UPDATE_REQUIRED", 426],
+    ["KFR02", "CLIENT_MUTATIONS_DISABLED", 503],
+    ["KFR03", "RUNTIME_POLICY_UNAVAILABLE", 503],
+    ["KFR06", "CLIENT_FEATURE_DISABLED", 503],
   ]) {
     test(`maps ${sqlState} to stable ${code}`, async () => {
       const handler = handlerFor("preview", {
@@ -264,17 +290,77 @@ describe("invite Edge contract", () => {
     assert.equal((await response.json()).error.code, "IDEMPOTENCY_KEY_REQUIRED");
   });
 
-  test("short code is explicitly unavailable in the link-token slice", async () => {
-    const handler = handlerFor("preview");
-    const response = await handler(jsonRequest("preview-invite", {shortCode: "ABC123"}));
-    assert.equal(response.status, 501);
-    assert.equal((await response.json()).error.code, "CAPABILITY_UNSUPPORTED");
+  test("short-code preview normalizes input and sends only its hash", async () => {
+    const calls = [];
+    const handler = handlerFor("preview", {
+      invokeRpc: async (name, parameters) => {
+        calls.push({name, parameters});
+        if (name === "consume_invite_rate_limit") return true;
+        return [{
+          valid: true,
+          household_display_name: "Primary household",
+          inviter_display_name: "Adult A",
+          role: "member",
+          expires_at: "2026-07-29T00:00:00Z",
+        }];
+      },
+    });
+    const response = await handler(jsonRequest("preview-invite", {
+      shortCode: " abcd efgh ",
+    }));
+    assert.equal(response.status, 200);
+    assert.equal(calls[0].parameters.p_scope, "preview_short_code");
+    assert.equal(calls[1].name, "preview_household_invite_short_code");
+    assert.match(calls[1].parameters.p_short_code_hash_hex, /^[0-9a-f]{64}$/);
+    assert.equal(JSON.stringify(calls).includes("ABCDEFGH"), false);
+  });
 
-    const accept = await handlerFor("accept")(jsonRequest("accept-invite", {
-      shortCode: "ABC123",
+  test("authenticated short-code acceptance is user-locked and idempotent", async () => {
+    const calls = [];
+    const handler = handlerFor("accept", {
+      invokeRpc: async (name, parameters) => {
+        calls.push({name, parameters});
+        if (name === "consume_invite_rate_limit") return true;
+        return [{
+          member_id: memberId,
+          household_id: householdId,
+          display_name: "Adult B",
+          role: "member",
+          active_household_set: true,
+        }];
+      },
+    });
+    const response = await handler(jsonRequest("accept-invite", {
+      shortCode: rawShortCode,
     }, {authenticated: true, idempotent: true}));
-    assert.equal(accept.status, 501);
-    assert.equal((await accept.json()).error.code, "CAPABILITY_UNSUPPORTED");
+    assert.equal(response.status, 200);
+    assert.equal(calls[0].parameters.p_scope, "accept_short_code");
+    assert.equal(calls[1].name, "accept_household_invite_short_code");
+    assert.equal(calls[1].parameters.p_authenticated_user_id, userId);
+    assert.match(calls[1].parameters.p_short_code_hash_hex, /^[0-9a-f]{64}$/);
+    assert.equal(JSON.stringify(calls).includes(rawShortCode), false);
+  });
+
+  test("preview and accept require exactly one invite credential", async () => {
+    const preview = await handlerFor("preview")(jsonRequest("preview-invite", {
+      token: rawToken,
+      shortCode: rawShortCode,
+    }));
+    assert.equal(preview.status, 400);
+    const accept = await handlerFor("accept")(jsonRequest("accept-invite", {}, {
+      authenticated: true,
+      idempotent: true,
+    }));
+    assert.equal(accept.status, 400);
+  });
+
+  test("production short-code generator uses the bounded unambiguous alphabet", () => {
+    const generated = generateInviteShortCode((bytes) => {
+      for (let index = 0; index < bytes.length; index += 1) bytes[index] = index;
+      return bytes;
+    });
+    assert.equal(generated, "2345-6789");
+    assert.match(generated, /^[23456789ABCDEFGHJKMNPQRSTVWXYZ]{4}-[23456789ABCDEFGHJKMNPQRSTVWXYZ]{4}$/);
   });
 
   test("malformed, extra-field, and oversized bodies fail closed", async () => {
@@ -324,6 +410,10 @@ describe("invite Edge contract", () => {
     }));
     assert.equal(preflight.status, 204);
     assert.equal(preflight.headers.get("access-control-allow-origin"), "http://127.0.0.1:3000");
+    assert.match(
+      preflight.headers.get("access-control-allow-headers"),
+      /x-kinflow-contract-version/,
+    );
   });
 
   test("invalid provider payload becomes a redacted retryable error", async () => {
@@ -349,18 +439,26 @@ function handlerFor(operation, overrides = {}) {
       if (name === "consume_invite_rate_limit") return true;
       throw new Error(`Unexpected RPC ${name}`);
     }),
+    randomShortCode: () => rawShortCode,
     randomToken: () => rawToken,
     sha256Hex,
   });
 }
 
-function jsonRequest(path, body, {authenticated = false, idempotent = false} = {}) {
+function jsonRequest(path, body, {
+  authenticated = false,
+  idempotent = false,
+  runtimePolicy = false,
+} = {}) {
   const headers = {
     "content-type": "application/json",
     "x-request-id": requestId,
   };
   if (authenticated) headers.authorization = "Bearer synthetic-session";
   if (idempotent) headers["idempotency-key"] = "80000000-0000-4000-8000-000000000101";
+  if (runtimePolicy) Object.assign(headers, runtimePolicyHeaders, {
+    "x-kinflow-forwarded-user-operation": "0",
+  });
   return new Request(`http://local/${path}`, {
     method: "POST",
     headers,

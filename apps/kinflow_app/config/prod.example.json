@@ -1,7 +1,7 @@
 {
   "APP_ENV": "prod",
   "APP_ID": "me.newlines.kinflow",
-  "APP_VERSION": "0.1.0+1",
+  "APP_VERSION": "0.2.0-alpha.1+2",
   "CONTRACT_VERSION": "2026-07-25",
   "SUPABASE_URL": "https://example.invalid",
   "SUPABASE_PUBLISHABLE_KEY": "replace-with-prod-publishable-key",
@@ -12,5 +12,9 @@
   "AUTH_REDIRECT_HOST": "auth.example.invalid",
   "SUPPORT_URL": "https://example.invalid/support",
   "PRIVACY_REQUEST_URL": "https://example.invalid/privacy-request",
-  "FEATURE_CONFIG_URL": ""
+  "FEATURE_CONFIG_URL": "",
+  "FIREBASE_ANDROID_API_KEY": "",
+  "FIREBASE_ANDROID_APP_ID": "",
+  "FIREBASE_MESSAGING_SENDER_ID": "",
+  "FIREBASE_PROJECT_ID": ""
 }

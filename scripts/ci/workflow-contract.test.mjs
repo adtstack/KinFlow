@@ -13,7 +13,7 @@ const workflowPath = resolve(import.meta.dirname, '../../.github/workflows/ci.ym
 test('repository CI workflow satisfies the trust and gate contract', async () => {
   const source = await readFile(workflowPath, 'utf8');
   const result = verifyWorkflowSource(source);
-  assert.equal(result.jobCount, 5);
+  assert.equal(result.jobCount, 6);
   assert.ok(result.actionCount >= 10);
 });
 

@@ -12,6 +12,7 @@ enum HouseholdMemberFailureKind {
   idempotencyConflict,
   temporarilyUnavailable,
   invalidPayload,
+  localStateUnavailable,
   internal,
 }
 

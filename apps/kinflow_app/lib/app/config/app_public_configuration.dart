@@ -44,6 +44,7 @@ final class AppPublicConfiguration {
     required this.contractVersion,
     required this.environment,
     required this.featureConfigUri,
+    required this.firebaseAndroidOptions,
     required this.googleWebClientId,
     required this.privacyRequestUri,
     required this.publicSiteUri,
@@ -60,6 +61,7 @@ final class AppPublicConfiguration {
   final String contractVersion;
   final AppEnvironment environment;
   final Uri? featureConfigUri;
+  final FirebaseAndroidPublicOptions? firebaseAndroidOptions;
   final String? googleWebClientId;
   final Uri privacyRequestUri;
   final Uri publicSiteUri;
@@ -74,6 +76,20 @@ final class AppPublicConfiguration {
   bool get isSentryEnabled => sentryDsn != null;
 }
 
+final class FirebaseAndroidPublicOptions {
+  const FirebaseAndroidPublicOptions({
+    required this.apiKey,
+    required this.appId,
+    required this.messagingSenderId,
+    required this.projectId,
+  });
+
+  final String apiKey;
+  final String appId;
+  final String messagingSenderId;
+  final String projectId;
+}
+
 abstract final class AppPublicConfigurationKeys {
   static const String appEnvironment = 'APP_ENV';
   static const String applicationId = 'APP_ID';
@@ -81,6 +97,11 @@ abstract final class AppPublicConfigurationKeys {
   static const String authRedirectHost = 'AUTH_REDIRECT_HOST';
   static const String contractVersion = 'CONTRACT_VERSION';
   static const String featureConfigUrl = 'FEATURE_CONFIG_URL';
+  static const String firebaseAndroidApiKey = 'FIREBASE_ANDROID_API_KEY';
+  static const String firebaseAndroidAppId = 'FIREBASE_ANDROID_APP_ID';
+  static const String firebaseMessagingSenderId =
+      'FIREBASE_MESSAGING_SENDER_ID';
+  static const String firebaseProjectId = 'FIREBASE_PROJECT_ID';
   static const String googleWebClientId = 'GOOGLE_WEB_CLIENT_ID';
   static const String privacyRequestUrl = 'PRIVACY_REQUEST_URL';
   static const String publicSiteUrl = 'PUBLIC_SITE_URL';
@@ -98,6 +119,10 @@ abstract final class AppPublicConfigurationKeys {
     authRedirectHost,
     contractVersion,
     featureConfigUrl,
+    firebaseAndroidApiKey,
+    firebaseAndroidAppId,
+    firebaseMessagingSenderId,
+    firebaseProjectId,
     googleWebClientId,
     privacyRequestUrl,
     publicSiteUrl,
@@ -112,6 +137,18 @@ abstract final class AppPublicConfigurationKeys {
     'APPLE_APP_STORE_API_PRIVATE_KEY',
     'DATA_EXPORT_SIGNING_KEY',
     'FCM_SERVER_CREDENTIAL',
+    'KINFLOW_FIREBASE_SERVICE_ACCOUNT_JSON',
+    'KINFLOW_BILLING_RECONCILIATION_WORKER_SECRET',
+    'KINFLOW_DATA_EXPORT_WORKER_SECRET',
+    'KINFLOW_HOUSEHOLD_PRIVACY_WORKER_SECRET',
+    'KINFLOW_REVENUECAT_ENTITLEMENT_ID',
+    'KINFLOW_REVENUECAT_SECRET_API_KEY',
+    'KINFLOW_REVENUECAT_WEBHOOK_AUTHORIZATION',
+    'KINFLOW_REVENUECAT_WEBHOOK_SIGNING_SECRET',
+    'KINFLOW_NOTIFICATION_TOKEN_ENCRYPTION_KEY',
+    'KINFLOW_NOTIFICATION_PUSH_WORKER_SECRET',
+    'KINFLOW_NOTIFICATION_TOKEN_DECRYPTION_KEYS',
+    'KINFLOW_NOTIFICATION_WORKER_SECRET',
     'GOOGLE_CLIENT_SECRET',
     'GOOGLE_PLAY_SERVICE_ACCOUNT_JSON',
     'INTERNAL_JOB_AUTH_SECRET',
@@ -299,6 +336,69 @@ final class AppPublicConfigurationLoader {
       );
     }
 
+    final Map<String, String?> firebaseValues = <String, String?>{
+      AppPublicConfigurationKeys.firebaseAndroidApiKey: _optionalProviderValue(
+        input,
+        AppPublicConfigurationKeys.firebaseAndroidApiKey,
+      ),
+      AppPublicConfigurationKeys.firebaseAndroidAppId: _optionalProviderValue(
+        input,
+        AppPublicConfigurationKeys.firebaseAndroidAppId,
+      ),
+      AppPublicConfigurationKeys.firebaseMessagingSenderId:
+          _optionalProviderValue(
+            input,
+            AppPublicConfigurationKeys.firebaseMessagingSenderId,
+          ),
+      AppPublicConfigurationKeys.firebaseProjectId: _optionalProviderValue(
+        input,
+        AppPublicConfigurationKeys.firebaseProjectId,
+      ),
+    };
+    final int configuredFirebaseValues = firebaseValues.values
+        .whereType<String>()
+        .length;
+    FirebaseAndroidPublicOptions? firebaseAndroidOptions;
+    if (configuredFirebaseValues != 0 &&
+        configuredFirebaseValues != firebaseValues.length) {
+      for (final MapEntry<String, String?> entry in firebaseValues.entries) {
+        if (entry.value == null) _invalidFormat(entry.key, issues);
+      }
+    } else if (configuredFirebaseValues == firebaseValues.length) {
+      final String apiKey =
+          firebaseValues[AppPublicConfigurationKeys.firebaseAndroidApiKey]!;
+      final String appId =
+          firebaseValues[AppPublicConfigurationKeys.firebaseAndroidAppId]!;
+      final String messagingSenderId =
+          firebaseValues[AppPublicConfigurationKeys.firebaseMessagingSenderId]!;
+      final String projectId =
+          firebaseValues[AppPublicConfigurationKeys.firebaseProjectId]!;
+      if (!RegExp(r'^AIza[0-9A-Za-z_-]{35}$').hasMatch(apiKey)) {
+        _invalidFormat(
+          AppPublicConfigurationKeys.firebaseAndroidApiKey,
+          issues,
+        );
+      }
+      if (!RegExp(r'^1:[0-9]{6,20}:android:[0-9a-f]{16,64}$').hasMatch(appId)) {
+        _invalidFormat(AppPublicConfigurationKeys.firebaseAndroidAppId, issues);
+      }
+      if (!RegExp(r'^[0-9]{6,20}$').hasMatch(messagingSenderId)) {
+        _invalidFormat(
+          AppPublicConfigurationKeys.firebaseMessagingSenderId,
+          issues,
+        );
+      }
+      if (!RegExp(r'^[a-z][a-z0-9-]{4,28}[a-z0-9]$').hasMatch(projectId)) {
+        _invalidFormat(AppPublicConfigurationKeys.firebaseProjectId, issues);
+      }
+      firebaseAndroidOptions = FirebaseAndroidPublicOptions(
+        apiKey: apiKey,
+        appId: appId,
+        messagingSenderId: messagingSenderId,
+        projectId: projectId,
+      );
+    }
+
     final String? googleWebClientId = _optionalProviderValue(
       input,
       AppPublicConfigurationKeys.googleWebClientId,
@@ -312,12 +412,24 @@ final class AppPublicConfigurationLoader {
       input,
       AppPublicConfigurationKeys.revenueCatAndroidPublicSdkKey,
     );
-    if (revenueCatAndroidPublicSdkKey != null &&
-        revenueCatAndroidPublicSdkKey.length < 16) {
-      _invalidFormat(
-        AppPublicConfigurationKeys.revenueCatAndroidPublicSdkKey,
-        issues,
-      );
+    if (revenueCatAndroidPublicSdkKey != null) {
+      if (revenueCatAndroidPublicSdkKey.toLowerCase().startsWith('sk_')) {
+        issues.add(
+          const AppConfigurationIssue(
+            code: AppConfigurationIssueCode.serverSecretPresent,
+            key: AppPublicConfigurationKeys.revenueCatAndroidPublicSdkKey,
+          ),
+        );
+      } else if (!_revenueCatAndroidPublicSdkKeyPattern.hasMatch(
+            revenueCatAndroidPublicSdkKey,
+          ) ||
+          expectedEnvironment.isProduction &&
+              revenueCatAndroidPublicSdkKey.startsWith('test_')) {
+        _invalidFormat(
+          AppPublicConfigurationKeys.revenueCatAndroidPublicSdkKey,
+          issues,
+        );
+      }
     }
 
     if (issues.isNotEmpty) {
@@ -331,6 +443,7 @@ final class AppPublicConfigurationLoader {
       contractVersion: contractVersion,
       environment: expectedEnvironment,
       featureConfigUri: featureConfigUri,
+      firebaseAndroidOptions: firebaseAndroidOptions,
       googleWebClientId: googleWebClientId,
       privacyRequestUri: privacyRequestUri,
       publicSiteUri: publicSiteUri,
@@ -348,6 +461,9 @@ final class AppPublicConfigurationLoader {
   );
   static final RegExp _jwtPattern = RegExp(
     r'^eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$',
+  );
+  static final RegExp _revenueCatAndroidPublicSdkKeyPattern = RegExp(
+    r'^(?:goog|test)_[A-Za-z0-9]{11,}$',
   );
   static final RegExp _versionPattern = RegExp(
     r'^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$',

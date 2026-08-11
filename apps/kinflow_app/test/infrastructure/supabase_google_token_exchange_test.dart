@@ -82,5 +82,58 @@ void main() {
         expect(result.toString(), isNot(contains('detail')));
       }
     });
+
+    test('maps only exact Supabase identity conflict codes', () async {
+      for (final String code in <String>[
+        'email_exists',
+        'identity_already_exists',
+        'user_already_exists',
+      ]) {
+        final SupabaseGoogleTokenExchange exchange =
+            SupabaseGoogleTokenExchange.withCall(
+              (_, _) async => throw AuthException(
+                'existing-account@example.com provider detail',
+                statusCode: '409',
+                code: code,
+              ),
+            );
+
+        final GoogleTokenExchangeResult result = await exchange.exchange(
+          tokens,
+        );
+
+        expect(
+          (result as GoogleTokenExchangeFailed).kind,
+          GoogleTokenExchangeFailureKind.identityConflict,
+        );
+        expect(result.toString(), isNot(contains('existing-account')));
+      }
+
+      for (final AuthException error in <AuthException>[
+        const AuthException('identity_already_exists', statusCode: '409'),
+        const AuthException(
+          'existing-account@example.com',
+          statusCode: '409',
+          code: 'conflict',
+        ),
+        const AuthException(
+          'provider detail',
+          statusCode: '409',
+          code: 'IDENTITY_ALREADY_EXISTS',
+        ),
+      ]) {
+        final SupabaseGoogleTokenExchange exchange =
+            SupabaseGoogleTokenExchange.withCall((_, _) async => throw error);
+
+        final GoogleTokenExchangeResult result = await exchange.exchange(
+          tokens,
+        );
+
+        expect(
+          (result as GoogleTokenExchangeFailed).kind,
+          GoogleTokenExchangeFailureKind.providerUnavailable,
+        );
+      }
+    });
   });
 }

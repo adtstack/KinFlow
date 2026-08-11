@@ -42,13 +42,14 @@ export function verifyWorkflowSource(source) {
     'dependency_audit',
     'backend',
     'android',
+    'web',
     'gate',
   ]) {
     requireMatch(`required ${job} job`, new RegExp(`^  ${job}:\\s*$`, 'mu'));
   }
   requireText(
     'gate dependency aggregation',
-    'needs: [quality, dependency_audit, backend, android]',
+    'needs: [quality, dependency_audit, backend, android, web]',
   );
 
   for (const command of [
@@ -57,6 +58,7 @@ export function verifyWorkflowSource(source) {
     'scripts/ci/osv-offline-scan.sh',
     'scripts/ci/supabase-backend.sh',
     'scripts/ci/android-build.sh ${{ matrix.flavor }}',
+    'scripts/ci/web-build.sh ${{ matrix.flavor }}',
     'npm ci --ignore-scripts --no-audit --no-fund',
   ]) {
     requireText(`required command ${command}`, command);
@@ -86,13 +88,13 @@ export function verifyWorkflowSource(source) {
   const checkoutHardeningCount = (
     source.match(/persist-credentials: false/gu) ?? []
   ).length;
-  if (checkoutHardeningCount < 4) {
+  if (checkoutHardeningCount < 5) {
     failures.push('credential-disabled checkout in all source jobs');
   }
   const timeoutCount = (source.match(/timeout-minutes:/gu) ?? []).length;
-  if (timeoutCount < 5) failures.push('timeout on every job');
+  if (timeoutCount < 6) failures.push('timeout on every job');
   const retentionCount = (source.match(/retention-days: 14/gu) ?? []).length;
-  if (retentionCount < 4) failures.push('14-day retention on every report/artifact');
+  if (retentionCount < 6) failures.push('14-day retention on every report/artifact');
 
   for (const forbidden of [
     ['pull_request_target trigger', /pull_request_target/u],
@@ -109,7 +111,7 @@ export function verifyWorkflowSource(source) {
   }
   return {
     actionCount: actionReferences.length,
-    jobCount: 5,
+    jobCount: 6,
     permissions: 'contents:read',
   };
 }
@@ -144,6 +146,11 @@ export function verifySupplyChainSources({
     'OSV_SCANNER_LOCAL_DB_CACHE_DIRECTORY',
   );
   requireText(osv, 'OSV actual npm lock', '"$kinflow_repo_root/package-lock.json"');
+  requireText(
+    osv,
+    'OSV actual public-site npm lock',
+    '"$kinflow_repo_root/apps/public_site/package-lock.json"',
+  );
   requireText(
     osv,
     'OSV actual Pub lock',

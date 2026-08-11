@@ -100,6 +100,8 @@ void main() {
                   AuthSignInDataFailureKind.providerUnavailable,
               GoogleTokenExchangeFailureKind.temporarilyUnavailable:
                   AuthSignInDataFailureKind.temporarilyUnavailable,
+              GoogleTokenExchangeFailureKind.identityConflict:
+                  AuthSignInDataFailureKind.identityConflict,
               GoogleTokenExchangeFailureKind.invalidResponse:
                   AuthSignInDataFailureKind.invalidPayload,
               GoogleTokenExchangeFailureKind.unknown:
@@ -128,6 +130,73 @@ void main() {
         }
       },
     );
+
+    test(
+      'clears only the Google account selection after identity conflict',
+      () async {
+        final _FakeGoogleIdentityGateway gateway = _FakeGoogleIdentityGateway(
+          result: const GoogleIdentityAuthenticated(tokens),
+        );
+        final GoogleSupabaseAuthSignInDataSource dataSource =
+            GoogleSupabaseAuthSignInDataSource(
+              serverClientId: clientId,
+              identityGateway: gateway,
+              tokenExchange: _FakeGoogleTokenExchange(
+                result: const GoogleTokenExchangeFailed(
+                  GoogleTokenExchangeFailureKind.identityConflict,
+                ),
+              ),
+            );
+
+        final AuthSignInDataResult result = await dataSource
+            .requestGoogleSignIn();
+
+        expect(
+          (result as AuthSignInDataFailed).kind,
+          AuthSignInDataFailureKind.identityConflict,
+        );
+        expect(gateway.signOutClientIds, <String>[clientId]);
+
+        final _FakeGoogleIdentityGateway nonConflictGateway =
+            _FakeGoogleIdentityGateway(
+              result: const GoogleIdentityAuthenticated(tokens),
+            );
+        await GoogleSupabaseAuthSignInDataSource(
+          serverClientId: clientId,
+          identityGateway: nonConflictGateway,
+          tokenExchange: _FakeGoogleTokenExchange(
+            result: const GoogleTokenExchangeFailed(
+              GoogleTokenExchangeFailureKind.providerUnavailable,
+            ),
+          ),
+        ).requestGoogleSignIn();
+        expect(nonConflictGateway.signOutClientIds, isEmpty);
+      },
+    );
+
+    test('selection-clear failure does not mask identity conflict', () async {
+      final GoogleSupabaseAuthSignInDataSource dataSource =
+          GoogleSupabaseAuthSignInDataSource(
+            serverClientId: clientId,
+            identityGateway: _FakeGoogleIdentityGateway(
+              result: const GoogleIdentityAuthenticated(tokens),
+              shouldThrowOnSignOut: true,
+            ),
+            tokenExchange: _FakeGoogleTokenExchange(
+              result: const GoogleTokenExchangeFailed(
+                GoogleTokenExchangeFailureKind.identityConflict,
+              ),
+            ),
+          );
+
+      final AuthSignInDataResult result = await dataSource
+          .requestGoogleSignIn();
+
+      expect(
+        (result as AuthSignInDataFailed).kind,
+        AuthSignInDataFailureKind.identityConflict,
+      );
+    });
 
     test(
       'fails closed for empty configuration and unexpected errors',
@@ -189,10 +258,15 @@ void main() {
 }
 
 final class _FakeGoogleIdentityGateway implements GoogleIdentityGateway {
-  _FakeGoogleIdentityGateway({this.result, this.shouldThrow = false});
+  _FakeGoogleIdentityGateway({
+    this.result,
+    this.shouldThrow = false,
+    this.shouldThrowOnSignOut = false,
+  });
 
   final GoogleIdentityAuthenticationResult? result;
   final bool shouldThrow;
+  final bool shouldThrowOnSignOut;
   final List<String> authenticateClientIds = <String>[];
   final List<String> signOutClientIds = <String>[];
 
@@ -210,7 +284,7 @@ final class _FakeGoogleIdentityGateway implements GoogleIdentityGateway {
   @override
   Future<void> signOut({required String serverClientId}) async {
     signOutClientIds.add(serverClientId);
-    if (shouldThrow) {
+    if (shouldThrowOnSignOut) {
       throw StateError('provider detail must not escape');
     }
   }

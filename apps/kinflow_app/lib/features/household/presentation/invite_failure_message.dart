@@ -14,6 +14,10 @@ String inviteFailureMessage(
     InviteFailureKind.rateLimited => localizations.inviteRateLimitedError,
     InviteFailureKind.permissionDenied => localizations.invitePermissionError,
     InviteFailureKind.invalidInput => localizations.householdInvalidInputError,
+    InviteFailureKind.featurePolicyUnavailable =>
+      localizations.featurePolicyUnavailableError,
+    InviteFailureKind.featureLimitReached =>
+      localizations.featureLimitReachedError,
     _ => localizations.inviteGenericError,
   };
 }

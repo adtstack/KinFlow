@@ -15,12 +15,18 @@ import 'package:kinflow_app/features/auth/domain/failures/auth_failure.dart';
 import 'package:kinflow_app/features/auth/domain/repositories/auth_session_repository.dart';
 import 'package:kinflow_app/features/auth/domain/services/auth_sign_in_launcher.dart';
 import 'package:kinflow_app/features/auth/presentation/providers/auth_providers.dart';
+import 'package:kinflow_app/features/calendar/presentation/providers/calendar_providers.dart';
+import 'package:kinflow_app/features/chores/presentation/providers/chore_providers.dart';
 import 'package:kinflow_app/features/household/domain/failures/household_failure.dart';
 import 'package:kinflow_app/features/household/domain/repositories/household_repository.dart';
 import 'package:kinflow_app/features/household/presentation/providers/household_providers.dart';
+import 'package:kinflow_app/features/runtime_policy/presentation/providers/app_runtime_policy_providers.dart';
 
 import 'support/fakes/fake_auth_dependencies.dart';
+import 'support/fakes/fake_calendar_dependencies.dart';
+import 'support/fakes/fake_chore_dependencies.dart';
 import 'support/fakes/fake_household_dependencies.dart';
+import 'support/fakes/fake_runtime_policy_dependencies.dart';
 
 void main() {
   testWidgets('shows loading until initialization completes', (
@@ -93,7 +99,7 @@ void main() {
   testWidgets('shows environment banner only in dev', (
     WidgetTester tester,
   ) async {
-    await _pumpShell(
+    final ProviderContainer devContainer = await _pumpShell(
       tester,
       environment: AppEnvironment.dev,
       initializer: _successfulInitialization,
@@ -101,6 +107,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('environment.banner')), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+    devContainer.dispose();
 
     await _pumpShell(
       tester,
@@ -180,7 +190,63 @@ void main() {
     expect(find.byKey(const Key('today.screen')), findsOneWidget);
   });
 
-  testWidgets('fails closed with only a disabled Google sign-in action', (
+  testWidgets('invalid dynamic route parameters use the same safe 404', (
+    WidgetTester tester,
+  ) async {
+    final ProviderContainer container = await _pumpShell(
+      tester,
+      environment: AppEnvironment.prod,
+      initializer: _successfulInitialization,
+    );
+    await tester.pumpAndSettle();
+
+    for (final String location in <String>[
+      '/calendar/event/not-a-uuid',
+      '/chores/occurrence/not-a-uuid',
+      '/chores/new?due=2026-02-31',
+    ]) {
+      container.read(appRouterProvider).go(location);
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('route.notFound')),
+        findsOneWidget,
+        reason: location,
+      );
+    }
+  });
+
+  testWidgets(
+    'platform direct URL survives router construction and auth boot',
+    (WidgetTester tester) async {
+      const String occurrenceId = '55555555-5555-4555-8555-555555555555';
+      tester.binding.platformDispatcher.defaultRouteNameTestValue =
+          '/chores/occurrence/$occurrenceId'
+          '?access_token=discarded#callback';
+      addTearDown(
+        tester.binding.platformDispatcher.clearDefaultRouteNameTestValue,
+      );
+
+      final ProviderContainer container = await _pumpShell(
+        tester,
+        environment: AppEnvironment.prod,
+        initializer: _successfulInitialization,
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        container
+            .read(appRouterProvider)
+            .routeInformationProvider
+            .value
+            .uri
+            .toString(),
+        '/chores/occurrence/$occurrenceId',
+      );
+      expect(find.byKey(const Key('chore.target.screen')), findsOneWidget);
+    },
+  );
+
+  testWidgets('fails closed with disabled Google and email sign-in actions', (
     WidgetTester tester,
   ) async {
     await _pumpShell(
@@ -195,11 +261,23 @@ void main() {
     expect(find.byKey(const Key('auth.signIn')), findsOneWidget);
     expect(find.text('Continue with Google'), findsOneWidget);
     expect(find.textContaining('OTP'), findsNothing);
-    expect(find.textContaining('email'), findsNothing);
-    final FilledButton button = tester.widget<FilledButton>(
-      find.widgetWithText(FilledButton, 'Continue with Google'),
+    expect(find.text('Continue with email'), findsOneWidget);
+    final OutlinedButton googleButton = tester.widget<OutlinedButton>(
+      find.widgetWithText(OutlinedButton, 'Continue with Google'),
     );
-    expect(button.onPressed, isNull);
+    expect(googleButton.onPressed, isNull);
+    expect(
+      tester
+          .widget<TextField>(find.byKey(const Key('auth.email.address')))
+          .enabled,
+      isFalse,
+    );
+    expect(
+      tester
+          .widget<FilledButton>(find.byKey(const Key('auth.email.send')))
+          .onPressed,
+      isNull,
+    );
   });
 
   testWidgets('configured Google action is enabled and cancellation is safe', (
@@ -218,11 +296,13 @@ void main() {
     await tester.pumpAndSettle();
 
     final Finder buttonFinder = find.widgetWithText(
-      FilledButton,
+      OutlinedButton,
       'Continue with Google',
     );
-    expect(tester.widget<FilledButton>(buttonFinder).onPressed, isNotNull);
+    expect(tester.widget<OutlinedButton>(buttonFinder).onPressed, isNotNull);
 
+    await tester.ensureVisible(buttonFinder);
+    await tester.pumpAndSettle();
     await tester.tap(buttonFinder);
     await tester.pumpAndSettle();
 
@@ -252,9 +332,11 @@ void main() {
     await tester.pumpAndSettle();
 
     final Finder buttonFinder = find.widgetWithText(
-      FilledButton,
+      OutlinedButton,
       'Continue with Google',
     );
+    await tester.ensureVisible(buttonFinder);
+    await tester.pumpAndSettle();
     await tester.tap(buttonFinder);
     await tester.pumpAndSettle();
 
@@ -265,9 +347,11 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(tester.widget<FilledButton>(buttonFinder).onPressed, isNotNull);
+    expect(tester.widget<OutlinedButton>(buttonFinder).onPressed, isNotNull);
     expect(find.byKey(const Key('today.screen')), findsNothing);
 
+    await tester.ensureVisible(buttonFinder);
+    await tester.pumpAndSettle();
     await tester.tap(buttonFinder);
     await tester.pump();
 
@@ -340,7 +424,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('auth.logout')));
+    await tester.tap(
+      find.byKey(const Key('layout.primaryNavigation.settings')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('settings.logout')));
     await tester.pumpAndSettle();
 
     expect(purger.purgeCount, 1);
@@ -372,6 +460,109 @@ void main() {
     expect(find.text('세션이 만료되었거나 회수되었습니다. 다시 로그인해 주세요.'), findsOneWidget);
     expect(find.byKey(const Key('today.screen')), findsNothing);
   });
+
+  testWidgets(
+    'session expiry hides resource identifiers and restores the exact route',
+    (WidgetTester tester) async {
+      final FakeAuthSessionRepository repository = FakeAuthSessionRepository(
+        restoreResult: AuthSessionAvailable(authSessionFixture()),
+      );
+      final ProviderContainer container = await _pumpShell(
+        tester,
+        environment: AppEnvironment.prod,
+        initializer: _successfulInitialization,
+        authRepository: repository,
+      );
+      await tester.pumpAndSettle();
+
+      container
+          .read(appRouterProvider)
+          .go(
+            '/chores/occurrence/55555555-5555-4555-8555-555555555555'
+            '?access_token=discarded#callback',
+          );
+      await tester.pumpAndSettle();
+
+      repository.emit(
+        const AuthSessionTerminated(AuthSessionTerminationReason.expired),
+      );
+      await tester.pumpAndSettle();
+
+      final Uri signInUri = container
+          .read(appRouterProvider)
+          .routeInformationProvider
+          .value
+          .uri;
+      expect(signInUri.toString(), '/sign-in?continue=notifications');
+      expect(
+        signInUri.toString(),
+        isNot(contains('55555555-5555-4555-8555-555555555555')),
+      );
+      expect(signInUri.toString(), isNot(contains('access_token')));
+      expect(find.byKey(const Key('auth.signIn')), findsOneWidget);
+
+      repository.emit(AuthSessionEstablished(authSessionFixture()));
+      await tester.pumpAndSettle();
+
+      expect(
+        container
+            .read(appRouterProvider)
+            .routeInformationProvider
+            .value
+            .uri
+            .toString(),
+        '/chores/occurrence/55555555-5555-4555-8555-555555555555',
+      );
+      expect(find.byKey(const Key('chore.target.screen')), findsOneWidget);
+    },
+  );
+
+  testWidgets('explicit logout never restores the previous resource route', (
+    WidgetTester tester,
+  ) async {
+    final FakeAuthSessionRepository repository = FakeAuthSessionRepository(
+      restoreResult: AuthSessionAvailable(authSessionFixture()),
+    );
+    final ProviderContainer container = await _pumpShell(
+      tester,
+      environment: AppEnvironment.prod,
+      initializer: _successfulInitialization,
+      authRepository: repository,
+    );
+    await tester.pumpAndSettle();
+
+    container
+        .read(appRouterProvider)
+        .go('/chores/occurrence/55555555-5555-4555-8555-555555555555');
+    await tester.pumpAndSettle();
+
+    await container.read(authLifecycleProvider.notifier).logout();
+    await tester.pumpAndSettle();
+
+    expect(
+      container
+          .read(appRouterProvider)
+          .routeInformationProvider
+          .value
+          .uri
+          .toString(),
+      '/sign-in',
+    );
+
+    repository.emit(AuthSessionEstablished(authSessionFixture()));
+    await tester.pumpAndSettle();
+
+    expect(
+      container
+          .read(appRouterProvider)
+          .routeInformationProvider
+          .value
+          .uri
+          .toString(),
+      AppRoutes.today,
+    );
+    expect(find.byKey(const Key('today.screen')), findsOneWidget);
+  });
 }
 
 Future<ProviderContainer> _pumpShell(
@@ -394,6 +585,9 @@ Future<ProviderContainer> _pumpShell(
   final ProviderContainer container = ProviderContainer(
     overrides: [
       appEnvironmentProvider.overrideWithValue(environment),
+      appRuntimePolicyRepositoryProvider.overrideWithValue(
+        const FakeAllowedAppRuntimePolicyRepository(),
+      ),
       appInitializerProvider.overrideWithValue(initializer),
       authSessionRepositoryProvider.overrideWithValue(resolvedAuthRepository),
       authSignInLauncherProvider.overrideWithValue(
@@ -402,6 +596,9 @@ Future<ProviderContainer> _pumpShell(
       sensitiveLocalStatePurgerProvider.overrideWithValue(
         localStatePurger ?? createSensitiveLocalStatePurger(),
       ),
+      activeHouseholdSnapshotWriterProvider.overrideWithValue(
+        createActiveHouseholdSnapshotWriter(),
+      ),
       householdRepositoryProvider.overrideWithValue(
         householdRepository ??
             FakeHouseholdRepository(
@@ -409,6 +606,15 @@ Future<ProviderContainer> _pumpShell(
                 activeHouseholdFixture(),
               ),
             ),
+      ),
+      choreRepositoryProvider.overrideWithValue(FakeChoreRepository()),
+      choreCommandIdGeneratorProvider.overrideWithValue(
+        FakeChoreCommandIdGenerator(),
+      ),
+      calendarRepositoryProvider.overrideWithValue(
+        FakeCalendarRepository(
+          eventList: calendarEventListFixture(localDate: '2026-08-06'),
+        ),
       ),
       if (locale != null) appLocaleProvider.overrideWithValue(locale),
       if (logger != null) appLoggerProvider.overrideWithValue(logger),

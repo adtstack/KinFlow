@@ -28,6 +28,8 @@ final class ProviderAuthSignInLauncher implements AuthSignInLauncher {
         AuthFailureKind.providerUnavailable,
       AuthSignInDataFailureKind.temporarilyUnavailable =>
         AuthFailureKind.temporarilyUnavailable,
+      AuthSignInDataFailureKind.identityConflict =>
+        AuthFailureKind.identityConflict,
       AuthSignInDataFailureKind.invalidPayload ||
       AuthSignInDataFailureKind.unknown => AuthFailureKind.internal,
     };

@@ -18,7 +18,11 @@
     "AUTH_REDIRECT_HOST",
     "SUPPORT_URL",
     "PRIVACY_REQUEST_URL",
-    "FEATURE_CONFIG_URL"
+    "FEATURE_CONFIG_URL",
+    "FIREBASE_ANDROID_API_KEY",
+    "FIREBASE_ANDROID_APP_ID",
+    "FIREBASE_MESSAGING_SENDER_ID",
+    "FIREBASE_PROJECT_ID"
   ],
   "properties": {
     "APP_ENV": {
@@ -55,7 +59,8 @@
       "type": "string"
     },
     "REVENUECAT_ANDROID_PUBLIC_SDK_KEY": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^(?:|(?:goog|test)_[A-Za-z0-9]{11,})$"
     },
     "SENTRY_DSN": {
       "type": "string"
@@ -77,6 +82,18 @@
       "format": "uri"
     },
     "FEATURE_CONFIG_URL": {
+      "type": "string"
+    },
+    "FIREBASE_ANDROID_API_KEY": {
+      "type": "string"
+    },
+    "FIREBASE_ANDROID_APP_ID": {
+      "type": "string"
+    },
+    "FIREBASE_MESSAGING_SENDER_ID": {
+      "type": "string"
+    },
+    "FIREBASE_PROJECT_ID": {
       "type": "string"
     }
   }

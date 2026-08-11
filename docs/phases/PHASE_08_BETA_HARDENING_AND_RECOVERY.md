@@ -37,6 +37,20 @@ Compliance Gate 통과, TestFlight/Play closed testing 준비.
 - old/new client with migrated DB
 - mandatory update/kill switch
 
+#### WP08-04A Android server-authoritative runtime policy — PARTIAL (2026-08-09)
+
+- dev/prod Android 최소 build·contract와 emergency 전역 non-privacy mutation switch를 private policy, exact public read, service-only versioned audit mutation으로 구현
+- direct authenticated mutation과 allowlisted compatibility header를 전달하는 Edge user operation을 DB trigger가 권위 있게 차단하고, 읽기·offline cache·export/delete/legal/support/diagnostics는 유지
+- 앱 initial/retry/foreground refresh, EN/KO/EN-XA read-only/update banner와 provider/network/store I/O 전 advisory guard를 로컬 자동 검증
+- hosted dev/prod propagation, N-1 signed binary, Play staged rollout·rollback, 실제 계정·다중기기·실기기는 **NOT RUN**이며 WP08-04/G8 완료가 아님
+
+#### WP08-04B Capability-specific runtime mutation policy — PARTIAL (2026-08-09)
+
+- household, chores, calendar, notifications, profile, billing을 exact six-row policy와 30개 명시적 table→feature trigger로 독립 제어하고 compatibility-open seed·expected-version·correlation replay·immutable audit를 구현
+- global update/read-only 우선순위, direct/Edge-forwarded user operation의 DB-authoritative `KFR06`, markerless service/worker와 privacy/export/delete 보존, transaction 내 기능 간 cache 격리를 로컬 검증
+- Flutter strict six-feature snapshot, 모든 mutation notifier의 exact family guard, 다른 기능과 읽기를 유지하는 EN/KO/EN-XA partial-read-only banner를 구현
+- cohort/percentage/per-account targeting, hosted operator 전파·모니터링·rollback drill, 실제 계정·다중기기·실기기는 **NOT RUN**이며 WP08-04/G8 완료가 아님
+
 ### WP08-05 Backup/recovery
 
 - isolated restore

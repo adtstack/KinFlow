@@ -20,6 +20,19 @@ abstract final class DartDefinePublicConfiguration {
     AppPublicConfigurationKeys.featureConfigUrl: String.fromEnvironment(
       AppPublicConfigurationKeys.featureConfigUrl,
     ),
+    AppPublicConfigurationKeys.firebaseAndroidApiKey: String.fromEnvironment(
+      AppPublicConfigurationKeys.firebaseAndroidApiKey,
+    ),
+    AppPublicConfigurationKeys.firebaseAndroidAppId: String.fromEnvironment(
+      AppPublicConfigurationKeys.firebaseAndroidAppId,
+    ),
+    AppPublicConfigurationKeys.firebaseMessagingSenderId:
+        String.fromEnvironment(
+          AppPublicConfigurationKeys.firebaseMessagingSenderId,
+        ),
+    AppPublicConfigurationKeys.firebaseProjectId: String.fromEnvironment(
+      AppPublicConfigurationKeys.firebaseProjectId,
+    ),
     AppPublicConfigurationKeys.googleWebClientId: String.fromEnvironment(
       AppPublicConfigurationKeys.googleWebClientId,
     ),

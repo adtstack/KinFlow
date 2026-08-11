@@ -2,6 +2,7 @@ import {
   createMemberLifecycleHandler,
   MemberLifecycleRpcError,
 } from "./member_lifecycle_contract.mjs";
+import {runtimePolicyServiceHeaders} from "./runtime_policy_headers.mjs";
 
 export function serveMemberLifecycle() {
   const supabaseUrl = requiredEnvironment("SUPABASE_URL").replace(/\/$/, "");
@@ -19,9 +20,10 @@ export function serveMemberLifecycle() {
       authorization,
       supabaseUrl,
     }),
-    invokeRpc: (name, parameters) => invokeRpc({
+    invokeRpc: (name, parameters, runtimePolicyHeaders) => invokeRpc({
       name,
       parameters,
+      runtimePolicyHeaders,
       serviceRoleKey,
       supabaseUrl,
     }),
@@ -71,7 +73,13 @@ function decodeVerifiedJwtPayload(token) {
   }
 }
 
-async function invokeRpc({name, parameters, serviceRoleKey, supabaseUrl}) {
+async function invokeRpc({
+  name,
+  parameters,
+  runtimePolicyHeaders,
+  serviceRoleKey,
+  supabaseUrl,
+}) {
   let response;
   try {
     response = await fetch(`${supabaseUrl}/rest/v1/rpc/${encodeURIComponent(name)}`, {
@@ -80,6 +88,7 @@ async function invokeRpc({name, parameters, serviceRoleKey, supabaseUrl}) {
         apikey: serviceRoleKey,
         authorization: `Bearer ${serviceRoleKey}`,
         "content-type": "application/json",
+        ...runtimePolicyServiceHeaders(runtimePolicyHeaders),
       },
       body: JSON.stringify(parameters),
       signal: AbortSignal.timeout(8000),

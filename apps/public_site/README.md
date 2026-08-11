@@ -1,6 +1,15 @@
-# Public Site
+# KinFlow Public Site
 
-공개 지원·개인정보·계정 삭제 사이트의 예약 경로다. Android Store 제출 전 별도 Work Package에서 구현하며 WP01-01에는 runtime scaffold를 만들지 않는다.
+KinFlow의 EN/KO 공개 약관, 개인정보, 지원과 계정 삭제 요청 경로를 제공하는 Astro 정적 사이트다. 브라우저 JavaScript, form backend, cookie, analytics와 tracker를 사용하지 않으며 `src/config/site-config.mjs`가 승인되지 않은 production publication을 fail closed한다. 환경 변수와 별개로 `src/config/policy-content-manifest.mjs`의 source-controlled 본문 상태도 `approved`여야 한다.
+
+기본 development build는 `.invalid` origin/mailbox, `draft` 정책 상태와 `noindex`를 사용한다. production build는 `.env.example`의 모든 공개 값을 실제 owned origin, support mailbox, 법률 주체, 승인된 policy version/date로 명시해야 한다. 앱/API contract version을 legal policy version으로 재사용하지 않는다.
+
+```bash
+npm install --ignore-scripts --no-audit --no-fund
+npm test
+```
+
+`npm test`는 정적 build, Astro type check, route/link/accessibility/security/privacy contract와 production configuration denial을 검증한다. 최종 법률 문구, owned domain/mailbox, 실제 email 전달과 hosted/browser/Store 검증 전에는 production 게시물을 만들지 않는다.
 
 ## Dev Android App Link Asset
 
@@ -13,7 +22,7 @@
 - deploy repository: `adtstack/adtstack.github.io`, `main` branch root
 - prod 배포: 금지
 
-`public/`은 dev Pages 저장소의 배포 원본이다. `.nojekyll`은 well-known 경로를 그대로 제공하고, 최소 landing page와 `robots.txt`는 검색 색인을 차단한다. 사용자 데이터, analytics, credential 또는 production secret은 이 디렉터리에 두지 않는다. 서버는 HTTPS 200, `Content-Type: application/json`으로 redirect 없이 응답해야 한다.
+Astro는 `public/`을 정적 build output에 그대로 복사한다. `.nojekyll`은 well-known 경로를 보존하고 `_headers`는 지원하는 static host에 CSP와 privacy/security header를 제공한다. 사용자 데이터, analytics, credential 또는 production secret은 이 디렉터리에 두지 않는다. 서버는 association 파일을 HTTPS 200, `Content-Type: application/json`으로 redirect 없이 응답해야 한다.
 
 배포 전 설치 APK와 exact package/signing fingerprint를 다시 비교한다.
 

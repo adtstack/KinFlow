@@ -1,6 +1,7 @@
 enum AuthFailureKind {
   providerUnavailable,
   temporarilyUnavailable,
+  identityConflict,
   sessionExpired,
   sessionRevoked,
   invalidSession,
@@ -16,6 +17,7 @@ final class AuthFailure {
   String get code => switch (kind) {
     AuthFailureKind.providerUnavailable => 'PROVIDER_UNAVAILABLE',
     AuthFailureKind.temporarilyUnavailable => 'TEMPORARILY_UNAVAILABLE',
+    AuthFailureKind.identityConflict => 'IDENTITY_CONFLICT',
     AuthFailureKind.sessionExpired => 'SESSION_EXPIRED',
     AuthFailureKind.sessionRevoked => 'SESSION_EXPIRED',
     AuthFailureKind.invalidSession => 'AUTH_REQUIRED',

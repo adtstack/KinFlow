@@ -14,6 +14,8 @@ final class HouseholdInvite {
     required this.expiresAt,
     required this.status,
     this.rawToken,
+    this.rawShortCode,
+    this.shortCodeExpiresAt,
   });
 
   final InviteId id;
@@ -22,11 +24,14 @@ final class HouseholdInvite {
   final DateTime expiresAt;
   final HouseholdInviteStatus status;
   final InviteToken? rawToken;
+  final InviteShortCode? rawShortCode;
+  final DateTime? shortCodeExpiresAt;
 
   @override
   String toString() {
     return 'HouseholdInvite(id: ${id.value}, householdId: ${householdId.value}, '
-        'role: ${role.name}, status: ${status.name}, rawToken: redacted)';
+        'role: ${role.name}, status: ${status.name}, rawToken: redacted, '
+        'rawShortCode: redacted)';
   }
 }
 

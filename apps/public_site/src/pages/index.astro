@@ -1,0 +1,97 @@
+---
+import PageHero from '../components/PageHero.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="KinFlow — 가족의 하루를 한 흐름으로"
+  description="KinFlow의 공개 약관, 개인정보 안내, 지원 및 계정 삭제 요청 경로입니다."
+  path="/"
+  current="home"
+>
+  <PageHero
+    eyebrow="Public information · 공개 안내"
+    title="가족의 하루를 한 흐름으로."
+    summary="KinFlow는 성인 가족이 집안일과 일정을 함께 정리하는 Android 서비스입니다. 이곳에서 서비스 정책, 개인정보 처리 방식, 지원과 계정 삭제 경로를 확인할 수 있습니다."
+  />
+
+  <section class="card-grid" aria-labelledby="public-resources-heading">
+    <h2 id="public-resources-heading" class="visually-hidden">공개 안내 / Public resources</h2>
+    <article class="card">
+      <p class="section-label">Terms · 약관</p>
+      <h3>서비스 이용 기준</h3>
+      <p lang="ko">계정, 공동 가구, 콘텐츠, 구독과 서비스 이용의 기본 경계를 확인합니다.</p>
+      <p lang="en">Review the boundaries for accounts, shared households, content, subscriptions, and use.</p>
+      <a class="card-link" href="/terms">약관 보기 / Read terms →</a>
+    </article>
+    <article class="card">
+      <p class="section-label">Privacy · 개인정보</p>
+      <h3>데이터를 다루는 방식</h3>
+      <p lang="ko">수집 범위, 이용 목적, 서비스 제공자, 보존·삭제와 사용자 권리를 설명합니다.</p>
+      <p lang="en">Understand data scope, purposes, processors, retention, deletion, and your controls.</p>
+      <a class="card-link" href="/privacy">개인정보 안내 / Read privacy notice →</a>
+    </article>
+    <article class="card">
+      <p class="section-label">Support · 지원</p>
+      <h3>도움 요청하기</h3>
+      <p lang="ko">계정이나 가족 내용을 자동 첨부하지 않는 공개 이메일 지원 경로입니다.</p>
+      <p lang="en">A public email support path that never attaches account or household context automatically.</p>
+      <a class="card-link" href="/support">지원 열기 / Open support →</a>
+    </article>
+    <article class="card">
+      <p class="section-label">Delete account · 계정 삭제</p>
+      <h3>앱 없이도 삭제 요청</h3>
+      <p lang="ko">앱을 다시 설치하지 않고 공개 웹 경로에서 KinFlow 계정 삭제 요청을 시작할 수 있습니다.</p>
+      <p lang="en">Start a KinFlow account deletion request on the web without reinstalling the app.</p>
+      <a class="card-link" href="/delete-account">삭제 요청 안내 / Request deletion →</a>
+    </article>
+  </section>
+
+  <div class="document-stack section-spacing">
+    <section id="ko" class="document-section" lang="ko" aria-labelledby="home-ko-heading">
+      <p class="section-label">한국어</p>
+      <h2 id="home-ko-heading">조용하고 투명한 공개 사이트</h2>
+      <div class="two-column">
+        <div>
+          <h3>이 사이트가 하는 일</h3>
+          <ul class="plain-list">
+            <li>KinFlow 서비스와 운영 주체를 식별합니다.</li>
+            <li>약관·개인정보·지원·계정 삭제 경로를 한곳에 제공합니다.</li>
+            <li>문서 상태와 별도 정책 버전을 각 페이지에 표시합니다.</li>
+          </ul>
+        </div>
+        <div>
+          <h3>이 사이트가 하지 않는 일</h3>
+          <ul class="plain-list">
+            <li>쿠키, 분석 도구, 광고 추적기 또는 브라우저 저장소를 사용하지 않습니다.</li>
+            <li>가구 이름, 집안일, 일정, 로그인 token 또는 결제 정보를 자동 수집하지 않습니다.</li>
+            <li>지원·삭제 요청 전에는 어떤 개인정보도 전송하지 않습니다.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="en" class="document-section" lang="en" aria-labelledby="home-en-heading">
+      <p class="section-label">English</p>
+      <h2 id="home-en-heading">A quiet, transparent public site</h2>
+      <div class="two-column">
+        <div>
+          <h3>What this site does</h3>
+          <ul class="plain-list">
+            <li>Identifies the KinFlow service and its operator.</li>
+            <li>Keeps terms, privacy, support, and account deletion paths easy to find.</li>
+            <li>Shows each document’s publication status and separate policy version.</li>
+          </ul>
+        </div>
+        <div>
+          <h3>What this site does not do</h3>
+          <ul class="plain-list">
+            <li>It uses no cookies, analytics, advertising trackers, or browser storage.</li>
+            <li>It never collects household names, chores, calendar content, login tokens, or purchase data automatically.</li>
+            <li>It sends no personal data until you explicitly start a support or deletion email.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </div>
+</BaseLayout>

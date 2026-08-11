@@ -1,5 +1,6 @@
 import 'package:kinflow_app/features/household/data/datasources/household_member_data_source.dart';
 import 'package:kinflow_app/features/household/data/dto/household_member_dto.dart';
+import 'package:kinflow_app/features/household/domain/entities/active_household.dart';
 import 'package:kinflow_app/features/household/domain/entities/household_member.dart';
 import 'package:kinflow_app/features/household/domain/entities/household_member_command.dart';
 import 'package:kinflow_app/features/household/domain/failures/household_member_failure.dart';
@@ -88,9 +89,7 @@ final class ProviderHouseholdMemberRepository
         );
     return switch (result) {
       HouseholdMemberDataSucceeded<LeaveHouseholdDto>(:final value) =>
-        _validLeave(value, command)
-            ? const HouseholdMemberCommandCompleted()
-            : _invalidPayload(),
+        _mapLeave(value, command),
       HouseholdMemberDataFailed<LeaveHouseholdDto>(:final kind) =>
         HouseholdMemberCommandFailed(_mapFailure(kind)),
     };
@@ -212,19 +211,36 @@ final class ProviderHouseholdMemberRepository
         DateTime.tryParse(dto.removedAt)?.isUtc == true;
   }
 
-  bool _validLeave(LeaveHouseholdDto dto, LeaveHouseholdCommand command) {
-    final bool fallbackBothNull =
-        dto.activeHouseholdId == null && dto.activeMemberId == null;
-    final bool fallbackBothValid =
-        dto.activeHouseholdId != null &&
-        dto.activeMemberId != null &&
-        HouseholdId.tryParse(dto.activeHouseholdId!) != null &&
-        HouseholdMemberId.tryParse(dto.activeMemberId!) != null;
-    return dto.householdId.toLowerCase() == command.householdId.value &&
-        HouseholdMemberId.tryParse(dto.memberId) != null &&
-        dto.version == command.expectedVersion + 1 &&
-        DateTime.tryParse(dto.removedAt)?.isUtc == true &&
-        (fallbackBothNull || fallbackBothValid);
+  HouseholdMemberCommandResult _mapLeave(
+    LeaveHouseholdDto dto,
+    LeaveHouseholdCommand command,
+  ) {
+    if (dto.householdId.toLowerCase() != command.householdId.value ||
+        dto.memberId.toLowerCase() != command.memberId.value ||
+        dto.version != command.expectedVersion + 1 ||
+        DateTime.tryParse(dto.removedAt)?.isUtc != true) {
+      return _invalidPayload();
+    }
+
+    final String? activeHouseholdId = dto.activeHouseholdId;
+    final String? activeMemberId = dto.activeMemberId;
+    if (activeHouseholdId == null && activeMemberId == null) {
+      return const HouseholdLeaveCompleted(null);
+    }
+    if (activeHouseholdId == null || activeMemberId == null) {
+      return _invalidPayload();
+    }
+
+    final HouseholdId? householdId = HouseholdId.tryParse(activeHouseholdId);
+    final HouseholdMemberId? memberId = HouseholdMemberId.tryParse(
+      activeMemberId,
+    );
+    if (householdId == null || memberId == null) {
+      return _invalidPayload();
+    }
+    return HouseholdLeaveCompleted(
+      ActiveHousehold(householdId: householdId, memberId: memberId),
+    );
   }
 
   bool _validOwnerTransfer(

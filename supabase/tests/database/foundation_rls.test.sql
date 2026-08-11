@@ -54,8 +54,8 @@ select ok(
 select policies_are(
   'public',
   'profiles',
-  array['profiles_select_self', 'profiles_update_self'],
-  'profiles policies are exact'
+  array['profiles_select_self'],
+  'profiles expose read-only self policy; writes use mediated commands'
 );
 select policies_are(
   'public',
@@ -72,7 +72,7 @@ select policies_are(
 select policies_are(
   'public',
   'user_active_households',
-  array['active_household_select_self', 'active_household_update_self'],
+  array['active_household_select_self'],
   'active household policies are exact'
 );
 
@@ -165,22 +165,22 @@ select ok(
   'profile identity cannot be updated directly'
 );
 select ok(
-  has_column_privilege(
+  not has_column_privilege(
     'authenticated',
     'public.profiles',
     'display_name',
     'update'
   ),
-  'profile display name has explicit update privilege'
+  'profile display name changes require the mediated preferences command'
 );
 select ok(
-  has_column_privilege(
+  not has_column_privilege(
     'authenticated',
     'public.user_active_households',
     'household_id',
     'update'
   ),
-  'active household selection has explicit update privilege'
+  'active household selection changes require the mediated command'
 );
 select ok(
   not has_column_privilege(
@@ -230,14 +230,14 @@ select is(
 );
 select throws_ok(
   $$
-    update public.user_active_households
-    set household_id = '20000000-0000-4000-8000-000000000201',
-        member_id = '30000000-0000-4000-8000-000000000201'
-    where auth_user_id = '00000000-0000-4000-8000-000000000101'
+    select * from public.switch_active_household(
+      '20000000-0000-4000-8000-000000000201',
+      1
+    )
   $$,
-  '42501',
-  'new row violates row-level security policy for table "user_active_households"',
-  'user cannot select another household member as active identity'
+  'KFH06',
+  'household selection target unavailable',
+  'user cannot select another household or submit an active member identity'
 );
 
 reset role;

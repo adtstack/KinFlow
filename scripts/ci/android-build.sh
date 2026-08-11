@@ -187,8 +187,14 @@ kinflow_permissions="$($kinflow_aapt_bin dump permissions "$kinflow_apk")"
 kinflow_expected_permissions="$(printf '%s\n' \
   "package: $kinflow_package" \
   "uses-permission: name='android.permission.INTERNET'" \
+  "uses-permission: name='com.android.vending.BILLING'" \
+  "uses-permission: name='android.permission.POST_NOTIFICATIONS'" \
+  "uses-permission: name='android.permission.WAKE_LOCK'" \
+  "uses-permission: name='android.permission.ACCESS_NETWORK_STATE'" \
+  "uses-permission: name='android.permission.VIBRATE'" \
   "uses-permission: name='android.permission.USE_BIOMETRIC'" \
   "uses-permission: name='android.permission.USE_FINGERPRINT'" \
+  "uses-permission: name='com.google.android.c2dm.permission.RECEIVE'" \
   "permission: $kinflow_package.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" \
   "uses-permission: name='$kinflow_package.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'")"
 if [[ "$kinflow_permissions" != "$kinflow_expected_permissions" ]]; then
@@ -210,7 +216,7 @@ kinflow_bytes="$(wc -c <"$kinflow_apk" | tr -d ' ')"
   printf 'source_state=%s\n' "$kinflow_source_state"
   printf 'android_backup=disabled\n'
   printf 'app_link=https://%s/invite/*;auto_verify=true\n' "$kinflow_auth_redirect_host"
-  printf 'permissions=INTERNET,USE_BIOMETRIC,USE_FINGERPRINT,package-scoped-dynamic-receiver\n'
+  printf 'permissions=INTERNET,PLAY_BILLING,POST_NOTIFICATIONS,WAKE_LOCK,ACCESS_NETWORK_STATE,VIBRATE,USE_BIOMETRIC,USE_FINGERPRINT,FCM_RECEIVE,package-scoped-dynamic-receiver\n'
   printf 'bytes=%s\n' "$kinflow_bytes"
   printf 'sha256=%s\n' "$kinflow_sha256"
   printf 'result=PASS\n'

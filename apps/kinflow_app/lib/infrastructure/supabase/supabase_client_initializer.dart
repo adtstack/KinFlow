@@ -6,6 +6,7 @@ abstract interface class SupabaseClientInitializer {
     required String publishableKey,
     required LocalStorage localStorage,
     required GotrueAsyncStorage pkceStorage,
+    required Map<String, String> headers,
   });
 }
 
@@ -19,11 +20,13 @@ final class SupabaseFlutterClientInitializer
     required String publishableKey,
     required LocalStorage localStorage,
     required GotrueAsyncStorage pkceStorage,
+    required Map<String, String> headers,
   }) async {
     try {
       final Supabase instance = await Supabase.initialize(
         url: uri.toString(),
         publishableKey: publishableKey,
+        headers: headers,
         authOptions: secureSupabaseAuthClientOptions(
           localStorage: localStorage,
           pkceStorage: pkceStorage,

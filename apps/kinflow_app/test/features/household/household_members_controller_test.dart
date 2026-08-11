@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kinflow_app/features/auth/domain/services/recent_authentication_service.dart';
 import 'package:kinflow_app/features/household/application/household_members_controller.dart';
 import 'package:kinflow_app/features/household/application/household_members_state.dart';
+import 'package:kinflow_app/features/household/domain/entities/active_household.dart';
 import 'package:kinflow_app/features/household/domain/entities/household_member.dart';
 import 'package:kinflow_app/features/household/domain/failures/household_member_failure.dart';
 import 'package:kinflow_app/features/household/domain/repositories/household_member_repository.dart';
@@ -36,6 +37,7 @@ void main() {
         repository,
         generator,
         recent,
+        FakeActiveHouseholdDepartureCommitter(),
       );
       addTearDown(controller.dispose);
       await controller.load(householdIdFixture());
@@ -74,6 +76,7 @@ void main() {
             ),
           ],
         ),
+        FakeActiveHouseholdDepartureCommitter(),
       );
       addTearDown(controller.dispose);
       await controller.load(householdIdFixture());
@@ -111,6 +114,7 @@ void main() {
       repository,
       generator,
       FakeRecentAuthenticationService(),
+      FakeActiveHouseholdDepartureCommitter(),
     );
     addTearDown(controller.dispose);
     await controller.load(householdIdFixture());
@@ -180,7 +184,18 @@ void main() {
             ),
             leaveCallback: (_) => response.future,
           );
-      final HouseholdMembersController controller = _controller(repository);
+      final ActiveHousehold fallback = ActiveHousehold(
+        householdId: householdIdFixture('22222222-2222-4222-8222-222222222223'),
+        memberId: householdMemberIdFixture(
+          '33333333-3333-4333-8333-333333333335',
+        ),
+      );
+      final FakeActiveHouseholdDepartureCommitter committer =
+          FakeActiveHouseholdDepartureCommitter();
+      final HouseholdMembersController controller = _controller(
+        repository,
+        committer: committer,
+      );
       addTearDown(controller.dispose);
       await controller.load(householdIdFixture());
 
@@ -189,19 +204,110 @@ void main() {
       expect(identical(first, duplicate), isTrue);
       expect(repository.leaveCommands, hasLength(1));
 
-      response.complete(const HouseholdMemberCommandCompleted());
+      response.complete(HouseholdLeaveCompleted(fallback));
       await first;
+      expect(
+        repository.leaveCommands.single.memberId,
+        repository.defaultRoster.currentMember.id,
+      );
+      expect(committer.nextHouseholds, <ActiveHousehold?>[fallback]);
       expect(controller.state, isA<HouseholdMembersLeft>());
+    },
+  );
+
+  test(
+    'no fallback commits authenticated no-household before leaving',
+    () async {
+      final FakeHouseholdMemberRepository repository =
+          FakeHouseholdMemberRepository(
+            roster: householdMemberRosterFixture(
+              currentRole: HouseholdMemberRole.member,
+            ),
+            leaveResults: const <HouseholdMemberCommandResult>[
+              HouseholdLeaveCompleted(null),
+            ],
+          );
+      final FakeActiveHouseholdDepartureCommitter committer =
+          FakeActiveHouseholdDepartureCommitter();
+      final HouseholdMembersController controller = _controller(
+        repository,
+        committer: committer,
+      );
+      addTearDown(controller.dispose);
+      await controller.load(householdIdFixture());
+
+      await controller.leaveHousehold();
+
+      expect(committer.nextHouseholds, <ActiveHousehold?>[null]);
+      expect(controller.state, isA<HouseholdMembersLeft>());
+    },
+  );
+
+  test('local handoff failure never restores the departed roster', () async {
+    final FakeHouseholdMemberRepository repository =
+        FakeHouseholdMemberRepository(
+          roster: householdMemberRosterFixture(
+            currentRole: HouseholdMemberRole.member,
+          ),
+        );
+    final HouseholdMembersController controller = _controller(
+      repository,
+      committer: FakeActiveHouseholdDepartureCommitter(result: false),
+    );
+    addTearDown(controller.dispose);
+    await controller.load(householdIdFixture());
+
+    await controller.leaveHousehold();
+
+    expect(controller.state, isA<HouseholdMembersDepartureFailed>());
+    expect(controller.state, isNot(isA<HouseholdMembersReady>()));
+    expect(
+      (controller.state as HouseholdMembersDepartureFailed).failure.kind,
+      HouseholdMemberFailureKind.localStateUnavailable,
+    );
+  });
+
+  test(
+    'generic leave success is rejected as an invalid contract state',
+    () async {
+      final FakeHouseholdMemberRepository repository =
+          FakeHouseholdMemberRepository(
+            roster: householdMemberRosterFixture(
+              currentRole: HouseholdMemberRole.member,
+            ),
+            leaveResults: const <HouseholdMemberCommandResult>[
+              HouseholdMemberCommandCompleted(),
+            ],
+          );
+      final FakeActiveHouseholdDepartureCommitter committer =
+          FakeActiveHouseholdDepartureCommitter();
+      final HouseholdMembersController controller = _controller(
+        repository,
+        committer: committer,
+      );
+      addTearDown(controller.dispose);
+      await controller.load(householdIdFixture());
+
+      await controller.leaveHousehold();
+
+      expect(committer.nextHouseholds, isEmpty);
+      expect(controller.state, isA<HouseholdMembersDepartureFailed>());
+      expect(
+        (controller.state as HouseholdMembersDepartureFailed).failure.kind,
+        HouseholdMemberFailureKind.invalidPayload,
+      );
     },
   );
 }
 
 HouseholdMembersController _controller(
-  FakeHouseholdMemberRepository repository,
-) {
+  FakeHouseholdMemberRepository repository, {
+  FakeActiveHouseholdDepartureCommitter? committer,
+}) {
   return HouseholdMembersController(
     repository,
     FakeHouseholdCommandIdGenerator(),
     FakeRecentAuthenticationService(),
+    committer ?? FakeActiveHouseholdDepartureCommitter(),
   );
 }

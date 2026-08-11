@@ -103,7 +103,7 @@ openai_api_key = "env(OPENAI_API_KEY)"
 # Email testing server. Emails sent with the local dev setup are not actually sent - rather, they
 # are monitored, and you can view the emails that would have been sent from the web interface.
 [local_smtp]
-enabled = false
+enabled = true
 # Port to use for the email testing server web interface.
 port = 54324
 # Uncomment to expose additional ports for testing user applications that send emails.
@@ -113,9 +113,14 @@ port = 54324
 # sender_name = "Admin"
 
 [storage]
-enabled = false
+enabled = true
 # The maximum file size allowed (e.g. "5MB", "500KB").
 file_size_limit = "50MiB"
+
+[storage.buckets.privacy-exports]
+public = false
+file_size_limit = "20MiB"
+allowed_mime_types = ["application/json", "text/plain"]
 
 # Uncomment to configure local storage buckets
 # [storage.buckets.images]
@@ -173,7 +178,7 @@ enable_refresh_token_rotation = true
 # Requires enable_refresh_token_rotation = true.
 refresh_token_reuse_interval = 10
 # Allow/disallow new user signups to your project.
-enable_signup = false
+enable_signup = true
 # Allow/disallow anonymous sign-ins to your project.
 enable_anonymous_sign_ins = false
 # Allow/disallow testing manual linking of accounts
@@ -218,7 +223,7 @@ web3 = 30
 
 [auth.email]
 # Allow/disallow new user signups via email to your project.
-enable_signup = false
+enable_signup = true
 # If enabled, a user will be required to confirm any email change on both the old, and new email
 # addresses. If disabled, only the new email is required to confirm.
 double_confirm_changes = true
@@ -227,11 +232,11 @@ enable_confirmations = false
 # If enabled, users will need to reauthenticate or have logged in recently to change their password.
 secure_password_change = false
 # Controls the minimum amount of time that must pass before sending another signup confirmation or password reset email.
-max_frequency = "1s"
+max_frequency = "60s"
 # Number of characters used in the email OTP.
 otp_length = 6
 # Number of seconds before the email OTP expires (defaults to 1 hour).
-otp_expiry = 3600
+otp_expiry = 600
 
 # Use a production-ready SMTP server
 # [auth.email.smtp]
@@ -247,6 +252,14 @@ otp_expiry = 3600
 # [auth.email.template.invite]
 # subject = "You have been invited"
 # content_path = "./supabase/templates/invite.html"
+
+[auth.email.template.confirmation]
+subject = "Your KinFlow sign-in code / KinFlow 로그인 코드"
+content_path = "./supabase/templates/email_otp.html"
+
+[auth.email.template.magic_link]
+subject = "Your KinFlow sign-in code / KinFlow 로그인 코드"
+content_path = "./supabase/templates/email_otp.html"
 
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]
@@ -398,6 +411,74 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.manage-household-members]
+verify_jwt = false
+
+[functions.notification-outbox-worker]
+# The gateway JWT check is replaced by an exact dedicated server-only Bearer
+# secret check inside the function. User JWTs and the service-role key are not
+# accepted as scheduler credentials.
+verify_jwt = false
+
+[functions.notification-endpoint]
+# Registration verifies the user against GoTrue inside the function. Revocation
+# intentionally uses a 256-bit installation binding proof after sign-out, so the
+# gateway must not require a live JWT for the combined POST/DELETE contract.
+verify_jwt = false
+
+[functions.notification-push-worker]
+# The gateway JWT check is replaced by an exact dedicated server-only Bearer
+# secret check inside the function. Firebase and endpoint decryption credentials
+# remain server-only runtime secrets.
+verify_jwt = false
+
+[functions.notification-email-worker]
+# The gateway JWT check is replaced by an exact dedicated server-only Bearer
+# secret check inside the function. SendGrid and service-role credentials remain
+# server-only and the provider receives fixed generic copy only.
+verify_jwt = false
+
+[functions.revenuecat-webhook]
+# RevenueCat cannot provide a Supabase JWT. The function verifies both an exact
+# dedicated Authorization value and the raw-body RevenueCat HMAC before parsing.
+verify_jwt = false
+
+[functions.billing-reconciliation-worker]
+# The gateway JWT check is replaced by an exact dedicated server-only Bearer
+# secret check inside the function. Provider and service-role keys stay private.
+verify_jwt = false
+
+[functions.account-deletion]
+# The function validates the caller and the separate recent OAuth proof against
+# GoTrue before invoking service-only privacy commands.
+verify_jwt = false
+
+[functions.account-deletion-worker]
+# A dedicated scheduler secret authenticates the worker. The service-role key
+# is used only inside the runtime for leased RPCs and Auth Admin soft-delete.
+verify_jwt = false
+
+[functions.data-export]
+# The function validates both the caller and recent OAuth proof with GoTrue.
+verify_jwt = false
+
+[functions.data-export-download]
+# A hash-only one-time capability is consumed instead of a user JWT.
+verify_jwt = false
+
+[functions.data-export-worker]
+# A dedicated scheduler secret authenticates generation and purge leases.
+verify_jwt = false
+
+[functions.household-privacy]
+# The function validates the caller, recent OAuth proof, and Owner scope.
+verify_jwt = false
+
+[functions.household-export-download]
+# A hash-only one-time capability is consumed instead of a user JWT.
+verify_jwt = false
+
+[functions.household-privacy-worker]
+# A dedicated scheduler secret authenticates export, purge, and deletion work.
 verify_jwt = false
 
 # [edge_runtime.secrets]

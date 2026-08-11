@@ -1,6 +1,7 @@
 import 'package:kinflow_app/features/household/domain/entities/active_household.dart';
 import 'package:kinflow_app/features/household/domain/entities/first_household_request.dart';
 import 'package:kinflow_app/features/household/domain/failures/household_failure.dart';
+import 'package:kinflow_app/features/offline/domain/read_cache_metadata.dart';
 
 abstract interface class HouseholdRepository {
   Future<LoadActiveHouseholdResult> loadActiveHousehold();
@@ -15,9 +16,10 @@ sealed class LoadActiveHouseholdResult {
 }
 
 final class ActiveHouseholdLoaded extends LoadActiveHouseholdResult {
-  const ActiveHouseholdLoaded(this.household);
+  const ActiveHouseholdLoaded(this.household, {this.cacheMetadata});
 
   final ActiveHousehold household;
+  final ReadCacheMetadata? cacheMetadata;
 }
 
 final class NoActiveHousehold extends LoadActiveHouseholdResult {

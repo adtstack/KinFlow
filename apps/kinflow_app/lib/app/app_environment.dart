@@ -15,4 +15,6 @@ enum AppEnvironment {
   final String applicationId;
   final bool isProduction;
   final String value;
+
+  static const String webApplicationId = 'kinflow_app';
 }

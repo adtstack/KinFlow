@@ -82,7 +82,11 @@ fi
 
 npm run supabase:reset
 printf '%s\n' 'db_reset=PASS' >>"$kinflow_report_dir/backend-summary.txt"
-npx supabase db lint --local --level warning --fail-on error
+npx supabase db lint \
+  --local \
+  --schema app_private,public \
+  --level warning \
+  --fail-on error
 printf '%s\n' 'db_lint=PASS' >>"$kinflow_report_dir/backend-summary.txt"
 npm run supabase:test
 printf '%s\n' 'pgtap_rls=PASS' >>"$kinflow_report_dir/backend-summary.txt"
@@ -90,6 +94,22 @@ node --test supabase/tests/invite-edge-contract.test.mjs
 printf '%s\n' 'invite_edge_unit_contract=PASS' >>"$kinflow_report_dir/backend-summary.txt"
 node --test supabase/tests/member-lifecycle-edge-contract.test.mjs
 printf '%s\n' 'member_lifecycle_edge_unit_contract=PASS' >>"$kinflow_report_dir/backend-summary.txt"
+node --test supabase/tests/account-deletion-edge-contract.test.mjs
+printf '%s\n' 'account_deletion_edge_unit_contract=PASS' >>"$kinflow_report_dir/backend-summary.txt"
+node --test scripts/ci/account-deletion-worker-contract.test.mjs
+printf '%s\n' 'account_deletion_worker_unit_contract=PASS' >>"$kinflow_report_dir/backend-summary.txt"
+node --test supabase/tests/data-export-edge-contract.test.mjs
+printf '%s\n' 'data_export_edge_unit_contract=PASS' >>"$kinflow_report_dir/backend-summary.txt"
+node --test supabase/tests/data-export-download-contract.test.mjs
+printf '%s\n' 'data_export_download_unit_contract=PASS' >>"$kinflow_report_dir/backend-summary.txt"
+node --test scripts/ci/data-export-worker-contract.test.mjs
+printf '%s\n' 'data_export_worker_unit_contract=PASS' >>"$kinflow_report_dir/backend-summary.txt"
+node --test supabase/tests/household-privacy-edge-contract.test.mjs
+printf '%s\n' 'household_privacy_edge_unit_contract=PASS' >>"$kinflow_report_dir/backend-summary.txt"
+node --test supabase/tests/household-export-download-contract.test.mjs
+printf '%s\n' 'household_export_download_unit_contract=PASS' >>"$kinflow_report_dir/backend-summary.txt"
+node --test scripts/ci/household-privacy-worker-contract.test.mjs
+printf '%s\n' 'household_privacy_worker_unit_contract=PASS' >>"$kinflow_report_dir/backend-summary.txt"
 npm run supabase:health
 printf '%s\n' 'edge_contract=PASS' >>"$kinflow_report_dir/backend-summary.txt"
 kinflow_status="$(npx supabase status -o env 2>/dev/null)"

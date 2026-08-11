@@ -47,6 +47,8 @@ void main() {
                 AuthFailureKind.providerUnavailable,
             AuthSignInDataFailureKind.temporarilyUnavailable:
                 AuthFailureKind.temporarilyUnavailable,
+            AuthSignInDataFailureKind.identityConflict:
+                AuthFailureKind.identityConflict,
             AuthSignInDataFailureKind.invalidPayload: AuthFailureKind.internal,
             AuthSignInDataFailureKind.unknown: AuthFailureKind.internal,
           };

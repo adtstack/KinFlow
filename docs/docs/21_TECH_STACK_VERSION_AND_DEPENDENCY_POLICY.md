@@ -27,16 +27,19 @@
 | Models | `freezed_annotation`, `json_annotation` | immutable DTO/state |
 | Codegen | `build_runner`, `freezed`, `json_serializable`, `riverpod_generator` | 생성 코드 |
 | Backend | `supabase_flutter` | Auth/PostgREST/Realtime/Storage |
-| Billing | `purchases_flutter` | App Store/Play purchase |
+| Billing | `purchases_flutter 10.8.0` exact | provider-private App Store/Play purchase bridge |
 | Push | `firebase_core`, `firebase_messaging` | FCM/APNs bridge |
 | Local notification | `flutter_local_notifications` | foreground/local presentation |
 | Secure storage | `flutter_secure_storage` | token/secret |
+| External URL handoff | `url_launcher 6.3.2` exact | 짧은 수명의 export URL을 platform browser/download handler에 전달; 앱 저장 금지 |
 | Connectivity | platform-approved connectivity package | UX hint; truth source 아님 |
 | Error | `sentry_flutter` | crash/error |
 | Localization | Flutter `gen_l10n`, `intl` | ARB/i18n |
 | Testing | `flutter_test`, `integration_test`, `mocktail` | automated tests |
 
 패키지 정확한 patch 버전은 Phase 01에서 Flutter SDK 3.44.7과 공식 호환성을 확인한 뒤 `pubspec.yaml`과 `pubspec.lock`에 고정한다.
+
+결제처럼 native/provider semantics가 권한과 금전 흐름에 직접 영향을 주는 SDK는 work package dependency audit를 거쳐 direct dependency도 exact pin할 수 있다. `purchases_flutter` major upgrade는 ADR 대상이다.
 
 ## 3. Dependency 추가 Gate
 

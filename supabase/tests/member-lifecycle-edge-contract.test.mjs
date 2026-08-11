@@ -18,13 +18,20 @@ const fallbackMemberId = "30000000-0000-4000-8000-000000000202";
 const requestId = "70000000-0000-4000-8000-000000000101";
 const idempotencyKey = "80000000-0000-4000-8000-000000000101";
 const freshProof = "fresh-oauth-proof";
+const runtimePolicyHeaders = Object.freeze({
+  "x-kinflow-client-version": "0.1.0-dev+10",
+  "x-kinflow-client-build": "10",
+  "x-kinflow-contract-version": "2026-08-09",
+  "x-kinflow-platform": "android",
+  "x-kinflow-environment": "dev",
+});
 
 describe("household member lifecycle Edge contract", () => {
   test("change role requires fresh OAuth proof and forwards exact command fields", async () => {
     const calls = [];
     const handler = handlerFor({
-      invokeRpc: async (name, parameters) => {
-        calls.push({name, parameters});
+      invokeRpc: async (name, parameters, compatibilityHeaders) => {
+        calls.push({name, parameters, compatibilityHeaders});
         return [{
           household_id: householdId,
           member_id: memberId,
@@ -40,7 +47,7 @@ describe("household member lifecycle Edge contract", () => {
       memberId,
       role: "admin",
       expectedVersion: 7,
-    }, {proof: freshProof}));
+    }, {proof: freshProof, runtimePolicy: true}));
 
     assert.equal(response.status, 200);
     assert.deepEqual(await response.json(), {
@@ -57,6 +64,7 @@ describe("household member lifecycle Edge contract", () => {
         p_new_role: "admin",
         p_target_member_id: memberId,
       },
+      compatibilityHeaders: runtimePolicyHeaders,
     }]);
     assert.equal(JSON.stringify(calls).includes(freshProof), false);
   });
@@ -206,6 +214,10 @@ describe("household member lifecycle Edge contract", () => {
     ["KFM06", "VERSION_CONFLICT", 409],
     ["KFM07", "ROLE_NOT_ALLOWED", 403],
     ["KFM08", "OWNER_TRANSFER_REQUIRED", 409],
+    ["KFR01", "CLIENT_UPDATE_REQUIRED", 426],
+    ["KFR02", "CLIENT_MUTATIONS_DISABLED", 503],
+    ["KFR03", "RUNTIME_POLICY_UNAVAILABLE", 503],
+    ["KFR06", "CLIENT_FEATURE_DISABLED", 503],
   ]) {
     test(`maps ${sqlState} to stable ${code}`, async () => {
       const handler = handlerFor({
@@ -315,6 +327,10 @@ describe("household member lifecycle Edge contract", () => {
     assert.equal(preflight.status, 204);
     assert.equal(preflight.headers.get("access-control-allow-origin"), "http://127.0.0.1:3000");
     assert.equal(preflight.headers.get("cache-control"), "no-store");
+    assert.match(
+      preflight.headers.get("access-control-allow-headers"),
+      /x-kinflow-client-build/,
+    );
   });
 });
 
@@ -357,6 +373,7 @@ function jsonRequest(body, {
   authenticated = true,
   idempotent = true,
   proof,
+  runtimePolicy = false,
 } = {}) {
   const headers = {
     "content-type": "application/json",
@@ -365,6 +382,9 @@ function jsonRequest(body, {
   if (authenticated) headers.authorization = "Bearer synthetic-session";
   if (idempotent) headers["idempotency-key"] = idempotencyKey;
   if (proof !== undefined) headers["x-kinflow-recent-auth"] = proof;
+  if (runtimePolicy) Object.assign(headers, runtimePolicyHeaders, {
+    "x-kinflow-forwarded-user-operation": "0",
+  });
   return new Request("http://local/manage-household-members", {
     method: "POST",
     headers,

@@ -39,13 +39,26 @@ final class SupabaseInviteDataSource implements InviteDataSource {
             'expiresAt',
             'status',
             'rawToken',
+            'shortCode',
+            'shortCodeExpiresAt',
           })) {
         return const InviteDataFailed<CreatedInviteRecord>(
           InviteDataFailureKind.invalidPayload,
         );
       }
+      final bool hasRawToken = data.containsKey('rawToken');
+      if (!hasCompleteOneTimeInviteCredentials(data)) {
+        return const InviteDataFailed<CreatedInviteRecord>(
+          InviteDataFailureKind.invalidPayload,
+        );
+      }
       final Object? rawTokenValue = data.remove('rawToken');
-      if (rawTokenValue != null && rawTokenValue is! String) {
+      final Object? rawShortCodeValue = data.remove('shortCode');
+      final Object? shortCodeExpiresAtValue = data.remove('shortCodeExpiresAt');
+      if (hasRawToken &&
+          (rawTokenValue is! String ||
+              rawShortCodeValue is! String ||
+              shortCodeExpiresAtValue is! String)) {
         return const InviteDataFailed<CreatedInviteRecord>(
           InviteDataFailureKind.invalidPayload,
         );
@@ -54,6 +67,8 @@ final class SupabaseInviteDataSource implements InviteDataSource {
         CreatedInviteRecord(
           dto: InviteDto.fromJson(data),
           rawToken: rawTokenValue as String?,
+          rawShortCode: rawShortCodeValue as String?,
+          shortCodeExpiresAt: shortCodeExpiresAtValue as String?,
         ),
       );
     } on FunctionException catch (error) {
@@ -109,6 +124,39 @@ final class SupabaseInviteDataSource implements InviteDataSource {
   }
 
   @override
+  Future<InviteDataResult<InvitePreviewDto>> previewInviteByShortCode({
+    required String shortCode,
+  }) async {
+    try {
+      final FunctionResponse response = await _client.functions.invoke(
+        'preview-invite',
+        body: <String, Object?>{'shortCode': shortCode},
+      );
+      final Map<String, Object?>? data = inviteDataFromEnvelope(response.data);
+      if (data == null) {
+        return const InviteDataFailed<InvitePreviewDto>(
+          InviteDataFailureKind.invalidPayload,
+        );
+      }
+      return InviteDataSucceeded<InvitePreviewDto>(
+        InvitePreviewDto.fromJson(data),
+      );
+    } on FunctionException catch (error) {
+      return InviteDataFailed<InvitePreviewDto>(
+        inviteDataFailureFromFunctionDetails(error.details),
+      );
+    } on CheckedFromJsonException {
+      return const InviteDataFailed<InvitePreviewDto>(
+        InviteDataFailureKind.invalidPayload,
+      );
+    } on Object {
+      return const InviteDataFailed<InvitePreviewDto>(
+        InviteDataFailureKind.temporarilyUnavailable,
+      );
+    }
+  }
+
+  @override
   Future<InviteDataResult<InviteMemberDto>> acceptInvite({
     required String idempotencyKey,
     required String token,
@@ -120,6 +168,49 @@ final class SupabaseInviteDataSource implements InviteDataSource {
         headers: <String, String>{'idempotency-key': idempotencyKey},
         body: <String, Object?>{
           'token': token,
+          'setActiveHousehold': setActiveHousehold,
+        },
+      );
+      final Map<String, Object?>? data = inviteDataFromEnvelope(response.data);
+      if (data == null) {
+        return const InviteDataFailed<InviteMemberDto>(
+          InviteDataFailureKind.invalidPayload,
+        );
+      }
+      return InviteDataSucceeded<InviteMemberDto>(
+        InviteMemberDto.fromJson(data),
+      );
+    } on FunctionException catch (error) {
+      return InviteDataFailed<InviteMemberDto>(
+        inviteDataFailureFromFunctionDetails(error.details),
+      );
+    } on AuthException {
+      return const InviteDataFailed<InviteMemberDto>(
+        InviteDataFailureKind.unauthenticated,
+      );
+    } on CheckedFromJsonException {
+      return const InviteDataFailed<InviteMemberDto>(
+        InviteDataFailureKind.invalidPayload,
+      );
+    } on Object {
+      return const InviteDataFailed<InviteMemberDto>(
+        InviteDataFailureKind.temporarilyUnavailable,
+      );
+    }
+  }
+
+  @override
+  Future<InviteDataResult<InviteMemberDto>> acceptInviteByShortCode({
+    required String idempotencyKey,
+    required String shortCode,
+    required bool setActiveHousehold,
+  }) async {
+    try {
+      final FunctionResponse response = await _client.functions.invoke(
+        'accept-invite',
+        headers: <String, String>{'idempotency-key': idempotencyKey},
+        body: <String, Object?>{
+          'shortCode': shortCode,
           'setActiveHousehold': setActiveHousehold,
         },
       );
@@ -221,6 +312,13 @@ bool hasExactCreatedInviteKeys(Map<String, Object?> data, Set<String> allowed) {
       }.every(data.containsKey);
 }
 
+bool hasCompleteOneTimeInviteCredentials(Map<String, Object?> data) {
+  final bool hasRawToken = data.containsKey('rawToken');
+  final bool hasShortCode = data.containsKey('shortCode');
+  final bool hasShortCodeExpiry = data.containsKey('shortCodeExpiresAt');
+  return hasRawToken == hasShortCode && hasRawToken == hasShortCodeExpiry;
+}
+
 InviteDataFailureKind inviteDataFailureFromFunctionDetails(Object? details) {
   if (details is! Map) {
     return InviteDataFailureKind.unknown;
@@ -242,6 +340,9 @@ InviteDataFailureKind inviteDataFailureFromFunctionDetails(Object? details) {
     'INVITE_EMAIL_MISMATCH' => InviteDataFailureKind.emailMismatch,
     'RATE_LIMITED' => InviteDataFailureKind.rateLimited,
     'PROFILE_UNAVAILABLE' => InviteDataFailureKind.profileUnavailable,
+    'FEATURE_POLICY_UNAVAILABLE' =>
+      InviteDataFailureKind.featurePolicyUnavailable,
+    'FEATURE_LIMIT_REACHED' => InviteDataFailureKind.featureLimitReached,
     'CAPABILITY_UNSUPPORTED' => InviteDataFailureKind.invalidInput,
     'TEMPORARILY_UNAVAILABLE' => InviteDataFailureKind.temporarilyUnavailable,
     _ => InviteDataFailureKind.unknown,

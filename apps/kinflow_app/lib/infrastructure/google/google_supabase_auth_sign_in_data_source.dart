@@ -35,6 +35,11 @@ final class GoogleSupabaseAuthSignInDataSource implements AuthSignInDataSource {
         case GoogleIdentityAuthenticated(:final tokens):
           final GoogleTokenExchangeResult exchangeResult = await tokenExchange
               .exchange(tokens);
+          if (exchangeResult case GoogleTokenExchangeFailed(
+            kind: GoogleTokenExchangeFailureKind.identityConflict,
+          )) {
+            await _clearGoogleAccountSelectionSafely();
+          }
           return switch (exchangeResult) {
             GoogleTokenExchangeCompleted() => const AuthSignInDataCompleted(),
             GoogleTokenExchangeFailed(:final kind) => AuthSignInDataFailed(
@@ -69,10 +74,21 @@ final class GoogleSupabaseAuthSignInDataSource implements AuthSignInDataSource {
         AuthSignInDataFailureKind.providerUnavailable,
       GoogleTokenExchangeFailureKind.temporarilyUnavailable =>
         AuthSignInDataFailureKind.temporarilyUnavailable,
+      GoogleTokenExchangeFailureKind.identityConflict =>
+        AuthSignInDataFailureKind.identityConflict,
       GoogleTokenExchangeFailureKind.invalidResponse =>
         AuthSignInDataFailureKind.invalidPayload,
       GoogleTokenExchangeFailureKind.unknown =>
         AuthSignInDataFailureKind.unknown,
     };
+  }
+
+  Future<void> _clearGoogleAccountSelectionSafely() async {
+    try {
+      await identityGateway.signOut(serverClientId: serverClientId);
+    } on Object {
+      // The stable identity conflict must remain recoverable even if the
+      // provider cannot clear its process-local account selection.
+    }
   }
 }

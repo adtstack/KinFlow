@@ -1,3 +1,5 @@
+import 'package:kinflow_app/features/offline/domain/read_cache_metadata.dart';
+
 enum HouseholdDataFailureKind {
   unauthenticated,
   invalidInput,
@@ -36,9 +38,10 @@ sealed class LoadActiveHouseholdDataResult {
 }
 
 final class ActiveHouseholdDataFound extends LoadActiveHouseholdDataResult {
-  const ActiveHouseholdDataFound(this.record);
+  const ActiveHouseholdDataFound(this.record, {this.cacheMetadata});
 
   final ActiveHouseholdRecord record;
+  final ReadCacheMetadata? cacheMetadata;
 }
 
 final class ActiveHouseholdDataAbsent extends LoadActiveHouseholdDataResult {

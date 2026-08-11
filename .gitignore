@@ -1,6 +1,8 @@
 .idea
 .fvm/
 node_modules/
+apps/public_site/.astro/
+apps/public_site/dist/
 supabase/.temp/
 ci-reports/
 

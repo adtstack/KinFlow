@@ -2,7 +2,7 @@
 
 KinFlow는 성인 2인이 가구를 만들고 집안일을 나누어 완료하는 Android-first 가족 협업 앱이다.
 
-현재 구현 범위는 Phase 02 WP02-02~05의 가구 권한·첫 가구 온보딩·초대·구성원 역할/Owner lifecycle 자동화와 Google Android integration이다. dev Google/Supabase provider와 owned App Link domain은 구성·검증했지만, 실제 Google 성인 2계정·Android 2기기 live gate와 production 배포는 아직 완료하지 않았다. GitHub-hosted `CI gate`의 자동 증거와 실제 계정·기기 증거는 구분한다.
+현재 local 구현은 가구 권한·온보딩·초대·구성원 lifecycle에 더해 Today 집안일과 Calendar 일정의 생성/완료·한 회차 예외·전체 시리즈 변경 및 선택 회차 기준 수정·취소까지 포함한다. 선택 회차 경계는 서버의 immutable recurrence slot이 결정하며, Calendar 취소는 경계 이후 moved exception까지 포함하고 이전 actionable prefix는 bounded terminal revision으로 보존한다. dev Google/Supabase provider와 owned App Link domain은 구성·검증했지만 실제 성인 계정·Android 두 기기 live gate와 production 배포는 마지막 검증 단계로 남아 있다. 자동 증거와 실제 계정·기기 증거는 구분한다.
 
 ## Accepted baseline
 
@@ -31,6 +31,9 @@ KinFlow는 성인 2인이 가구를 만들고 집안일을 나누어 완료하�
 - 가구·Owner membership·active selection을 한 transaction으로 만드는 첫 가구 온보딩
 - hash-only 단일 사용 초대와 preview/accept/revoke Edge command, 로그인 전후 App Link continuation
 - Admin/Member 역할 변경, 제거·나가기, 최근 인증 기반 Owner 이전과 immutable audit
+- 반복 집안일의 한 회차 예외, 전체 시리즈 변경, 선택 회차 기준 수정·취소와 authoritative Today/Upcoming reconciliation
+- 반복 Calendar의 한 회차 예외, 전체 시리즈 변경, 선택 회차 기준 수정·취소와 immutable recurrence-slot authority
+- 독립 dev/prod Flutter Web release build, email-first sign-in과 no-PWA/no-persistent-cache capability fallback baseline
 
 자세한 변경 근거는 `docs/adr/ADR-0002-android-first-release.md`를 따른다.
 
@@ -95,6 +98,7 @@ GitHub Actions는 PR, `main` push와 수동 실행에서 다음 job을 병렬 �
 - Pub/npm license allowlist와 OSV offline vulnerability scan
 - Supabase reset/lint, 전체 pgTAP RLS/contract, Edge health와 Flutter live adapter contract
 - Android dev/prod debug APK build와 package/API/permission/checksum audit
+- Web dev/prod release build와 version/path URL/no-PWA/no-persistent-cache/checksum audit
 
 PR workflow 권한은 `contents: read`뿐이며 production secret을 참조하지 않는다. action과 다운로드 도구는 release commit 또는 checksum으로 고정한다. OSV database는 공개 fixture로 받은 뒤 실제 lockfile scan을 network-disabled mode에서 실행한다. 실패한 Android build의 APK는 업로드하지 않는다.
 
@@ -108,6 +112,8 @@ npm run ci:dependency
 scripts/ci/supabase-backend.sh
 scripts/ci/android-build.sh dev
 scripts/ci/android-build.sh prod
+scripts/ci/web-build.sh dev
+scripts/ci/web-build.sh prod
 ```
 
 Flutter package cache만 사용하는 검증은 `KINFLOW_PUB_OFFLINE=1`을 추가한다. Phase 02 상태 정합성 기준 원격 실행은 [CI run 30504563368](https://github.com/adtstack/KinFlow/actions/runs/30504563368)이며 모든 source job과 최종 `CI gate`가 통과했다. branch protection/ruleset 적용은 별도 repository 관리 작업으로 남아 있다.

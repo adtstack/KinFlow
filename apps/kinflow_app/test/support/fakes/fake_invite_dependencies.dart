@@ -11,7 +11,9 @@ final class FakeInviteRepository implements InviteRepository {
   FakeInviteRepository({
     this.createCallback,
     this.previewCallback,
+    this.previewShortCodeCallback,
     this.acceptCallback,
+    this.acceptShortCodeCallback,
     this.revokeCallback,
     List<CreateHouseholdInviteResult> createResults =
         const <CreateHouseholdInviteResult>[],
@@ -32,10 +34,18 @@ final class FakeInviteRepository implements InviteRepository {
   createCallback;
   final Future<PreviewHouseholdInviteResult> Function(InviteToken token)?
   previewCallback;
+  final Future<PreviewHouseholdInviteResult> Function(
+    InviteShortCode shortCode,
+  )?
+  previewShortCodeCallback;
   final Future<AcceptHouseholdInviteResult> Function(
     AcceptHouseholdInviteRequest request,
   )?
   acceptCallback;
+  final Future<AcceptHouseholdInviteResult> Function(
+    AcceptHouseholdInviteByShortCodeRequest request,
+  )?
+  acceptShortCodeCallback;
   final Future<RevokeHouseholdInviteResult> Function(
     RevokeHouseholdInviteRequest request,
   )?
@@ -48,8 +58,11 @@ final class FakeInviteRepository implements InviteRepository {
   final List<CreateHouseholdInviteRequest> createRequests =
       <CreateHouseholdInviteRequest>[];
   final List<InviteToken> previewTokens = <InviteToken>[];
+  final List<InviteShortCode> previewShortCodes = <InviteShortCode>[];
   final List<AcceptHouseholdInviteRequest> acceptRequests =
       <AcceptHouseholdInviteRequest>[];
+  final List<AcceptHouseholdInviteByShortCodeRequest> acceptShortCodeRequests =
+      <AcceptHouseholdInviteByShortCodeRequest>[];
   final List<RevokeHouseholdInviteRequest> revokeRequests =
       <RevokeHouseholdInviteRequest>[];
 
@@ -82,11 +95,41 @@ final class FakeInviteRepository implements InviteRepository {
   }
 
   @override
+  Future<PreviewHouseholdInviteResult> previewInviteByShortCode(
+    InviteShortCode shortCode,
+  ) async {
+    previewShortCodes.add(shortCode);
+    final callback = previewShortCodeCallback;
+    if (callback != null) {
+      return callback(shortCode);
+    }
+    if (_previewResults.isNotEmpty) {
+      return _previewResults.removeAt(0);
+    }
+    return HouseholdInvitePreviewed(householdInvitePreviewFixture());
+  }
+
+  @override
   Future<AcceptHouseholdInviteResult> acceptInvite(
     AcceptHouseholdInviteRequest request,
   ) async {
     acceptRequests.add(request);
     final callback = acceptCallback;
+    if (callback != null) {
+      return callback(request);
+    }
+    if (_acceptResults.isNotEmpty) {
+      return _acceptResults.removeAt(0);
+    }
+    return HouseholdInviteAccepted(acceptedHouseholdInviteFixture());
+  }
+
+  @override
+  Future<AcceptHouseholdInviteResult> acceptInviteByShortCode(
+    AcceptHouseholdInviteByShortCodeRequest request,
+  ) async {
+    acceptShortCodeRequests.add(request);
+    final callback = acceptShortCodeCallback;
     if (callback != null) {
       return callback(request);
     }
@@ -137,6 +180,7 @@ final class FakeInviteCommandIdGenerator implements InviteCommandIdGenerator {
 
 HouseholdInvite householdInviteFixture({
   String rawToken = inviteTokenValue,
+  String? rawShortCode,
   HouseholdInviteStatus status = HouseholdInviteStatus.active,
 }) {
   return HouseholdInvite(
@@ -146,6 +190,10 @@ HouseholdInvite householdInviteFixture({
     expiresAt: DateTime.utc(2030, 1, 8),
     status: status,
     rawToken: InviteToken.tryParse(rawToken),
+    rawShortCode: rawShortCode == null
+        ? null
+        : InviteShortCode.tryParse(rawShortCode),
+    shortCodeExpiresAt: rawShortCode == null ? null : DateTime.utc(2030, 1, 2),
   );
 }
 
@@ -201,3 +249,4 @@ InviteCommandId inviteCommandIdFixture(String value) {
 }
 
 const String inviteTokenValue = 'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG';
+const String inviteShortCodeValue = '2345-ABCD';

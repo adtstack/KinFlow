@@ -58,6 +58,143 @@ void main() {
 
     expect(violations, isNotEmpty);
   });
+
+  test('RevenueCat SDK imports stay inside its infrastructure driver', () {
+    final Directory lib = Directory('lib');
+    final List<String> violations = <String>[];
+    for (final File file
+        in lib
+            .listSync(recursive: true)
+            .whereType<File>()
+            .where((File value) => value.path.endsWith('.dart'))) {
+      if (!file.readAsStringSync().contains(
+        "package:purchases_flutter/purchases_flutter.dart",
+      )) {
+        continue;
+      }
+      final String normalized = file.path.replaceAll('\\', '/');
+      if (normalized !=
+          'lib/infrastructure/revenuecat/purchases_flutter_revenuecat_sdk.dart') {
+        violations.add(normalized);
+      }
+    }
+
+    expect(violations, isEmpty, reason: violations.join('\n'));
+  });
+
+  test('package info SDK imports stay inside validated app-build adapters', () {
+    final Directory lib = Directory('lib');
+    final List<String> violations = <String>[];
+    const Set<String> allowed = <String>{
+      'lib/infrastructure/package_info/package_info_diagnostic_app_build_reader.dart',
+      'lib/infrastructure/package_info/package_info_runtime_client_build_reader.dart',
+    };
+    for (final File file
+        in lib
+            .listSync(recursive: true)
+            .whereType<File>()
+            .where((File value) => value.path.endsWith('.dart'))) {
+      if (!file.readAsStringSync().contains(
+        "package:package_info_plus/package_info_plus.dart",
+      )) {
+        continue;
+      }
+      final String normalized = file.path.replaceAll('\\', '/');
+      if (!allowed.contains(normalized)) {
+        violations.add(normalized);
+      }
+    }
+
+    expect(violations, isEmpty, reason: violations.join('\n'));
+  });
+
+  test('mutation providers use only their exact runtime capability guard', () {
+    const Map<String, ({String feature, int guardCount})>
+    contracts = <String, ({String feature, int guardCount})>{
+      'lib/features/household/presentation/providers/household_providers.dart':
+          (feature: 'household', guardCount: 8),
+      'lib/features/chores/presentation/providers/chore_providers.dart': (
+        feature: 'chores',
+        guardCount: 19,
+      ),
+      'lib/features/calendar/presentation/providers/calendar_providers.dart': (
+        feature: 'calendar',
+        guardCount: 13,
+      ),
+      'lib/features/notifications/presentation/providers/notification_providers.dart':
+          (feature: 'notifications', guardCount: 6),
+      'lib/features/settings/presentation/providers/profile_preferences_providers.dart':
+          (feature: 'profile', guardCount: 1),
+      'lib/features/billing/presentation/providers/billing_providers.dart': (
+        feature: 'billing',
+        guardCount: 3,
+      ),
+    };
+    final RegExp featureGuard = RegExp(
+      r'appRuntimePolicyFeatureMutationsBlockedProvider\(\s*AppRuntimeFeature\.(\w+)',
+    );
+
+    for (final MapEntry<String, ({String feature, int guardCount})> contract
+        in contracts.entries) {
+      final String source = File(contract.key).readAsStringSync();
+      final List<String> features = featureGuard
+          .allMatches(source)
+          .map((RegExpMatch match) => match.group(1)!)
+          .toList(growable: false);
+
+      expect(
+        features,
+        List<String>.filled(contract.value.guardCount, contract.value.feature),
+        reason:
+            '${contract.key} must guard every mutation as '
+            '${contract.value.feature}',
+      );
+      expect(
+        source,
+        isNot(contains('appRuntimePolicyMutationsBlockedProvider')),
+        reason: '${contract.key} must not use the broad global guard',
+      );
+    }
+  });
+
+  test('broad runtime mutation guard stays inside runtime policy feature', () {
+    final List<String> violations = <String>[];
+    for (final File file
+        in Directory('lib/features')
+            .listSync(recursive: true)
+            .whereType<File>()
+            .where((File value) => value.path.endsWith('.dart'))) {
+      final String normalized = file.path.replaceAll('\\', '/');
+      if (normalized.startsWith('lib/features/runtime_policy/')) {
+        continue;
+      }
+      if (file.readAsStringSync().contains(
+        'appRuntimePolicyMutationsBlockedProvider',
+      )) {
+        violations.add(normalized);
+      }
+    }
+
+    expect(violations, isEmpty, reason: violations.join('\n'));
+  });
+
+  test('privacy and export providers stay outside runtime mutation advisory', () {
+    for (final String path in <String>[
+      'lib/features/settings/presentation/providers/account_deletion_providers.dart',
+      'lib/features/settings/presentation/providers/data_export_providers.dart',
+      'lib/features/settings/presentation/providers/household_privacy_providers.dart',
+    ]) {
+      final String source = File(path).readAsStringSync();
+      expect(
+        source,
+        allOf(
+          isNot(contains('appRuntimePolicyMutationsBlockedProvider')),
+          isNot(contains('appRuntimePolicyFeatureMutationsBlockedProvider')),
+        ),
+        reason: '$path must preserve privacy and export mutations',
+      );
+    }
+  });
 }
 
 enum _Layer { domain, application, data, presentation }

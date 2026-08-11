@@ -5,7 +5,14 @@ import 'package:kinflow_app/app/presentation/widgets/environment_banner.dart';
 import 'package:kinflow_app/app/providers/app_providers.dart';
 import 'package:kinflow_app/app/router/app_router.dart';
 import 'package:kinflow_app/app/theme/app_theme.dart';
+import 'package:kinflow_app/features/analytics/presentation/widgets/analytics_lifecycle_host.dart';
+import 'package:kinflow_app/features/auth/presentation/widgets/auth_session_lifecycle_host.dart';
+import 'package:kinflow_app/features/billing/presentation/widgets/billing_lifecycle_host.dart';
+import 'package:kinflow_app/features/notifications/presentation/widgets/notification_center_lifecycle_host.dart';
 import 'package:kinflow_app/l10n/app_localizations.dart';
+import 'package:kinflow_app/features/notifications/presentation/widgets/notification_push_lifecycle_host.dart';
+import 'package:kinflow_app/features/runtime_policy/presentation/widgets/app_runtime_policy_lifecycle_host.dart';
+import 'package:kinflow_app/features/settings/presentation/widgets/profile_preferences_lifecycle_host.dart';
 
 class KinFlowApp extends ConsumerWidget {
   const KinFlowApp({super.key});
@@ -20,7 +27,23 @@ class KinFlowApp extends ConsumerWidget {
       builder: (BuildContext context, Widget? child) {
         return EnvironmentBanner(
           environment: environment,
-          child: AppBootstrapGate(child: child ?? const SizedBox.shrink()),
+          child: AuthSessionLifecycleHost(
+            child: AnalyticsLifecycleHost(
+              child: AppRuntimePolicyLifecycleHost(
+                child: ProfilePreferencesLifecycleHost(
+                  child: BillingLifecycleHost(
+                    child: NotificationPushLifecycleHost(
+                      child: NotificationCenterLifecycleHost(
+                        child: AppBootstrapGate(
+                          child: child ?? const SizedBox.shrink(),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
         );
       },
       darkTheme: AppTheme.dark,

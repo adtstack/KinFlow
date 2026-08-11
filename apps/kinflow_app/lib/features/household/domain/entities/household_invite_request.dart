@@ -30,6 +30,18 @@ final class AcceptHouseholdInviteRequest {
   final bool setActiveHousehold;
 }
 
+final class AcceptHouseholdInviteByShortCodeRequest {
+  const AcceptHouseholdInviteByShortCodeRequest({
+    required this.idempotencyKey,
+    required this.shortCode,
+    required this.setActiveHousehold,
+  });
+
+  final InviteCommandId idempotencyKey;
+  final InviteShortCode shortCode;
+  final bool setActiveHousehold;
+}
+
 final class RevokeHouseholdInviteRequest {
   const RevokeHouseholdInviteRequest({
     required this.idempotencyKey,

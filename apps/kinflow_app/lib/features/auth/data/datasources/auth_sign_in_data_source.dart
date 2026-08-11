@@ -1,6 +1,7 @@
 enum AuthSignInDataFailureKind {
   providerUnavailable,
   temporarilyUnavailable,
+  identityConflict,
   invalidPayload,
   unknown,
 }
