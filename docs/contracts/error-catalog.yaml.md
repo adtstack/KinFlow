@@ -7,13 +7,44 @@
 - 사용 방법: 아래 코드 블록의 내용을 복사하여 위 원본 경로에 저장합니다.
 
 ```yaml
-version: "2026-07-21"
+version: "2026-08-10-wp05-12"
 envelope:
   code: stable machine code
   messageKey: client localization key
   retryable: boolean
   requestId: correlation UUID
   details: allowlisted structured data only
+providerMappings:
+  googleIdentitySignIn:
+    email_exists: IDENTITY_CONFLICT
+    identity_already_exists: IDENTITY_CONFLICT
+    user_already_exists: IDENTITY_CONFLICT
+  runtimePolicy:
+    KFR01: CLIENT_UPDATE_REQUIRED
+    KFR02: CLIENT_MUTATIONS_DISABLED
+    KFR03: RUNTIME_POLICY_UNAVAILABLE
+    KFR06: CLIENT_FEATURE_DISABLED
+  profilePreferences:
+    KFS01: AUTH_REQUIRED
+    KFS02: VALIDATION_FAILED
+    KFS03: NOT_FOUND_OR_FORBIDDEN
+    KFS04: PERMISSION_DENIED
+    KFS05: VERSION_CONFLICT
+    KFS06: VERSION_CONFLICT
+  choreSeriesChange:
+    KFC01: AUTH_REQUIRED
+    KFC02: VALIDATION_FAILED
+    KFC03: NOT_FOUND_OR_FORBIDDEN
+    KFC04: IDEMPOTENCY_KEY_REUSED
+    KFC05: VERSION_CONFLICT
+    KFC06: INVALID_STATE_TRANSITION
+    KFC07: RECURRENCE_RULE_INVALID
+  notificationSnooze:
+    KNP01: VALIDATION_FAILED
+    KNP02: AUTH_REQUIRED
+    KNP03: NOT_FOUND_OR_FORBIDDEN
+    KNP06: VERSION_CONFLICT
+    KNS04: NOTIFICATION_SNOOZE_UNAVAILABLE
 errors:
   - code: VALIDATION_FAILED
     httpStatus: 400
@@ -35,11 +66,19 @@ errors:
     httpStatus: 403
     retryable: false
     messageKey: errors.recentAuthRequired
+  - code: IDENTITY_CONFLICT
+    httpStatus: 409
+    retryable: false
+    messageKey: errors.identityConflict
   - code: PERMISSION_DENIED
     httpStatus: 403
     retryable: false
     messageKey: errors.permissionDenied
   - code: NOT_FOUND_OR_FORBIDDEN
+    httpStatus: 404
+    retryable: false
+    messageKey: errors.notFound
+  - code: NOT_FOUND
     httpStatus: 404
     retryable: false
     messageKey: errors.notFound
@@ -135,6 +174,30 @@ errors:
     httpStatus: 403
     retryable: false
     messageKey: errors.featureDisabled
+  - code: FEATURE_POLICY_UNAVAILABLE
+    httpStatus: 503
+    retryable: true
+    messageKey: errors.featurePolicyUnavailable
+  - code: CLIENT_UPDATE_REQUIRED
+    httpStatus: 426
+    retryable: false
+    messageKey: errors.clientUpdateRequired
+  - code: CLIENT_MUTATIONS_DISABLED
+    httpStatus: 503
+    retryable: true
+    messageKey: errors.clientMutationsDisabled
+  - code: CLIENT_FEATURE_DISABLED
+    httpStatus: 503
+    retryable: true
+    messageKey: errors.clientFeatureDisabled
+  - code: RUNTIME_POLICY_UNAVAILABLE
+    httpStatus: 503
+    retryable: true
+    messageKey: errors.runtimePolicyUnavailable
+  - code: FEATURE_LIMIT_REACHED
+    httpStatus: 409
+    retryable: false
+    messageKey: errors.featureLimitReached
   - code: PLAN_LIMIT_REACHED
     httpStatus: 402
     retryable: false
@@ -163,6 +226,10 @@ errors:
     httpStatus: 409
     retryable: false
     messageKey: errors.notificationPermissionRequired
+  - code: NOTIFICATION_SNOOZE_UNAVAILABLE
+    httpStatus: 409
+    retryable: false
+    messageKey: notifications.snoozeUnavailable
   - code: CAPABILITY_UNSUPPORTED
     httpStatus: 501
     retryable: false
@@ -171,6 +238,62 @@ errors:
     httpStatus: 409
     retryable: false
     messageKey: errors.privacyRequestAlreadyPending
+  - code: REQUESTS_PAUSED
+    httpStatus: 503
+    retryable: true
+    messageKey: errors.temporarilyUnavailable
+  - code: SUBSCRIPTION_ACKNOWLEDGEMENT_REQUIRED
+    httpStatus: 409
+    retryable: false
+    messageKey: errors.subscriptionAcknowledgementRequired
+  - code: REQUEST_NOT_CANCELLABLE
+    httpStatus: 409
+    retryable: false
+    messageKey: errors.privacyRequestNotCancellable
+  - code: ARTIFACT_UNAVAILABLE
+    httpStatus: 410
+    retryable: false
+    messageKey: errors.dataExportUnavailable
+  - code: DOWNLOAD_GRANT_INVALID
+    httpStatus: 410
+    retryable: false
+    messageKey: errors.dataExportUnavailable
+  - code: DOWNLOADS_PAUSED
+    httpStatus: 503
+    retryable: true
+    messageKey: errors.temporarilyUnavailable
+  - code: EXPORT_TOO_LARGE
+    httpStatus: 413
+    retryable: false
+    messageKey: errors.dataExportTooLarge
+  - code: OWNER_REQUIRED
+    httpStatus: 403
+    retryable: false
+    messageKey: errors.householdOwnerRequired
+  - code: CONFIRMATION_MISMATCH
+    httpStatus: 409
+    retryable: false
+    messageKey: errors.householdNameConfirmationMismatch
+  - code: EXPORT_REQUESTS_PAUSED
+    httpStatus: 503
+    retryable: true
+    messageKey: errors.temporarilyUnavailable
+  - code: DELETION_REQUESTS_PAUSED
+    httpStatus: 503
+    retryable: true
+    messageKey: errors.temporarilyUnavailable
+  - code: REQUEST_NOT_MUTABLE
+    httpStatus: 409
+    retryable: false
+    messageKey: errors.householdPrivacyRequestNotMutable
+  - code: SUBSCRIPTION_ACK_REQUIRED
+    httpStatus: 409
+    retryable: false
+    messageKey: errors.subscriptionAcknowledgmentRequired
+  - code: HOUSEHOLD_ALREADY_DELETED
+    httpStatus: 410
+    retryable: false
+    messageKey: errors.householdAlreadyDeleted
   - code: RATE_LIMITED
     httpStatus: 429
     retryable: true
