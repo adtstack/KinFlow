@@ -170,10 +170,7 @@ void main() {
     await tester.tap(tile);
     await tester.pumpAndSettle();
 
-    expect(
-      router.routeInformationProvider.value.uri.path,
-      AppRoutes.deviceCapabilities,
-    );
+    expect(router.state.uri.path, AppRoutes.deviceCapabilities);
     expect(find.byKey(const Key('capabilities.routeTarget')), findsOneWidget);
   });
 

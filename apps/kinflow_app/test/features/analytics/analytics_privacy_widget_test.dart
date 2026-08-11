@@ -201,10 +201,7 @@ void main() {
     await tester.tap(tile);
     await tester.pumpAndSettle();
 
-    expect(
-      router.routeInformationProvider.value.uri.path,
-      AppRoutes.analyticsPrivacy,
-    );
+    expect(router.state.uri.path, AppRoutes.analyticsPrivacy);
     expect(
       find.byKey(const Key('analyticsPrivacy.routeTarget')),
       findsOneWidget,

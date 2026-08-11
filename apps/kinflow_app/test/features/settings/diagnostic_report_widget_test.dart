@@ -198,10 +198,7 @@ void main() {
     await tester.tap(tile);
     await tester.pumpAndSettle();
 
-    expect(
-      router.routeInformationProvider.value.uri.path,
-      AppRoutes.diagnostics,
-    );
+    expect(router.state.uri.path, AppRoutes.diagnostics);
     expect(find.byKey(const Key('diagnostics.routeTarget')), findsOneWidget);
   });
 }
